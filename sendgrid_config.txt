@@ -1,0 +1,8 @@
+
+# Configuration SendGrid pour production
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'apikey'  # Toujours 'apikey' pour SendGrid
+EMAIL_HOST_PASSWORD = 'VOTRE_API_KEY_SENDGRID_ICI'  # Remplacez par votre vraie API key

@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Accès Admin Litiges{% endblock %}
+
+{% block extra_css %}
+<style>
+.admin-access {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    padding: 50px 20px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.access-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    border: 2px solid rgba(138, 43, 226, 0.3);
+    max-width: 500px;
+    width: 100%;
+}
+
+.access-title {
+    font-size: 2.5rem;
+    color: #00ffff;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px #00ffff;
+}
+
+.access-description {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    color: #ccc;
+}
+
+.admin-btn {
+    background: linear-gradient(45deg, #8a2be2, #4169e1);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    display: inline-block;
+    margin: 10px;
+}
+
+.admin-btn:hover {
+    transform: scale(1.05);
+    color: white;
+    text-decoration: none;
+    box-shadow: 0 0 20px rgba(138, 43, 226, 0.5);
+}
+
+.btn-dashboard { background: linear-gradient(45deg, #00ffff, #0066cc); }
+.btn-django { background: linear-gradient(45deg, #4caf50, #2e7d32); }
+
+.access-info {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 30px;
+    border-left: 4px solid #8a2be2;
+}
+
+.url-display {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 10px;
+    border-radius: 5px;
+    font-family: monospace;
+    color: #00ffff;
+    margin: 10px 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-access">
+    <div class="access-card">
+        <h1 class="access-title">
+            <i class="fas fa-shield-alt"></i>
+            Admin Litiges
+        </h1>
+        
+        <p class="access-description">
+            Interface d'administration pour la gestion des litiges <span class="notranslate">BLIZZ</span>
+        </p>
+        
+        <div class="admin-actions">
+            <a href="{% url 'admin_dispute_dashboard' %}" class="admin-btn btn-dashboard">
+                <i class="fas fa-tachometer-alt"></i>
+                Dashboard Litiges
+            </a>
+            
+            <a href="{% url 'admin_payout_dashboard' %}" class="admin-btn" style="background: linear-gradient(45deg, #22c55e, #16a34a);">
+                <i class="fas fa-money-bill-wave"></i>
+                Payouts
+            </a>
+            
+            <a href="{% url 'pending_seller_notifications' %}" class="admin-btn" style="background: linear-gradient(45deg, #f59e0b, #d97706);">
+                <i class="fas fa-bell"></i>
+                Notifications Vendeurs
+            </a>
+            
+            <a href="{% url 'admin:index' %}" class="admin-btn btn-django">
+                <i class="fas fa-cog"></i>
+                Django Admin
+            </a>
+        </div>
+        
+        <div class="access-info">
+            <h4><i class="fas fa-info-circle"></i> URLs Disponibles</h4>
+            
+            <p><strong>Dashboard Principal :</strong></p>
+            <div class="url-display">/dispute-admin/dashboard/</div>
+            
+            <p><strong>Payouts :</strong></p>
+            <div class="url-display">/payouts/dashboard/</div>
+            
+            <p><strong>Notifications Vendeurs :</strong></p>
+            <div class="url-display">/admin/pending-seller-notifications/</div>
+            
+            <p><strong>Django Admin :</strong></p>
+            <div class="url-display">/admin/</div>
+            
+            <p><small>Accès réservé aux administrateurs (is_staff=True)</small></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

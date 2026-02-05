@@ -1,0 +1,368 @@
+{% load i18n %}
+<!-- Composant d'auto-complétion pour hashtags -->
+<div class="hashtag-autocomplete-container" id="hashtagAutocomplete" style="display: none;">
+    <div class="autocomplete-header">
+        <i class="fas fa-hashtag"></i>
+        <span>Suggestions de hashtags</span>
+    </div>
+    <div class="autocomplete-content">
+        <div class="trending-section">
+            <h4>🔥 Tendances</h4>
+            <div class="hashtag-suggestions" id="trendingHashtags">
+                <!-- Chargé dynamiquement -->
+            </div>
+        </div>
+        <div class="popular-section">
+            <h4>📈 Populaires</h4>
+            <div class="hashtag-suggestions" id="popularHashtags">
+                <!-- Chargé dynamiquement -->
+            </div>
+        </div>
+        <div class="category-section">
+            <h4>🎮 Gaming</h4>
+            <div class="hashtag-suggestions" id="gamingHashtags">
+                <!-- Chargé dynamiquement -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.hashtag-autocomplete-container {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: rgba(26, 35, 50, 0.95);
+    border: 1px solid var(--primary-color);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(108, 92, 231, 0.3);
+}
+
+.autocomplete-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: rgba(108, 92, 231, 0.1);
+    border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+.autocomplete-content {
+    padding: 1rem;
+}
+
+.trending-section, .popular-section, .category-section {
+    margin-bottom: 1.5rem;
+}
+
+.trending-section h4, .popular-section h4, .category-section h4 {
+    margin: 0 0 0.8rem 0;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.hashtag-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.hashtag-suggestion {
+    padding: 0.4rem 0.8rem;
+    background: rgba(108, 92, 231, 0.2);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    border-radius: 15px;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.hashtag-suggestion:hover {
+    background: var(--primary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(108, 92, 231, 0.4);
+}
+
+.hashtag-suggestion .count {
+    opacity: 0.7;
+    font-size: 0.7rem;
+}
+
+.hashtag-suggestion .trending-indicator {
+    color: #ff6b6b;
+    font-size: 0.7rem;
+}
+
+/* Animation d'apparition */
+.hashtag-autocomplete-container.show {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hashtag-autocomplete-container {
+        max-height: 300px;
+    }
+    
+    .autocomplete-content {
+        padding: 0.8rem;
+    }
+    
+    .hashtag-suggestion {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+    }
+}
+</style>
+
+<script>
+class HashtagAutocomplete {
+    constructor(inputElement, containerElement) {
+        this.input = inputElement;
+        this.container = containerElement;
+        this.suggestions = {
+            trending: [],
+            popular: [],
+            gaming: []
+        };
+        this.isVisible = false;
+        
+        this.init();
+    }
+    
+    init() {
+        // Charger les suggestions
+        this.loadSuggestions();
+        
+        // Événements
+        this.input.addEventListener('input', (e) => this.handleInput(e));
+        this.input.addEventListener('focus', (e) => this.handleFocus(e));
+        document.addEventListener('click', (e) => this.handleDocumentClick(e));
+        
+        // Gestion du clavier
+        this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
+    }
+    
+    async loadSuggestions() {
+        try {
+            const response = await fetch('/api/hashtag-suggestions/');
+            const data = await response.json();
+            
+            if (data.success) {
+                this.suggestions = data.suggestions;
+                this.renderSuggestions();
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des suggestions:', error);
+        }
+    }
+    
+    handleInput(e) {
+        const value = e.target.value;
+        const cursorPos = e.target.selectionStart;
+        
+        // Détecter si on tape un hashtag
+        const beforeCursor = value.substring(0, cursorPos);
+        const hashtagMatch = beforeCursor.match(/#(\w*)$/);
+        
+        if (hashtagMatch) {
+            const query = hashtagMatch[1].toLowerCase();
+            this.filterAndShowSuggestions(query);
+        } else {
+            this.hide();
+        }
+    }
+    
+    handleFocus(e) {
+        const value = e.target.value;
+        if (value.includes('#')) {
+            this.show();
+        }
+    }
+    
+    handleDocumentClick(e) {
+        if (!this.container.contains(e.target) && e.target !== this.input) {
+            this.hide();
+        }
+    }
+    
+    handleKeydown(e) {
+        if (!this.isVisible) return;
+        
+        const suggestions = this.container.querySelectorAll('.hashtag-suggestion');
+        const selected = this.container.querySelector('.hashtag-suggestion.selected');
+        
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                this.selectNext(suggestions, selected);
+                break;
+            case 'ArrowUp':
+                e.preventDefault();
+                this.selectPrevious(suggestions, selected);
+                break;
+            case 'Enter':
+                e.preventDefault();
+                if (selected) {
+                    this.insertHashtag(selected.dataset.hashtag);
+                }
+                break;
+            case 'Escape':
+                this.hide();
+                break;
+        }
+    }
+    
+    filterAndShowSuggestions(query) {
+        // Filtrer les suggestions basées sur la requête
+        const filtered = {
+            trending: this.suggestions.trending.filter(item => 
+                item.tag.toLowerCase().includes(query)
+            ).slice(0, 5),
+            popular: this.suggestions.popular.filter(item => 
+                item.tag.toLowerCase().includes(query)
+            ).slice(0, 5),
+            gaming: this.suggestions.gaming.filter(item => 
+                item.tag.toLowerCase().includes(query)
+            ).slice(0, 5)
+        };
+        
+        this.renderFilteredSuggestions(filtered);
+        this.show();
+    }
+    
+    renderSuggestions() {
+        this.renderSection('trendingHashtags', this.suggestions.trending.slice(0, 5), true);
+        this.renderSection('popularHashtags', this.suggestions.popular.slice(0, 5), false);
+        this.renderSection('gamingHashtags', this.suggestions.gaming.slice(0, 5), false);
+    }
+    
+    renderFilteredSuggestions(filtered) {
+        this.renderSection('trendingHashtags', filtered.trending, true);
+        this.renderSection('popularHashtags', filtered.popular, false);
+        this.renderSection('gamingHashtags', filtered.gaming, false);
+    }
+    
+    renderSection(containerId, items, showTrending = false) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        container.innerHTML = '';
+        
+        items.forEach(item => {
+            const element = document.createElement('div');
+            element.className = 'hashtag-suggestion';
+            element.dataset.hashtag = item.tag;
+            element.addEventListener('click', () => this.insertHashtag(item.tag));
+            
+            let content = `#${item.tag}`;
+            if (item.count) {
+                content += ` <span class="count">(${item.count})</span>`;
+            }
+            if (showTrending && item.score) {
+                content += ` <span class="trending-indicator">🔥</span>`;
+            }
+            
+            element.innerHTML = content;
+            container.appendChild(element);
+        });
+    }
+    
+    insertHashtag(hashtag) {
+        const value = this.input.value;
+        const cursorPos = this.input.selectionStart;
+        
+        // Trouver le début du hashtag en cours
+        const beforeCursor = value.substring(0, cursorPos);
+        const hashtagMatch = beforeCursor.match(/#(\w*)$/);
+        
+        if (hashtagMatch) {
+            const startPos = cursorPos - hashtagMatch[0].length;
+            const newValue = value.substring(0, startPos) + `#${hashtag} ` + value.substring(cursorPos);
+            
+            this.input.value = newValue;
+            this.input.setSelectionRange(startPos + hashtag.length + 2, startPos + hashtag.length + 2);
+        }
+        
+        this.hide();
+        this.input.focus();
+    }
+    
+    selectNext(suggestions, selected) {
+        if (!suggestions.length) return;
+        
+        if (selected) {
+            selected.classList.remove('selected');
+            const next = selected.nextElementSibling || suggestions[0];
+            next.classList.add('selected');
+        } else {
+            suggestions[0].classList.add('selected');
+        }
+    }
+    
+    selectPrevious(suggestions, selected) {
+        if (!suggestions.length) return;
+        
+        if (selected) {
+            selected.classList.remove('selected');
+            const prev = selected.previousElementSibling || suggestions[suggestions.length - 1];
+            prev.classList.add('selected');
+        } else {
+            suggestions[suggestions.length - 1].classList.add('selected');
+        }
+    }
+    
+    show() {
+        this.container.style.display = 'block';
+        this.container.classList.add('show');
+        this.isVisible = true;
+    }
+    
+    hide() {
+        this.container.style.display = 'none';
+        this.container.classList.remove('show');
+        this.isVisible = false;
+        
+        // Supprimer les sélections
+        const selected = this.container.querySelector('.hashtag-suggestion.selected');
+        if (selected) {
+            selected.classList.remove('selected');
+        }
+    }
+}
+
+// CSS pour la sélection au clavier
+const style = document.createElement('style');
+style.textContent = `
+    .hashtag-suggestion.selected {
+        background: var(--primary-color) !important;
+        color: white !important;
+        transform: translateY(-1px);
+        box-shadow: 0 3px 10px rgba(108, 92, 231, 0.4);
+    }
+`;
+document.head.appendChild(style);
+</script>

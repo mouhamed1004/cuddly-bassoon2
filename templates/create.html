@@ -1,0 +1,1315 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ page_title|default:"Créer une annonce - Blizz Gaming" }}{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="content-card">
+        <h2 class="section-title">{% trans "Créer une annonce" %}</h2>
+        
+        {% if not payment_configured %}
+        <div class="payment-warning" style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); color: white; padding: 1rem; border-radius: 10px; margin-bottom: 1.5rem; text-align: center;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 1.2rem; margin-right: 0.5rem;"></i>
+            <strong>Configuration de paiement requise</strong>
+            <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">
+                Vous devez configurer vos informations de paiement avant de pouvoir créer une annonce.
+                <a href="{% url 'seller_payment_setup' %}" style="color: white; text-decoration: underline; font-weight: bold;">
+                    Configurer maintenant
+                </a>
+            </p>
+        </div>
+        {% endif %}
+        
+        <form method="POST" enctype="multipart/form-data" class="form-container" {% if not payment_configured %}style="opacity: 0.6; pointer-events: none;"{% endif %}>
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="title">Titre de l'annonce *</label>
+                <div style="position: relative;">
+                    <input type="text" id="title" name="title" required placeholder="Ex: Compte FreeFire niveau 50 avec skins rares" style="padding-right: 45px;">
+                    <button type="button" id="emojiBtn2" class="emoji-trigger" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); z-index: 1000;">
+                        😀
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="game">Type de jeu *</label>
+                <select name="game" id="game" required>
+                    <option value="">Sélectionnez un jeu</option>
+                    <option value="FreeFire">FreeFire</option>
+                    <option value="PUBG"><span class="notranslate">PUBG</span> Mobile</option>
+                    <option value="COD"><span class="notranslate">Call of Duty</span> Mobile</option>
+                    <option value="efootball"><span class="notranslate">eFootball</span> Mobile</option>
+                    <option value="fc25">FC25 Mobile</option>
+                    <option value="bloodstrike">Bloodstrike</option>
+                    <option value="other">Autres</option>
+                </select>
+            </div>
+
+            <div class="form-group" id="custom-game-group" style="display: none;">
+                <label for="custom_game_name">Nom du jeu personnalisé *</label>
+                <input type="text" id="custom_game_name" name="custom_game_name" placeholder="Ex: Roblox, Minecraft, etc.">
+                <small class="form-help">Ce nom sera sauvegardé pour une future intégration dans la liste des jeux.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="coins">Nombre de pièces/coins *</label>
+                <input type="text" id="coins" name="coins" required placeholder="Ex: 5000 UC, 2500 V-Bucks, 10000 pièces eFootball">
+                <small class="form-help">Indiquez le nombre de monnaie principale du jeu (UC, V-Bucks, pièces, etc.)</small>
+            </div>
+
+            <div class="form-group">
+                <label for="level">Niveau du compte *</label>
+                <input type="text" id="level" name="level" required placeholder="Ex: 50, Diamant, Niveau 100, Master">
+                <small class="form-help">Niveau, rang ou grade du compte</small>
+            </div>
+
+            <div class="form-group price-container">
+                <label for="price">Prix *</label>
+                <div class="commission-info" style="background: rgba(108, 92, 231, 0.1); border-left: 3px solid var(--primary-color); padding: 0.75rem; margin-bottom: 0.5rem; border-radius: 5px;">
+                    <i class="fas fa-info-circle" style="color: var(--primary-color); margin-right: 0.5rem;"></i>
+                    <small style="color: rgba(255, 255, 255, 0.9);">
+                        <strong>Commission de 10% :</strong> Le prix affiché à l'acheteur inclura automatiquement une commission de 10%. 
+                        Vous recevrez le montant que vous fixez ici.
+                        <br>
+                        <em style="color: rgba(255, 255, 255, 0.7);" id="commissionExample">Exemple : Si vous fixez 1000 FCFA, l'acheteur paiera 1100 FCFA et vous recevrez 1000 FCFA.</em>
+                    </small>
+                </div>
+                <div class="price-input-group">
+                    <input type="number" id="price" name="price" required step="0.01" placeholder="1000.00" min="1000" data-min-xof="1000">
+                    <input type="hidden" id="currency" name="currency" value="{{ current_currency }}">
+                    <script>
+                        // S'assurer que le champ currency est correctement initialisé
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const currencyInput = document.getElementById('currency');
+                            const currencyBtn = document.getElementById('currencyDropdownCreate');
+                            if (currencyInput && currencyBtn) {
+                                const currencySpan = currencyBtn.querySelector('.current-currency');
+                                if (currencySpan) {
+                                    const currencyText = currencySpan.textContent.trim();
+                                    // Mapper les symboles vers les codes
+                                    const symbolToCode = {
+                                        'FCFA': 'XOF',
+                                        '€': 'EUR',
+                                        '$': 'USD',
+                                        '£': 'GBP',
+                                        '¥': 'JPY',
+                                        'CHF': 'CHF'
+                                    };
+                                    const currencyCode = symbolToCode[currencyText] || 'EUR';
+                                    currencyInput.value = currencyCode;
+                                    currencyInput.setAttribute('value', currencyCode);
+                                    console.log('Devise initialisée:', currencyCode);
+                                }
+                            }
+                        });
+                    </script>
+                    <div class="currency-selector-create">
+                        <div class="currency-selector-wrapper">
+                            <div class="currency-dropdown-container">
+                                <button class="currency-btn" type="button" id="currencyDropdownCreate" onclick="toggleCurrencyDropdownCreate()">
+                                    <i class="fas fa-coins"></i>
+                                    <span class="current-currency">{{ current_currency_symbol|default:"FCFA" }}</span>
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                                <div class="currency-dropdown" id="currencyDropdownMenuCreate" style="display: none;">
+                                    <!-- Barre de recherche -->
+                                    <div class="currency-search-container">
+                                        <input type="text" id="currencySearchCreate" placeholder="Rechercher une devise..." class="currency-search-input">
+                                        <i class="fas fa-search currency-search-icon"></i>
+                                    </div>
+                                    
+                                    <!-- Liste des devises -->
+                                    <div class="currency-list" id="currencyListCreate">
+                                        {% for currency in currencies %}
+                                        <div class="currency-option {% if currency.code == current_currency %}active{% endif %}" 
+                                             data-currency="{{ currency.code }}"
+                                             data-name="{{ currency.name|lower }}"
+                                             data-symbol="{{ currency.symbol|lower }}"
+                                             onclick="changeCurrencyCreate('{{ currency.code }}')">
+                                            <span class="currency-symbol">{{ currency.symbol }}</span>
+                                            <span class="currency-name">{{ currency.name }}</span>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="validation-message" id="priceValidation" style="font-size: 0.8rem; color: #ff4757; margin-top: 0.25rem; display: none;">
+                    <!-- Validation désactivée pour les tests -->
+                </div>
+                <small class="form-help" id="priceHelpText">
+                    <span id="minPriceText">Prix minimum : 1000 FCFA</span>
+                    <span id="pricePreview" style="display: none; color: var(--primary-color); font-weight: bold; margin-left: 1rem;">
+                        → L'acheteur paiera : <span id="priceWithCommission">0</span>
+
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="caption">Description *</label>
+                <div style="position: relative;">
+                    <textarea id="caption" name="caption" rows="4" required placeholder="Décrivez votre compte, ses caractéristiques, niveaux, skins, etc." style="padding-right: 45px;"></textarea>
+                    <button type="button" id="emojiBtn" class="emoji-trigger" style="position: absolute; right: 8px; top: 12px; z-index: 1000;">
+                        😀
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group upload-container">
+                <label for="banner">
+                    <i class="fas fa-image"></i>
+                    Bannière du produit * (Image principale)
+                </label>
+                <div class="banner-recommendations">
+                    <h4><i class="fas fa-info-circle"></i> Dimensions recommandées</h4>
+                    <p>Pour un affichage optimal, utilisez des images en format paysage :</p>
+                    <ul>
+                        <li><strong>1600x900 pixels</strong> (ratio 16:9) - Recommandé</li>
+                        <li><strong>1920x1080 pixels</strong> (ratio 16:9) - Haute qualité</li>
+                        <li><strong>1280x720 pixels</strong> (ratio 16:9) - Alternative</li>
+                    </ul>
+                    <p><small>Formats acceptés: JPG, PNG, GIF. Taille max: 5MB</small></p>
+                </div>
+                <div class="upload-zone">
+                    <input type="file" id="banner" name="banner" accept="image/*" required>
+                    <div class="upload-placeholder">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Glissez votre bannière ici ou cliquez pour sélectionner</p>
+                    </div>
+                </div>
+                <div id="banner-preview" class="banner-preview-container"></div>
+            </div>
+
+            <div class="form-group upload-container">
+                <label for="images">
+                    <i class="fas fa-images"></i>
+                    Images supplémentaires (maximum 15) *
+                </label>
+                <div class="upload-zone">
+                    <input type="file" id="images" name="images[]" accept="image/*" multiple required>
+                    <div class="upload-placeholder">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Glissez vos images ici ou cliquez pour sélectionner</p>
+                        <small>Ces images seront affichées dans le carousel après la bannière. Formats: JPG, PNG, GIF. Taille max: 5MB par image</small>
+                    </div>
+                </div>
+                <div id="image-preview" class="image-preview-container"></div>
+            </div>
+
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-plus"></i>
+                    Créer l'annonce
+                </button>
+                <a href="{% url 'index' %}" class="btn-cancel">
+                    <i class="fas fa-times"></i>{% trans "Annuler" %}</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.main-container {
+    min-height: 100vh;
+    padding: 2rem;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+}
+
+.content-card {
+    max-width: 800px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 3rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    margin-bottom: 3rem;
+    font-family: 'RussoOne', sans-serif;
+    color: var(--primary-color);
+    text-shadow: 0 0 15px var(--primary-color);
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    color: white;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 15px rgba(108, 92, 231, 0.3);
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.price-input-group {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.price-input-group input {
+    flex: 2;
+}
+
+.currency-selector-create {
+    flex: 1;
+    min-width: 200px;
+}
+
+.currency-selector-create .currency-btn {
+    width: 100%;
+    justify-content: space-between;
+    padding: 0.8rem 1rem;
+    font-size: 0.9rem;
+}
+
+.currency-selector-create .currency-dropdown {
+    width: 100%;
+    max-width: 300px;
+}
+
+.upload-container {
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.upload-container:hover {
+    border-color: var(--primary-color);
+    background: rgba(108, 92, 231, 0.05);
+}
+
+.upload-zone {
+    position: relative;
+}
+
+.upload-zone input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-placeholder {
+    pointer-events: none;
+}
+
+.upload-placeholder i {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.upload-placeholder p {
+    color: white;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.upload-placeholder small {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+}
+
+.banner-preview-container {
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.banner-preview {
+    max-width: 300px;
+    max-height: 200px;
+    border-radius: 10px;
+    border: 2px solid var(--primary-color);
+    object-fit: cover;
+}
+
+.banner-recommendations {
+    background: rgba(108, 92, 231, 0.1);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.banner-recommendations h4 {
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.banner-recommendations p {
+    color: #ccc;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.banner-recommendations ul {
+    color: #ccc;
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+}
+
+.banner-recommendations li {
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+}
+
+.banner-recommendations small {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+}
+
+/* Les styles pour les listes déroulantes sont maintenant dans base.html */
+
+.image-preview-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.preview-item {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.preview-item img,
+.preview-item video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.preview-item .remove-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+}
+
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.btn-submit,
+.btn-cancel {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-submit {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+}
+
+.btn-cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        padding: 1rem;
+    }
+    
+    .content-card {
+        padding: 2rem;
+    }
+    
+    .price-input-group {
+        flex-direction: column;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+}
+
+/* Styles pour la validation */
+.form-group input.error {
+    border-color: #ff4757 !important;
+    box-shadow: 0 0 15px rgba(255, 71, 87, 0.3) !important;
+    animation: shake 0.3s ease-in-out;
+}
+
+.validation-message {
+    font-size: 0.8rem;
+    color: #ff4757;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+/* Notification d'erreur stylisée */
+.price-error-notification {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin: 1rem 0;
+    box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+    border-left: 5px solid #ff4757;
+    animation: slideInDown 0.5s ease-out;
+    position: relative;
+    overflow: hidden;
+}
+
+.price-error-notification::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    animation: shimmer 2s infinite;
+}
+
+.price-error-notification .error-icon {
+    font-size: 2rem;
+    margin-right: 1rem;
+    animation: pulse 1.5s infinite;
+}
+
+.price-error-notification .error-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.price-error-notification .error-message {
+    font-size: 1rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.price-error-notification .error-suggestion {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    opacity: 0.9;
+    font-style: italic;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+.form-help {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    margin-top: 0.25rem;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+</style>
+
+<script>
+// Variables globales pour la gestion des images
+let selectedFiles = [];
+
+// Fonction globale pour mettre à jour l'affichage des images
+function updateImagePreview() {
+    const imagePreview = document.getElementById('image-preview');
+    
+    // Conserver les avertissements existants
+    const warnings = imagePreview.querySelectorAll('.file-warning');
+    imagePreview.innerHTML = '';
+    warnings.forEach(warning => imagePreview.appendChild(warning));
+    
+    selectedFiles.forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'preview-item';
+            previewItem.innerHTML = `
+                <img src="${e.target.result}" alt="Preview ${index + 1}">
+                <button type="button" class="remove-btn" onclick="removeFile(${index})">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            imagePreview.appendChild(previewItem);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion du champ jeu personnalisé
+    const gameSelect = document.getElementById('game');
+    const customGameGroup = document.getElementById('custom-game-group');
+    const customGameInput = document.getElementById('custom_game_name');
+    
+    gameSelect.addEventListener('change', function() {
+        if (this.value === 'other') {
+            customGameGroup.style.display = 'block';
+            customGameInput.required = true;
+        } else {
+            customGameGroup.style.display = 'none';
+            customGameInput.required = false;
+            customGameInput.value = '';
+        }
+    });
+    
+    // Gestion de la bannière
+    const bannerInput = document.getElementById('banner');
+    const bannerPreview = document.getElementById('banner-preview');
+    
+    bannerInput.addEventListener('change', function(e) {
+        bannerPreview.innerHTML = '';
+        const file = e.target.files[0];
+        
+        if (file && file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                previewItem.innerHTML = `
+                    <img src="${e.target.result}" alt="Bannière preview" class="banner-preview">
+                    <button type="button" class="remove-btn" onclick="removeBanner()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                bannerPreview.appendChild(previewItem);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+    
+    // Gestion des images
+    const imageInput = document.getElementById('images');
+    const imagePreview = document.getElementById('image-preview');
+    
+    imageInput.addEventListener('change', function(e) {
+        const newFiles = Array.from(e.target.files);
+        
+        // Ajouter les nouveaux fichiers à la liste existante
+        newFiles.forEach(file => {
+            if (selectedFiles.length < 15 && file.type.startsWith('image/')) {
+                selectedFiles.push(file);
+            }
+        });
+        
+        // Limiter à 15 images maximum
+        if (selectedFiles.length > 15) {
+            selectedFiles = selectedFiles.slice(0, 15);
+        }
+        
+        // Mettre à jour l'input avec tous les fichiers sélectionnés
+        const dt = new DataTransfer();
+        selectedFiles.forEach(file => dt.items.add(file));
+        imageInput.files = dt.files;
+        
+        // Afficher un message si limite atteinte
+        if (newFiles.length + selectedFiles.length > 15) {
+            const existingWarning = imagePreview.querySelector('.file-warning');
+            if (existingWarning) existingWarning.remove();
+            
+            const warning = document.createElement('div');
+            warning.className = 'file-warning';
+            warning.style.color = '#ffc107';
+            warning.style.fontSize = '0.9rem';
+            warning.style.marginTop = '0.5rem';
+            warning.textContent = `Limite de 5 images atteinte (${selectedFiles.length}/5)`;
+            imagePreview.appendChild(warning);
+        }
+        
+        // Rafraîchir l'affichage
+        updateImagePreview();
+    });
+    
+    
+});
+
+// Fonctions globales pour la suppression d'images
+function removeBanner() {
+    const input = document.getElementById('banner');
+    input.value = '';
+    document.getElementById('banner-preview').innerHTML = '';
+}
+
+function removeFile(index) {
+    // Supprimer le fichier de la liste selectedFiles
+    selectedFiles.splice(index, 1);
+    
+    // Mettre à jour l'input avec les fichiers restants
+    const dt = new DataTransfer();
+    selectedFiles.forEach(file => dt.items.add(file));
+    document.getElementById('images').files = dt.files;
+    
+    // Supprimer le message d'avertissement si moins de 5 images
+    if (selectedFiles.length < 5) {
+        const warning = document.getElementById('image-preview').querySelector('.file-warning');
+        if (warning) warning.remove();
+    }
+    
+    // Rafraîchir l'affichage
+    updateImagePreview();
+}
+
+
+// Initialiser le sélecteur d'emojis pour la création d'annonces
+document.addEventListener('DOMContentLoaded', function() {
+    // Emoji picker pour le champ description
+    const emojiBtn = document.getElementById('emojiBtn');
+    const captionInput = document.getElementById('caption');
+    
+    if (emojiBtn && captionInput) {
+        emojiBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const picker = window.emojiPickerInstance || EmojiPicker.init();
+            if (picker.isVisible && picker.currentInput === captionInput) {
+                picker.hide();
+            } else {
+                picker.show(captionInput, emojiBtn);
+            }
+        });
+    }
+    
+    // Emoji picker pour le champ titre
+    const emojiBtn2 = document.getElementById('emojiBtn2');
+    const titleInput = document.getElementById('title');
+    
+    if (emojiBtn2 && titleInput) {
+        emojiBtn2.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const picker = window.emojiPickerInstance || EmojiPicker.init();
+            if (picker.isVisible && picker.currentInput === titleInput) {
+                picker.hide();
+            } else {
+                picker.show(titleInput, emojiBtn2);
+            }
+        });
+    }
+});
+
+// Fonctions spécifiques pour le sélecteur de devises du formulaire de création
+function toggleCurrencyDropdownCreate() {
+    const dropdown = document.getElementById('currencyDropdownMenuCreate');
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+function changeCurrencyCreate(currencyCode) {
+    console.log('💱 Changement de devise vers:', currencyCode);
+    
+    // Mettre à jour le champ caché de la devise IMMÉDIATEMENT
+    const currencyInput = document.getElementById('currency');
+    if (currencyInput) {
+        currencyInput.value = currencyCode;
+        console.log('✅ Champ currency mis à jour:', currencyInput.value);
+    }
+    
+    // Fermer le dropdown
+    document.getElementById('currencyDropdownMenuCreate').style.display = 'none';
+    
+    // Afficher un indicateur de chargement
+    const btn = document.getElementById('currencyDropdownCreate');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Changement...</span>';
+    btn.disabled = true;
+    
+    // DÉCLENCHER IMMÉDIATEMENT la mise à jour du calculateur de prix
+    // Émettre l'événement tout de suite pour réactivité maximale
+    const immediateEvent = new CustomEvent('currencyChanged', {
+        detail: {
+            currency: currencyCode,
+            immediate: true
+        }
+    });
+    document.dispatchEvent(immediateEvent);
+    console.log('🚀 Événement currencyChanged émis immédiatement');
+    
+    // Envoyer la requête AJAX pour changer la devise
+    fetch('/change-currency/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            'currency': currencyCode
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mettre à jour l'affichage du bouton
+            const currencySymbol = data.currency_symbol || currencyCode;
+            btn.innerHTML = `<i class="fas fa-coins"></i><span class="current-currency">${currencySymbol}</span><i class="fas fa-chevron-down"></i>`;
+            btn.disabled = false;
+            
+            // Émettre un événement personnalisé pour les autres composants
+            const event = new CustomEvent('currencyChanged', {
+                detail: {
+                    currency: currencyCode,
+                    symbol: currencySymbol
+                }
+            });
+            document.dispatchEvent(event);
+            
+            // Mettre à jour le champ caché existant sans le remplacer
+            const hiddenInput = document.getElementById('currency');
+            if (hiddenInput) {
+                hiddenInput.value = currencyCode;
+                hiddenInput.setAttribute('value', currencyCode); // pour MutationObserver
+            }
+        } else {
+            showErrorAlert('Erreur lors du changement de devise : ' + data.message, 'Erreur de Devise');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showErrorAlert('Erreur de connexion', 'Erreur de Connexion');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+// Fonction pour récupérer le cookie CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Fermer le dropdown si on clique ailleurs
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('currencyDropdownMenuCreate');
+    const button = document.getElementById('currencyDropdownCreate');
+    if (button && dropdown && !button.contains(event.target) && !dropdown.contains(event.target)) {
+        dropdown.style.display = 'none';
+    }
+});
+
+// Fonctionnalité de recherche pour le sélecteur de devises du formulaire
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('currencySearchCreate');
+    const currencyOptions = document.querySelectorAll('#currencyListCreate .currency-option');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            currencyOptions.forEach(option => {
+                const currencyName = option.getAttribute('data-name');
+                const currencySymbol = option.getAttribute('data-symbol');
+                const currencyCode = option.getAttribute('data-currency');
+                
+                if (currencyName.includes(searchTerm) || 
+                    currencySymbol.includes(searchTerm) || 
+                    currencyCode.toLowerCase().includes(searchTerm)) {
+                    option.style.display = 'flex';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
+        
+        // Vider la recherche quand le dropdown se ferme
+        const dropdown = document.getElementById('currencyDropdownMenuCreate');
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    if (dropdown.style.display === 'none') {
+                        searchInput.value = '';
+                        currencyOptions.forEach(option => {
+                            option.style.display = 'flex';
+                        });
+                    }
+                }
+            });
+        });
+        observer.observe(dropdown, { attributes: true, attributeFilter: ['style'] });
+    }
+});
+
+// Validation du prix minimum en temps réel avec conversion de devises
+document.addEventListener('DOMContentLoaded', function() {
+    const priceInput = document.getElementById('price');
+    const priceValidation = document.getElementById('priceValidation');
+    const minPriceText = document.getElementById('minPriceText');
+    const priceHelpText = document.getElementById('priceHelpText');
+    const minPriceHelpText = document.getElementById('minPriceHelpText');
+    const currencyDropdown = document.getElementById('currencyDropdownCreate');
+    
+    // Prix minimum de référence en FCFA
+    const MIN_PRICE_FCFA = 1000;
+    
+    // Fonction pour mettre à jour le prix minimum selon la devise - DÉSACTIVÉE
+    function updateMinPrice(currency) {
+        // Validation désactivée pour les tests
+        // Mettre à jour les textes sans validation
+        minPriceText.textContent = 'Aucun minimum';
+        minPriceHelpText.textContent = 'Aucun minimum';
+        priceHelpText.textContent = 'Prix de vente de votre compte (aucun minimum)';
+        
+        // Supprimer l'attribut min du champ
+        priceInput.removeAttribute('min');
+        priceInput.setAttribute('placeholder', '0.00');
+        
+        return 0; // Aucun minimum
+    }
+    
+    // Fonction utilitaire pour valider le prix - DÉSACTIVÉE
+    function validatePriceSimple(price, currency) {
+        // Validation désactivée pour les tests - toujours retourner true
+        return true;
+    }
+    
+    // Validation simple - seulement au submit
+    if (priceInput && priceValidation) {
+        // Vérifier que le champ currency existe
+        const currencyInput = document.getElementById('currency');
+        if (!currencyInput) {
+            console.error('❌ Champ currency introuvable au chargement!');
+            return;
+        }
+        // Initialiser avec la devise par défaut détectée
+        updateMinPrice(currencyInput.value || 'XOF');
+        
+        // Écouter les changements de devise pour mettre à jour l'affichage seulement
+        if (currencyDropdown) {
+            document.addEventListener('currencyChanged', function(e) {
+                const newCurrency = e.detail.currency;
+                updateMinPrice(newCurrency);
+                
+                // Cacher l'erreur lors du changement de devise
+                priceValidation.style.display = 'none';
+                priceInput.classList.remove('error');
+            });
+        }
+        
+        // Pas de validation en temps réel - seulement au submit
+        
+        // Validation simple au submit seulement - DÉSACTIVÉE POUR LES TESTS
+        // Vous pouvez réactiver cette validation en décommentant le code ci-dessous
+        /*
+        const form = document.querySelector('.form-container');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const price = parseFloat(priceInput.value) || 0;
+                let currencyInput = document.getElementById('currency');
+                let currency = 'EUR';
+                
+                if (currencyInput) {
+                    currency = currencyInput.value;
+                } else {
+                    // Essayer de récupérer la devise depuis le bouton de devise
+                    const currencyBtn = document.getElementById('currencyDropdownCreate');
+                    if (currencyBtn) {
+                        const currencySpan = currencyBtn.querySelector('.current-currency');
+                        if (currencySpan) {
+                            const currencyText = currencySpan.textContent.trim();
+                            
+                            // Mapper les symboles vers les codes
+                            const symbolToCode = {
+                                'FCFA': 'XOF',
+                                '€': 'EUR',
+                                '$': 'USD',
+                                '£': 'GBP',
+                                '¥': 'JPY',
+                                'CHF': 'CHF'
+                            };
+                            
+                            currency = symbolToCode[currencyText] || 'EUR';
+                        }
+                    }
+                }
+                
+                const isValid = validatePriceSimple(price, currency);
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    priceValidation.style.display = 'block';
+                    priceInput.classList.add('error');
+                    priceInput.focus();
+                    return false;
+                } else {
+                    priceValidation.style.display = 'none';
+                    priceInput.classList.remove('error');
+                }
+            });
+        }
+        */
+    }
+});
+
+// Gestion des notifications d'erreur stylisées
+document.addEventListener('DOMContentLoaded', function() {
+    // Vérifier s'il y a des messages d'erreur
+    const messages = document.querySelectorAll('.messages .alert-danger');
+    
+    messages.forEach(function(message) {
+        const messageText = message.textContent.trim();
+        
+        if (messageText === 'PRICE_TOO_HIGH') {
+            showPriceErrorNotification(
+                '💰 Prix trop élevé',
+                'Le prix maximum autorisé est de 999,999.99 €',
+                'Veuillez entrer un montant plus raisonnable pour votre annonce.'
+            );
+            message.style.display = 'none';
+        } else if (messageText === 'PRICE_CONVERSION_TOO_HIGH') {
+            showPriceErrorNotification(
+                '🔄 Conversion impossible',
+                'Le prix converti en euros dépasse la limite autorisée',
+                'Essayez avec un montant plus petit ou une autre devise.'
+            );
+            message.style.display = 'none';
+        } else if (messageText === 'PRICE_CONVERSION_ERROR') {
+            showPriceErrorNotification(
+                '⚠️ Erreur de conversion',
+                'Impossible de convertir le prix vers l\'euro',
+                'Vérifiez que le montant saisi est valide et réessayez.'
+            );
+            message.style.display = 'none';
+        }
+    });
+});
+
+function showPriceErrorNotification(title, message, suggestion) {
+    // Créer la notification
+    const notification = document.createElement('div');
+    notification.className = 'price-error-notification';
+    notification.innerHTML = `
+        <div class="error-title">
+            <span class="error-icon">⚠️</span>
+            ${title}
+        </div>
+        <div class="error-message">${message}</div>
+        <div class="error-suggestion">${suggestion}</div>
+    `;
+    
+    // Insérer la notification au début du formulaire
+    const form = document.querySelector('.form-container');
+    if (form) {
+        form.insertBefore(notification, form.firstChild);
+        
+        // Faire défiler vers la notification
+        notification.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
+        // Supprimer la notification après 8 secondes
+        setTimeout(function() {
+            if (notification.parentNode) {
+                notification.style.animation = 'slideInUp 0.5s ease-out reverse';
+                setTimeout(function() {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 500);
+            }
+        }, 8000);
+    }
+}
+
+// Animation de sortie
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideInUp {
+        from {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        to {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+    }
+`;
+document.head.appendChild(style);
+
+// ===== CALCULATEUR DE PRIX AVEC COMMISSION ET PRIX MINIMUM VARIABLE =====
+document.addEventListener('DOMContentLoaded', function() {
+    const priceInput = document.getElementById('price');
+    const currencyInput = document.getElementById('currency');
+    const pricePreview = document.getElementById('pricePreview');
+    const priceWithCommission = document.getElementById('priceWithCommission');
+    const minPriceText = document.getElementById('minPriceText');
+    
+    // Symboles de devise
+    const currencySymbols = {
+        // Afrique
+        'XOF': 'FCFA', 'XAF': 'FCFA', 'GNF': 'GNF', 'NGN': '₦', 'GHS': '₵',
+        'MAD': 'د.م.', 'DZD': 'د.ج', 'TND': 'د.ت', 'EGP': 'ج.م',
+        'KES': 'KSh', 'TZS': 'TSh', 'UGX': 'USh', 'ZAR': 'R', 'MUR': '₨',
+        // Principales
+        'EUR': '€', 'USD': '$', 'GBP': '£',
+        // Asie
+        'JPY': '¥', 'CNY': '¥', 'INR': '₹', 'KRW': '₩', 'THB': '฿', 'VND': '₫',
+        'IDR': 'Rp', 'PHP': '₱', 'MYR': 'RM', 'SGD': 'S$',
+        // Amérique
+        'BRL': 'R$', 'MXN': '$', 'ARS': '$', 'CLP': '$', 'COP': '$',
+        'PEN': 'S/', 'UYU': '$', 'VES': 'Bs', 'CAD': 'CAD', 'AUD': 'A$', 'NZD': 'NZ$',
+        // Europe
+        'CHF': 'CHF', 'SEK': 'kr', 'NOK': 'kr', 'DKK': 'kr', 'PLN': 'zł', 'CZK': 'Kč',
+        'HUF': 'Ft', 'RON': 'lei', 'BGN': 'лв', 'HRK': 'kn', 'RSD': 'дин',
+        'UAH': '₴', 'RUB': '₽', 'TRY': '₺'
+    };
+    
+    // Prix minimums selon la devise (identique au backend)
+    const minPrices = {
+        // Afrique de l'Ouest et Centrale
+        'XOF': 1000, 'XAF': 1000, 'GNF': 15000, 'NGN': 1500, 'GHS': 20,
+        // Maghreb
+        'MAD': 16, 'DZD': 220, 'TND': 5.0, 'EGP': 55,
+        // Afrique de l'Est et Australe
+        'KES': 220, 'TZS': 4000, 'UGX': 6500, 'ZAR': 30, 'MUR': 75,
+        // Devises principales
+        'EUR': 1.6, 'USD': 1.8, 'GBP': 1.4,
+        // Asie
+        'JPY': 260, 'CNY': 13, 'INR': 150, 'KRW': 2400, 'THB': 60,
+        'VND': 45000, 'IDR': 27000, 'PHP': 100, 'MYR': 8.0, 'SGD': 2.4,
+        // Amérique
+        'BRL': 9.0, 'MXN': 32, 'ARS': 1600, 'CLP': 1600, 'COP': 7500,
+        'PEN': 6.0, 'UYU': 75, 'VES': 6500, 'CAD': 2.5, 'AUD': 2.7, 'NZD': 2.9,
+        // Europe
+        'CHF': 1.6, 'SEK': 18, 'NOK': 18, 'DKK': 12, 'PLN': 7.0, 'CZK': 40,
+        'HUF': 620, 'RON': 8.0, 'BGN': 3.2, 'HRK': 12, 'RSD': 190,
+        'UAH': 70, 'RUB': 160, 'TRY': 55
+    };
+    
+    function updateMinPrice(currency) {
+        const minPrice = minPrices[currency] || 1000;
+        const symbol = currencySymbols[currency] || currency;
+        
+        // Mettre à jour le texte du prix minimum
+        if (minPriceText) {
+            minPriceText.textContent = `Prix minimum : ${minPrice} ${symbol}`;
+        }
+        
+        // Mettre à jour l'exemple de commission
+        const commissionExample = document.getElementById('commissionExample');
+        if (commissionExample) {
+            const exampleAmount = minPrice;
+            const exampleWithCommission = (exampleAmount * 1.10);
+            const formattedExample = exampleAmount >= 1000 ? exampleAmount.toFixed(0) : exampleAmount.toFixed(2);
+            const formattedWithCommission = exampleWithCommission >= 1000 ? exampleWithCommission.toFixed(0) : exampleWithCommission.toFixed(2);
+            
+            commissionExample.textContent = `Exemple : Si vous fixez ${formattedExample} ${symbol}, l'acheteur paiera ${formattedWithCommission} ${symbol} et vous recevrez ${formattedExample} ${symbol}.`;
+        }
+        
+        // Mettre à jour l'attribut min de l'input
+        if (priceInput) {
+            priceInput.setAttribute('min', minPrice);
+            // Mettre à jour le placeholder avec le prix minimum
+            const placeholderValue = minPrice >= 1000 ? minPrice.toFixed(0) : minPrice.toFixed(2);
+            priceInput.setAttribute('placeholder', `${placeholderValue}`);
+        }
+    }
+    
+    function updatePricePreview() {
+        const price = parseFloat(priceInput.value);
+        const currency = currencyInput.value || 'XOF';
+        const symbol = currencySymbols[currency] || currency;
+
+        if (price && price > 0) {
+            // Calculer le prix avec commission (10%)
+            const totalPrice = (price * 1.10);
+
+            // Formater selon le type de devise
+            const formattedPrice = totalPrice >= 1000 ? totalPrice.toFixed(0) : totalPrice.toFixed(2);
+
+            // Afficher l'aperçu
+            priceWithCommission.textContent = `${formattedPrice} ${symbol}`;
+            pricePreview.style.display = 'inline';
+        } else {
+            // Mettre aussi à jour le symbole même si pas de prix
+            priceWithCommission.textContent = `0 ${symbol}`;
+            pricePreview.style.display = 'none';
+        }
+    }
+    
+    function updateAll(currency) {
+        // Si la devise n'est pas fournie, la récupérer du champ caché
+        if (!currency) {
+            currency = currencyInput.value || 'XOF';
+        }
+        
+        console.log('🔄 Mise à jour pour la devise:', currency);
+        updateMinPrice(currency);
+        updatePricePreview();
+    }
+    
+    // Mettre à jour l'aperçu quand le prix change
+    if (priceInput) {
+        priceInput.addEventListener('input', updatePricePreview);
+        priceInput.addEventListener('change', updatePricePreview);
+    }
+    
+    // Mettre à jour quand la devise change (via le champ caché)
+    if (currencyInput) {
+        // MutationObserver pour détecter les changements du champ caché
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'value') {
+                    const newCurrency = currencyInput.value;
+                    console.log('👀 MutationObserver détecte:', newCurrency);
+                    updateAll(newCurrency);
+                }
+            });
+        });
+        observer.observe(currencyInput, { attributes: true, attributeFilter: ['value'] });
+        
+        // Écouter aussi les changements directs de la propriété value
+        let originalValue = currencyInput.value;
+        setInterval(function() {
+            if (currencyInput.value !== originalValue) {
+                originalValue = currencyInput.value;
+                console.log('🔍 Polling détecte:', originalValue);
+                updateAll(originalValue);
+            }
+        }, 250); // Vérifier régulièrement sans agresser le CPU
+    }
+    
+    // Écouter l'événement personnalisé currencyChanged
+    document.addEventListener('currencyChanged', function(event) {
+        const newCurrency = event.detail ? event.detail.currency : (currencyInput.value || 'XOF');
+        console.log('📡 Event currencyChanged:', newCurrency);
+        // S'assurer que le champ caché reflète bien la devise
+        currencyInput.value = newCurrency;
+        currencyInput.setAttribute('value', newCurrency);
+        updateAll(newCurrency);
+    });
+    
+    // Initialiser au chargement
+    console.log('✅ Initialisation du calculateur de prix');
+    updateAll();
+});
+</script>
+
+{% load static %}
+<script src="{% static 'js/emoji-picker.js' %}"></script>
+{% endblock %} 

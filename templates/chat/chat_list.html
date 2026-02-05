@@ -1,0 +1,417 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Mes Chats{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-list-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #0f1729 0%, #1e293b 100%);
+        min-height: 100vh;
+    }
+
+    .page-header {
+        background: rgba(15, 23, 41, 0.95);
+        border: 1px solid #6c5ce7;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: 0 0 30px rgba(108, 92, 231, 0.2);
+    }
+
+    .page-title {
+        color: #6c5ce7;
+        font-size: 2.5rem;
+        margin: 0 0 10px 0;
+        font-weight: 700;
+    }
+
+    .page-subtitle {
+        color: #94a3b8;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .chat-list {
+        display: grid;
+        gap: 20px;
+    }
+
+    .chat-item {
+        background: rgba(15, 23, 41, 0.95);
+        border: 1px solid rgba(108, 92, 231, 0.3);
+        border-radius: 15px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .chat-item:hover {
+        border-color: #6c5ce7;
+        box-shadow: 0 0 20px rgba(108, 92, 231, 0.3);
+        transform: translateY(-2px);
+    }
+
+    .chat-item-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .chat-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .avatar-transaction {
+        background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    }
+
+    .avatar-dispute {
+        background: linear-gradient(135deg, #dc3545, #ff6b6b);
+    }
+
+    .chat-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .chat-title {
+        color: #6c5ce7;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0 0 5px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chat-subtitle {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chat-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .chat-type-badge {
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .type-transaction {
+        background: rgba(108, 92, 231, 0.2);
+        color: #6c5ce7;
+        border: 1px solid #6c5ce7;
+    }
+
+    .type-dispute {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid #dc3545;
+    }
+
+    .chat-status-badge {
+        padding: 4px 12px;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .status-pending {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid #ffc107;
+    }
+
+    .status-processing {
+        background: rgba(13, 202, 240, 0.2);
+        color: #0dcaf0;
+        border: 1px solid #0dcaf0;
+    }
+
+    .status-completed {
+        background: rgba(25, 135, 84, 0.2);
+        color: #198754;
+        border: 1px solid #198754;
+    }
+
+    .status-disputed {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid #dc3545;
+    }
+
+    .chat-last-message {
+        color: #94a3b8;
+        font-size: 0.9rem;
+        margin: 10px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chat-time {
+        color: #6c757d;
+        font-size: 0.8rem;
+        margin: 0;
+    }
+
+    .unread-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, #dc3545, #ff6b6b);
+        color: white;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-state h3 {
+        color: #6c5ce7;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        margin: 0;
+        font-size: 1.1rem;
+    }
+
+    .chat-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .chat-action-btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+        color: white;
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .chat-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .chat-action-btn.secondary {
+        background: rgba(108, 92, 231, 0.2);
+        color: #6c5ce7;
+        border: 1px solid #6c5ce7;
+    }
+
+    .chat-action-btn.secondary:hover {
+        background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .chat-list-container {
+            padding: 10px;
+        }
+
+        .page-header {
+            padding: 20px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+
+        .chat-item-header {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .chat-avatar {
+            width: 50px;
+            height: 50px;
+            font-size: 1.2rem;
+        }
+
+        .chat-meta {
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .chat-actions {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-list-container">
+    <!-- En-tête de la page -->
+    <div class="page-header">
+        <h1 class="page-title">💬 Mes Chats</h1>
+        <p class="page-subtitle">Gérez vos conversations de transaction et de litige</p>
+    </div>
+
+    <!-- Liste des chats -->
+    {% if chats %}
+    <div class="chat-list">
+        {% for chat_data in chats %}
+        <div class="chat-item" onclick="openChat('{{ chat_data.chat.id }}')">
+            <!-- Badge de messages non lus -->
+            {% if chat_data.unread_count > 0 %}
+            <div class="unread-badge">{% if chat_data.unread_count > 1000 %}1000+{% else %}{{ chat_data.unread_count }}{% endif %}</div>
+            {% endif %}
+
+            <div class="chat-item-header">
+                <div class="chat-avatar {% if chat_data.chat.dispute %}avatar-dispute{% else %}avatar-transaction{% endif %}">
+                    {% if chat_data.chat.dispute %}
+                        ⚖️
+                    {% else %}
+                        💬
+                    {% endif %}
+                </div>
+                <div class="chat-info">
+                    <h3 class="chat-title">
+                        {% if chat_data.chat.dispute %}
+                            Litige #{{ chat_data.chat.dispute.id|slice:":8" }}
+                        {% else %}
+                            {{ chat_data.chat.transaction.post.title }}
+                        {% endif %}
+                    </h3>
+                    <p class="chat-subtitle">
+                        {% if chat_data.chat.dispute %}
+                            {{ chat_data.chat.dispute.transaction.post.title }}
+                        {% else %}
+                            {{ chat_data.other_user.username }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <div class="chat-meta">
+                <span class="chat-type-badge {% if chat_data.chat.dispute %}type-dispute{% else %}type-transaction{% endif %}">
+                    {% if chat_data.chat.dispute %}
+                        Litige
+                    {% else %}
+                        Transaction
+                    {% endif %}
+
+                
+                {% if chat_data.chat.dispute %}
+                <span class="chat-status-badge status-{{ chat_data.chat.dispute.status }}">
+                    {{ chat_data.chat.dispute.get_status_display }}
+
+                {% else %}
+                <span class="chat-status-badge status-{{ chat_data.chat.transaction.status }}">
+                    {{ chat_data.chat.transaction.get_status_display }}
+
+                {% endif %}
+            </div>
+
+            {% if chat_data.last_message %}
+            <div class="chat-last-message">
+                <strong>{{ chat_data.last_message.sender.username }}:</strong> {{ chat_data.last_message.content|truncatechars:50 }}
+            </div>
+            {% endif %}
+
+            <div class="chat-time">
+                {% if chat_data.last_message %}
+                    {{ chat_data.last_message.created_at|timesince }} ago
+                {% else %}
+                    {{ chat_data.chat.created_at|timesince }} ago
+                {% endif %}
+            </div>
+
+            <div class="chat-actions">
+                <a href="{% if chat_data.chat.dispute %}{% url 'dispute_chat' chat_data.chat.dispute.id %}{% else %}{% url 'transaction_chat' chat_data.chat.transaction.id %}{% endif %}" 
+                   class="chat-action-btn">
+                    💬 Ouvrir le chat
+                </a>
+                {% if chat_data.chat.dispute %}
+                <a href="{% url 'admin_dispute_detail' chat_data.chat.dispute.id %}" class="chat-action-btn secondary">
+                    📋 Détails du litige
+                </a>
+                {% else %}
+                <a href="{% url 'transaction_detail' chat_data.chat.transaction.id %}" class="chat-action-btn secondary">
+                    📋 Détails de la transaction
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- État vide -->
+    <div class="empty-state">
+        <div class="empty-state-icon">💬</div>
+        <h3>Aucun chat trouvé</h3>
+        <p>Vous n'avez pas encore de conversations. Les chats apparaîtront ici lorsque vous commencerez une transaction ou qu'un litige sera ouvert.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function openChat(chatId) {
+        // Cette fonction sera implémentée pour ouvrir le chat approprié
+        console.log('Ouverture du chat:', chatId);
+    }
+
+    // Auto-refresh de la liste des chats toutes les 30 secondes
+    setInterval(function() {
+        location.reload();
+    }, 30000);
+</script>
+{% endblock %}
+

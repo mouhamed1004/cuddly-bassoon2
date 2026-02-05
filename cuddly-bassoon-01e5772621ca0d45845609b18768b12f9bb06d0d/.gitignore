@@ -1,0 +1,44 @@
+node_modules/
+.env
+
+# Logs et fichiers temporaires
+*.log
+*.log.*
+logs/
+sync_shopify.log*
+
+# Base de données locale
+*.sqlite3
+db.sqlite3
+
+# Fichiers Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environnements virtuels
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Fichiers de cache
+.cache/
+*.cache
+
+# Fichiers média locaux (Cloudinary en prod)
+media/
+
+# Fichiers statiques collectés
+staticfiles/
+static_collected/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

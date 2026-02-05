@@ -1,0 +1,554 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Suivi de litige - {{ dispute.id.hex|slice:":8" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .followup-page {
+        background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+        min-height: 100vh;
+        padding: 20px;
+        color: #ffffff;
+    }
+    
+    .followup-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        color: #333;
+    }
+    
+    .resolution-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding: 20px;
+        background: linear-gradient(135deg, #28a745, #20c997);
+        border-radius: 12px;
+        color: white;
+    }
+    
+    .resolution-header h1 {
+        margin: 0;
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+    
+    .resolution-type {
+        font-size: 1.2rem;
+        margin-top: 10px;
+        opacity: 0.9;
+    }
+    
+    .user-info {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    
+    .user-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 20px;
+        border: 2px solid #e9ecef;
+    }
+    
+    .user-card.winner {
+        border-color: #28a745;
+        background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    }
+    
+    .user-card.loser {
+        border-color: #dc3545;
+        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    }
+    
+    .user-card h3 {
+        margin: 0 0 15px 0;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .user-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .stat-item {
+        text-align: center;
+        padding: 10px;
+        background: rgba(255, 255, 255, 0.7);
+        border-radius: 8px;
+    }
+    
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #dc3545;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #666;
+        margin-top: 5px;
+    }
+    
+    .sanctions-section {
+        margin-top: 30px;
+    }
+    
+    .sanctions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+        margin-top: 20px;
+    }
+    
+    .sanction-card {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 25px;
+        border: 2px solid #e9ecef;
+    }
+    
+    .sanction-card.warning {
+        border-color: #ffc107;
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    }
+    
+    .sanction-card.ban {
+        border-color: #dc3545;
+        background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    }
+    
+    .sanction-card h4 {
+        margin: 0 0 20px 0;
+        font-size: 1.3rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #007bff;
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+    }
+    
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .btn {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+    
+    .btn-warning {
+        background: linear-gradient(135deg, #ffc107, #ff8c00);
+        color: #000;
+    }
+    
+    .btn-warning:hover {
+        background: linear-gradient(135deg, #e0a800, #ff7b00);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+    }
+    
+    .btn-danger {
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+    }
+    
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #c82333, #bd2130);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+    
+    .history-section {
+        margin-top: 30px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 25px;
+    }
+    
+    .history-section h4 {
+        margin: 0 0 20px 0;
+        color: #333;
+        font-size: 1.3rem;
+    }
+    
+    .dispute-item {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        border-left: 4px solid #dc3545;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dispute-item h5 {
+        margin: 0 0 10px 0;
+        color: #333;
+    }
+    
+    .dispute-meta {
+        font-size: 0.9rem;
+        color: #666;
+        display: flex;
+        gap: 20px;
+    }
+    
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+    }
+    
+    .alert-info {
+        background: #d1ecf1;
+        border-color: #bee5eb;
+        color: #0c5460;
+    }
+    
+    .alert-warning {
+        background: #fff3cd;
+        border-color: #ffeaa7;
+        color: #856404;
+    }
+    
+    .alert-danger {
+        background: #f8d7da;
+        border-color: #f5c6cb;
+        color: #721c24;
+    }
+    
+    @media (max-width: 768px) {
+        .user-info,
+        .sanctions-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .user-stats {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .followup-container {
+            padding: 20px;
+        }
+        
+        .resolution-header h1 {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="followup-page">
+    <div class="followup-container">
+        <!-- En-tête de résolution -->
+        <div class="resolution-header">
+            <h1>✅ Litige Résolu</h1>
+            <div class="resolution-type">
+                {% if resolution_type == 'remboursement' %}
+                    Remboursement effectué en faveur de l'acheteur
+                {% else %}
+                    Paiement vendeur effectué
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Informations des utilisateurs -->
+        <div class="user-info">
+            <!-- Gagnant -->
+            <div class="user-card winner">
+                <h3>🏆 Gagnant</h3>
+                <p><strong>Utilisateur:</strong> {{ winning_user.username }}</p>
+                <p><strong>Email:</strong> {{ winning_user.email }}</p>
+                <p><strong>Rôle:</strong> 
+                    {% if resolution_type == 'remboursement' %}
+                        Acheteur
+                    {% else %}
+                        Vendeur
+                    {% endif %}
+                </p>
+            </div>
+            
+            <!-- Perdant -->
+            <div class="user-card loser">
+                <h3>❌ Perdant</h3>
+                <p><strong>Utilisateur:</strong> {{ losing_user.username }}</p>
+                <p><strong>Email:</strong> {{ losing_user.email }}</p>
+                <p><strong>Rôle:</strong> 
+                    {% if resolution_type == 'remboursement' %}
+                        Vendeur
+                    {% else %}
+                        Acheteur
+                    {% endif %}
+                </p>
+                
+                <!-- Statistiques du perdant -->
+                <div class="user-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ active_warnings }}</div>
+                        <div class="stat-label">Avertissements actifs</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ active_bans }}</div>
+                        <div class="stat-label">Bannissements actifs</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ total_lost_disputes }}</div>
+                        <div class="stat-label">Litiges perdus</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ total_disputes_as_buyer|add:total_disputes_as_seller }}</div>
+                        <div class="stat-label">Total litiges</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Alertes selon les statistiques -->
+        {% if active_bans > 0 %}
+            <div class="alert alert-danger">
+                <strong>⚠️ Attention:</strong> Cet utilisateur a déjà {{ active_bans }} bannissement(s) actif(s).
+            </div>
+        {% elif active_warnings >= 3 %}
+            <div class="alert alert-warning">
+                <strong>⚠️ Attention:</strong> Cet utilisateur a {{ active_warnings }} avertissement(s) actif(s). Considérez un bannissement.
+            </div>
+        {% elif total_lost_disputes >= 5 %}
+            <div class="alert alert-warning">
+                <strong>⚠️ Attention:</strong> Cet utilisateur a perdu {{ total_lost_disputes }} litiges. Comportement suspect détecté.
+            </div>
+        {% endif %}
+        
+        <!-- Section des sanctions -->
+        <div class="sanctions-section">
+            <h2>🔨 Gestion des Sanctions</h2>
+            <p>Choisissez une action à effectuer sur l'utilisateur perdant :</p>
+            
+            <div class="sanctions-grid">
+                <!-- Avertissement -->
+                <div class="sanction-card warning">
+                    <h4>⚠️ Avertir l'utilisateur</h4>
+                    <form method="post" action="{% url 'admin_warn_user' dispute.id %}">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="warning_type">Type d'avertissement:</label>
+                            <select name="warning_type" id="warning_type" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="dispute_lost">Litige perdu</option>
+                                <option value="inappropriate_behavior">Comportement inapproprié</option>
+                                <option value="fake_account">Compte falsifié</option>
+                                <option value="spam">Spam</option>
+                                <option value="other">Autre</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="severity">Sévérité:</label>
+                            <select name="severity" id="severity" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="low">Faible</option>
+                                <option value="medium" selected>Moyen</option>
+                                <option value="high">Élevé</option>
+                                <option value="critical">Critique</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reason">Raison (obligatoire):</label>
+                            <textarea name="reason" id="reason" placeholder="Expliquez la raison de l'avertissement..." required></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="details">Détails supplémentaires:</label>
+                            <textarea name="details" id="details" placeholder="Détails optionnels..."></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="expires_days">Expire dans (jours):</label>
+                            <input type="number" name="expires_days" id="expires_days" value="30" min="1" max="365">
+                        </div>
+                        
+                        <button type="submit" class="btn btn-warning" onclick="return confirm('Êtes-vous sûr de vouloir avertir cet utilisateur ?')">
+                            ⚠️ Envoyer l'avertissement
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Bannissement -->
+                <div class="sanction-card ban">
+                    <h4>🚫 Bannir l'utilisateur</h4>
+                    <form method="post" action="{% url 'admin_ban_user' dispute.id %}">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="ban_type">Type de bannissement:</label>
+                            <select name="ban_type" id="ban_type" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="temporary">Temporaire</option>
+                                <option value="permanent">Permanent</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" id="ban_days_group" style="display: none;">
+                            <label for="ban_days">Durée (jours):</label>
+                            <input type="number" name="ban_days" id="ban_days" value="7" min="1" max="365">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="reason">Raison (obligatoire):</label>
+                            <select name="reason" id="reason" required>
+                                <option value="">Sélectionner...</option>
+                                <option value="multiple_disputes">Multiples litiges perdus</option>
+                                <option value="fraud">Fraude</option>
+                                <option value="inappropriate_behavior">Comportement inapproprié</option>
+                                <option value="fake_accounts">Comptes falsifiés</option>
+                                <option value="spam">Spam</option>
+                                <option value="other">Autre</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="details">Détails (optionnel):</label>
+                            <textarea name="details" id="details" placeholder="Expliquez en détail la raison du bannissement..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir bannir cet utilisateur ? Cette action est irréversible pour les bannissements permanents.')">
+                            🚫 Bannir l'utilisateur
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Historique des litiges perdus -->
+        {% if lost_disputes %}
+        <div class="history-section">
+            <h4>📋 Historique des litiges perdus</h4>
+            {% for lost_dispute in lost_disputes %}
+                <div class="dispute-item">
+                    <h5>Litige #{{ lost_dispute.id.hex|slice:":8" }}</h5>
+                    <div class="dispute-meta">
+                        <span><strong>Date:</strong> {{ lost_dispute.resolved_at|date:"d/m/Y H:i" }}</span>
+                        <span><strong>Montant:</strong> {{ lost_dispute.disputed_amount }}€</span>
+                        <span><strong>Résolution:</strong> {{ lost_dispute.get_resolution_display }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Actions de navigation -->
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{% url 'admin_dispute_detail' dispute.id %}" class="btn btn-secondary">
+                ← Retour au litige
+            </a>
+            <a href="{% url 'admin_dispute_dashboard' %}" class="btn btn-secondary">
+                📋 Tableau de bord
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+// Afficher/masquer le champ de durée pour les bannissements temporaires
+document.getElementById('ban_type').addEventListener('change', function() {
+    const banDaysGroup = document.getElementById('ban_days_group');
+    if (this.value === 'temporary') {
+        banDaysGroup.style.display = 'block';
+    } else {
+        banDaysGroup.style.display = 'none';
+    }
+});
+
+// Confirmation personnalisée pour les bannissements
+document.querySelector('form[action*="ban"]').addEventListener('submit', function(e) {
+    const banType = document.getElementById('ban_type').value;
+    const reason = document.getElementById('reason').value;
+    const details = document.getElementById('details').value;
+    
+    if (!banType || !reason || !details) {
+        e.preventDefault();
+        alert('Veuillez remplir tous les champs obligatoires.');
+        return;
+    }
+    
+    let message = 'Êtes-vous sûr de vouloir bannir cet utilisateur ?\n\n';
+    message += `Type: ${banType === 'temporary' ? 'Temporaire' : 'Permanent'}\n`;
+    message += `Raison: ${reason}\n\n`;
+    
+    if (banType === 'permanent') {
+        message += '⚠️ ATTENTION: Ce bannissement est PERMANENT et IRRÉVERSIBLE !';
+    } else {
+        const days = document.getElementById('ban_days').value;
+        message += `Durée: ${days} jours`;
+    }
+    
+    if (!confirm(message)) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}
+
+

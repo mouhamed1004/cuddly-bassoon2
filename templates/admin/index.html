@@ -1,0 +1,178 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+{% load i18n %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .payout-dashboard-card {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin: 2rem 0;
+        box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+        text-align: center;
+    }
+    
+    .payout-dashboard-card h2 {
+        margin: 0 0 1rem 0;
+        font-size: 1.8rem;
+        font-weight: bold;
+    }
+    
+    .payout-dashboard-card p {
+        margin: 0 0 1.5rem 0;
+        opacity: 0.9;
+        font-size: 1.1rem;
+    }
+    
+    .payout-dashboard-card a {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: bold;
+        display: inline-block;
+        transition: all 0.3s ease;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .payout-dashboard-card a:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    }
+    
+    .admin-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 2rem 0;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        border-left: 4px solid #007cba;
+    }
+    
+    .stat-card h3 {
+        margin: 0 0 0.5rem 0;
+        color: #333;
+        font-size: 1.2rem;
+    }
+    
+    .stat-card .number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #007cba;
+        margin: 0;
+    }
+    
+    .quick-actions {
+        display: flex;
+        gap: 1rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+    
+    .quick-action-btn {
+        background: #007cba;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+    
+    .quick-action-btn:hover {
+        background: #005a8b;
+        transform: translateY(-1px);
+    }
+    
+    .quick-action-btn.success {
+        background: #22c55e;
+    }
+    
+    .quick-action-btn.success:hover {
+        background: #16a34a;
+    }
+    
+    .quick-action-btn.warning {
+        background: #f59e0b;
+    }
+    
+    .quick-action-btn.warning:hover {
+        background: #d97706;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-dashboard">
+    <!-- Carte principale pour les payouts -->
+    <div class="payout-dashboard-card">
+        <h2>💰 Gestion des Payouts</h2>
+        <p>Gérez les payouts des vendeurs, exportez les données pour <span class="notranslate">CinetPay</span> et suivez les transferts en temps réel.</p>
+        <a href="{% url 'admin_payout_dashboard' %}">Accéder au tableau de bord</a>
+    </div>
+    
+    <!-- Statistiques rapides -->
+    <div class="admin-stats">
+        <div class="stat-card">
+            <h3>Payouts en attente</h3>
+            <p class="number">{{ pending_payouts|default:0 }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Payouts en cours</h3>
+            <p class="number">{{ processing_payouts|default:0 }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Payouts terminés</h3>
+            <p class="number">{{ completed_payouts|default:0 }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Montant total (EUR)</h3>
+            <p class="number">{{ total_amount_eur|default:0|floatformat:2 }}</p>
+        </div>
+    </div>
+    
+    <!-- Actions rapides -->
+    <div class="quick-actions">
+        <a href="{% url 'admin_payout_list' %}" class="quick-action-btn">
+            📋 Voir tous les payouts
+        </a>
+        <a href="{% url 'admin_export_payouts_csv' %}" class="quick-action-btn success">
+            📥 Exporter CSV pour <span class="notranslate">CinetPay</span>
+        </a>
+        <a href="{% url 'admin:blizzgame_payoutrequest_changelist' %}?status__exact=pending" class="quick-action-btn warning">
+            ⏳ Payouts en attente
+        </a>
+        <a href="{% url 'admin:blizzgame_dispute_changelist' %}" class="quick-action-btn">
+            ⚖️ Gérer les litiges
+        </a>
+    </div>
+    
+    <!-- Instructions <span class="notranslate">CinetPay</span> -->
+    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin: 2rem 0; border-left: 4px solid #007cba;">
+        <h3 style="margin-top: 0; color: #007cba;">📋 Instructions pour <span class="notranslate">CinetPay</span></h3>
+        <ol style="margin: 0; padding-left: 1.5rem;">
+            <li><strong>Exporter les données :</strong> Cliquez sur "Exporter CSV pour <span class="notranslate">CinetPay</span>"</li>
+            <li><strong>Se connecter à <span class="notranslate">CinetPay</span> :</strong> Allez sur le dashboard <span class="notranslate">CinetPay</span> Règlements</li>
+            <li><strong>Importer le fichier :</strong> Utilisez le CSV exporté pour créer les payouts</li>
+            <li><strong>Valider les payouts :</strong> Effectuez les transferts via <span class="notranslate">CinetPay</span></li>
+            <li><strong>Marquer comme terminé :</strong> Revenez ici pour marquer les payouts comme terminés</li>
+        </ol>
+    </div>
+</div>
+
+{{ block.super }}
+{% endblock %}
+
+

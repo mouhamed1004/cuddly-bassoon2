@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "blizz-app"
+version = "1.0.0"
+description = "Blizz Gaming Platform"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "Django==4.2.23",
+    "Pillow==10.4.0",
+    "requests==2.31.0",
+    "django-allauth==0.54.0",
+    "python-decouple==3.8",
+    "channels==4.0.0",
+    "channels-redis==4.1.0",
+    "django-ratelimit==4.1.0",
+    "gunicorn==21.2.0",
+    "whitenoise==6.6.0",
+    "dj-database-url==2.1.0",
+    "psycopg2-binary==2.9.9",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["blizzgame*", "socialgame*"]

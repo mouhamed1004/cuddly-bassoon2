@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Demande d'Information - Litige{% endblock %}
+
+{% block extra_css %}
+<style>
+.request-container {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    padding: 30px 20px;
+    color: #fff;
+}
+
+.request-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 800px;
+    margin: 0 auto;
+    border: 2px solid rgba(138, 43, 226, 0.3);
+    overflow: hidden;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+.request-header {
+    text-align: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid rgba(138, 43, 226, 0.3);
+    padding-bottom: 20px;
+}
+
+.request-title {
+    font-size: 2rem;
+    color: #00ffff;
+    margin-bottom: 10px;
+    text-shadow: 0 0 15px #00ffff;
+}
+
+.dispute-info {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    border-left: 4px solid #8a2be2;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.question-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 25px;
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.question-section div {
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    max-width: 100%;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #00ffff;
+}
+
+.form-control {
+    width: 100%;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 1rem;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #8a2be2;
+    box-shadow: 0 0 0 0.2rem rgba(138, 43, 226, 0.25);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.form-control::placeholder {
+    color: #999;
+}
+
+.btn-submit {
+    background: linear-gradient(45deg, #4caf50, #2e7d32);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.btn-submit:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(76, 175, 80, 0.4);
+}
+
+.btn-back {
+    background: linear-gradient(45deg, #666, #444);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.btn-back:hover {
+    color: white;
+    text-decoration: none;
+    transform: scale(1.05);
+}
+
+.request-type-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    margin-left: 10px;
+}
+
+.type-text { background: #2196f3; }
+.type-screenshot { background: #ff9800; }
+.type-document { background: #9c27b0; }
+
+.deadline-warning {
+    background: rgba(255, 152, 0, 0.2);
+    border: 1px solid #ff9800;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    color: #ffb74d;
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* Responsive mobile */
+@media (max-width: 768px) {
+    .request-container {
+        padding: 15px 10px;
+    }
+    
+    .request-card {
+        padding: 20px 15px;
+        border-radius: 15px;
+    }
+    
+    .request-title {
+        font-size: 1.5rem;
+    }
+    
+    .dispute-info, .question-section {
+        padding: 15px;
+    }
+}
+
+.file-upload-area {
+    border: 2px dashed rgba(138, 43, 226, 0.5);
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.02);
+    transition: all 0.3s ease;
+}
+
+.file-upload-area:hover {
+    border-color: #8a2be2;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.file-upload-area input[type="file"] {
+    margin-top: 15px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="request-container">
+    <div class="request-card">
+        <a href="{% url 'transaction_detail' info_request.dispute.transaction.id %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Retour à la Transaction
+        </a>
+
+        <div class="request-header">
+            <h1 class="request-title">
+                <i class="fas fa-question-circle"></i>
+                Demande d'Information
+            </h1>
+            <p>Litige #{{ info_request.dispute.id.hex|slice:":8" }}</p>
+        </div>
+
+        <div class="dispute-info">
+            <h4><i class="fas fa-info-circle"></i> Informations du Litige</h4>
+            <p><strong>Transaction :</strong> {{ info_request.dispute.transaction.post.title }}</p>
+            <p><strong>Montant :</strong> {{ info_request.dispute.disputed_amount }}€</p>
+            <p><strong>Demandé par :</strong> Administrateur {{ info_request.requested_by.username }}</p>
+            <p><strong>Type de demande :</strong> 
+                <span class="request-type-badge type-{{ info_request.request_type }}">
+                    {{ info_request.get_request_type_display }}
+
+            </p>
+        </div>
+
+        <div class="deadline-warning">
+            <i class="fas fa-clock"></i>
+            <strong>Délai de réponse :</strong> {{ info_request.deadline|date:"d/m/Y à H:i" }}
+            <br><small>Veuillez répondre dans les plus brefs délais pour éviter des complications.</small>
+        </div>
+
+        <div class="question-section">
+            <h4><i class="fas fa-question"></i> Question de l'Administrateur</h4>
+            <div style="background: rgba(0,0,0,0.3); padding: 15px; border-radius: 8px; margin-top: 15px;">
+                {{ info_request.question|linebreaks }}
+            </div>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {% if info_request.request_type == 'text_response' %}
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-edit"></i> Votre Réponse
+                </label>
+                <textarea name="response_text" class="form-control" rows="6" 
+                          placeholder="Tapez votre réponse détaillée ici..." required></textarea>
+            </div>
+            {% else %}
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-file-upload"></i> 
+                    {% if info_request.request_type == 'screenshot' %}
+                        Capture d'Écran
+                    {% else %}
+                        Document/Preuve
+                    {% endif %}
+                </label>
+                <div class="file-upload-area">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: #8a2be2; margin-bottom: 10px;"></i>
+                    <p>
+                        {% if info_request.request_type == 'screenshot' %}
+                            Glissez votre capture d'écran ici ou cliquez pour sélectionner
+                        {% else %}
+                            Glissez votre document ici ou cliquez pour sélectionner
+                        {% endif %}
+                    </p>
+                    <input type="file" name="response_file" class="form-control" 
+                           accept="{% if info_request.request_type == 'screenshot' %}.png,.jpg,.jpeg,.gif{% else %}.pdf,.doc,.docx,.txt,.png,.jpg,.jpeg{% endif %}" 
+                           required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    <i class="fas fa-comment"></i> Commentaire Additionnel (Optionnel)
+                </label>
+                <textarea name="response_text" class="form-control" rows="3" 
+                          placeholder="Ajoutez un commentaire si nécessaire..."></textarea>
+            </div>
+            {% endif %}
+
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-paper-plane"></i>
+                Envoyer la Réponse
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Gestion du drag & drop pour les fichiers
+const fileUploadArea = document.querySelector('.file-upload-area');
+const fileInput = document.querySelector('input[type="file"]');
+
+if (fileUploadArea && fileInput) {
+    fileUploadArea.addEventListener('click', () => fileInput.click());
+    
+    fileUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUploadArea.style.borderColor = '#8a2be2';
+        fileUploadArea.style.background = 'rgba(138, 43, 226, 0.1)';
+    });
+    
+    fileUploadArea.addEventListener('dragleave', () => {
+        fileUploadArea.style.borderColor = 'rgba(138, 43, 226, 0.5)';
+        fileUploadArea.style.background = 'rgba(255, 255, 255, 0.02)';
+    });
+    
+    fileUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileInput.files = e.dataTransfer.files;
+        fileUploadArea.style.borderColor = 'rgba(138, 43, 226, 0.5)';
+        fileUploadArea.style.background = 'rgba(255, 255, 255, 0.02)';
+    });
+}
+
+// Confirmation avant envoi
+document.querySelector('form').addEventListener('submit', function(e) {
+    if (!confirm('Êtes-vous sûr de vouloir envoyer cette réponse ? Elle ne pourra plus être modifiée.')) {
+        e.preventDefault();
+    }
+});
+</script>
+{% endblock %}

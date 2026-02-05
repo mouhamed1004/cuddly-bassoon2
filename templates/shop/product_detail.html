@@ -1,0 +1,1048 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_tags %}
+
+{% block title %}{{ product.name }} - Boutique Gaming <span class="notranslate">BLIZZ</span>{% endblock %}
+
+{% block content %}
+<style>
+    .product-container {
+        padding: 0;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+
+    .product-content {
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .product-main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        align-items: start;
+    }
+
+    .product-images {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 1.5rem;
+        position: sticky;
+        top: 2rem;
+        min-height: 500px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* CARROUSEL GAMING */
+    .gaming-carousel {
+        position: relative;
+        width: 100%;
+        height: 450px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(30, 30, 30, 0.6));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .gaming-carousel .carousel-item {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .gaming-carousel .carousel-item.active {
+        opacity: 1;
+    }
+
+    .gaming-carousel .carousel-item img {
+        max-width: 90%;
+        max-height: 90%;
+        width: auto;
+        height: auto;
+        object-fit: contain;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        display: block;
+        margin: auto;
+    }
+    
+    /* Styles responsive */
+    @media (max-width: 768px) {
+        .gaming-carousel {
+            height: 300px;
+        }
+        .product-images {
+            min-height: 350px;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .gaming-carousel {
+            height: 250px;
+        }
+        .product-images {
+            min-height: 300px;
+        }
+    }
+
+    .gaming-carousel .carousel-indicators {
+        position: absolute;
+        bottom: 15px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 5;
+    }
+
+    .gaming-carousel .carousel-indicators button {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        border: 2px solid white;
+        background: rgba(255, 255, 255, 0.3);
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .gaming-carousel .carousel-indicators button.active {
+        background: var(--primary-color);
+        box-shadow: 0 0 10px var(--primary-color);
+    }
+
+    .gaming-carousel .carousel-control-prev,
+    .gaming-carousel .carousel-control-next {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(108, 92, 231, 0.8);
+        border: none;
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .gaming-carousel .carousel-control-prev {
+        left: 15px;
+    }
+
+    .gaming-carousel .carousel-control-next {
+        right: 15px;
+    }
+
+    .gaming-carousel .carousel-control-prev:hover,
+    .gaming-carousel .carousel-control-next:hover {
+        background: var(--primary-color);
+        box-shadow: 0 0 15px var(--primary-color);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    .product-info {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 2rem;
+    }
+
+    .product-title {
+        color: white;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+        /* Gestion des titres trop longs */
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        max-height: 2.4em; /* Limite à 2 lignes */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .product-category-badge {
+        display: inline-block;
+        background: var(--primary-color);
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+    }
+
+    .price-section {
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .current-price {
+        color: white;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .original-price {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 1.2rem;
+        text-decoration: line-through;
+        margin-right: 1rem;
+    }
+
+    .discount-badge {
+        background: #e17055;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    .product-description {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 2rem;
+        line-height: 1.6;
+        /* Gestion des descriptions trop longues */
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        hyphens: auto;
+        /* Suppression de la limitation de hauteur pour afficher la description complète */
+    }
+
+    /* Section durée de livraison */
+    .delivery-info {
+        display: flex;
+        align-items: center;
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        gap: 1rem;
+    }
+
+    .delivery-icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .delivery-text {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+
+    .delivery-text strong {
+        color: #22c55e;
+        font-weight: 600;
+    }
+
+    /* LIMITER LA TAILLE DES IMAGES DANS LA DESCRIPTION */
+    .product-description img {
+        max-width: 100% !important;
+        max-height: 300px !important;
+        width: auto !important;
+        height: auto !important;
+        object-fit: contain !important;
+        border-radius: 8px;
+        margin: 1rem 0;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .product-features {
+        margin-bottom: 2rem;
+    }
+
+    .product-features h4 {
+        color: white;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .features-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .features-list li {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+    }
+
+    .features-list li:before {
+        content: '✓';
+        color: var(--primary-color);
+        font-weight: bold;
+        margin-right: 0.75rem;
+    }
+
+    .quantity-section {
+        margin-bottom: 2rem;
+    }
+
+    .quantity-label {
+        color: white;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        display: block;
+    }
+
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: fit-content;
+    }
+
+    .quantity-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--primary-color);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .quantity-btn:hover {
+        background: var(--primary-color);
+        box-shadow: 0 0 15px var(--primary-color);
+    }
+
+    .quantity-input {
+        background: rgba(15, 23, 41, 0.8);
+        border: 1px solid var(--primary-color);
+        color: white;
+        text-align: center;
+        width: 80px;
+        height: 40px;
+        border-radius: 8px;
+    }
+
+    .product-actions {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary:hover {
+        background: var(--secondary-color);
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: transparent;
+        color: white;
+        border: 2px solid var(--primary-color);
+        padding: 1rem 2rem;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-secondary:hover {
+        background: var(--primary-color);
+        transform: translateY(-1px);
+    }
+
+    /* Variantes supprimées - CSS désactivé */
+    /*
+    .variants-section {
+        margin-bottom: 2rem;
+    }
+
+    .variant-option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .variant-option:hover {
+        border-color: var(--primary-color);
+        background: rgba(108, 92, 231, 0.1);
+    }
+
+    .variant-option input[type="radio"] {
+        accent-color: var(--primary-color);
+    }
+
+    .variant-option label {
+        color: white;
+        cursor: pointer;
+        flex: 1;
+    }
+    */
+
+
+    .related-title {
+        font-family: 'RussoOne', sans-serif;
+        color: var(--primary-color);
+        text-shadow: 0 0 15px var(--primary-color);
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 2rem;
+    }
+
+    .related-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
+    .related-card {
+        background: linear-gradient(145deg, rgba(15, 23, 41, 0.9), rgba(108, 92, 231, 0.1));
+        border: 1px solid var(--primary-color);
+        border-radius: 15px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .related-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(108, 92, 231, 0.3);
+    }
+
+    .related-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+    }
+
+    .related-card h6 {
+        color: white;
+        margin-bottom: 0.5rem;
+        font-family: 'Halo', sans-serif;
+    }
+
+    .related-card .price {
+        color: var(--secondary-color);
+        font-family: 'RussoOne', sans-serif;
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+
+    .related-card .btn {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .related-card .btn:hover {
+        background: var(--secondary-color);
+        box-shadow: 0 0 15px var(--secondary-color);
+    }
+
+
+    @media (max-width: 768px) {
+        .product-content {
+            padding: 1rem;
+        }
+        
+        .product-main {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .product-images {
+            position: static;
+            min-height: 350px;
+        }
+        
+        .gaming-carousel {
+            height: 300px;
+        }
+        
+        .gaming-carousel .carousel-item img {
+            max-width: 85%;
+            max-height: 85%;
+        }
+        
+        /* Images de description responsive */
+        .product-description img {
+            max-height: 200px !important;
+        }
+        
+        .product-title {
+            font-size: 1.5rem;
+            /* Titres plus courts sur mobile */
+            max-height: 3em; /* 2.5 lignes sur mobile */
+            -webkit-line-clamp: 2;
+        }
+        
+        .current-price {
+            font-size: 1.5rem;
+        }
+        
+        .product-actions {
+            flex-direction: column;
+        }
+        
+        .product-description {
+            /* Descriptions complètes sur mobile aussi */
+            /* Suppression de la limitation de hauteur pour afficher la description complète */
+        }
+
+        .delivery-info {
+            padding: 0.8rem 1rem;
+            gap: 0.8rem;
+        }
+
+        .delivery-icon {
+            font-size: 1.3rem;
+        }
+
+        .delivery-text {
+            font-size: 0.9rem;
+        }
+        
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .product-images {
+            min-height: 300px;
+        }
+        
+        .gaming-carousel {
+            height: 250px;
+        }
+        
+        .gaming-carousel .carousel-item img {
+            max-width: 80%;
+            max-height: 80%;
+        }
+        
+        /* Images de description mobile */
+        .product-description img {
+            max-height: 150px !important;
+        }
+    }
+</style>
+
+<div class="product-container">
+
+    <div class="product-content">
+
+    <div class="product-main">
+        <!-- Carrousel d'images Gaming -->
+        <div class="product-images">
+            <div class="gaming-carousel" id="gamingCarousel">
+                {% if product_images %}
+                    <!-- Images -->
+                    {% for image in product_images %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            {% load image_filters %}
+{% load i18n %}
+                            <img src="{{ image|shopify_media_or_static:'image' }}" alt="{{ image.alt_text|default:product.name }}" loading="lazy">
+                        </div>
+                    {% endfor %}
+                    
+                    <!-- Indicateurs -->
+                    {% if product_images|length > 1 %}
+                        <div class="carousel-indicators">
+                            {% for image in product_images %}
+                                <button type="button" onclick="showSlide({{ forloop.counter0 }})"{% if forloop.first %} class="active"{% endif %}></button>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Contrôles -->
+                        <button class="carousel-control-prev" onclick="prevSlide()">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="carousel-control-next" onclick="nextSlide()">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <!-- Image par défaut -->
+                    <div class="carousel-item active">
+                        <img src="{% static 'images/default.png' %}" alt="{{ product.name }}">
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Informations produit -->
+        <div class="product-info">
+            <div class="product-category-badge">{{ product.category.name|default:"Gaming" }}</div>
+            <h1 class="product-title">{{ product.name }}</h1>
+            
+            <div class="price-section">
+                <div class="current-price">{% display_price product.price "EUR" request.user %}</div>
+                {% if product.compare_price and product.compare_price > product.price %}
+                    <div>
+                        <span class="original-price">{% display_price product.compare_price "EUR" request.user %}</span>
+                        <span class="discount-badge">PROMO</span>
+                    </div>
+                {% endif %}
+            </div>
+
+            {% if product.short_description %}
+                <div class="product-description">{{ product.short_description }}</div>
+            {% endif %}
+
+            {% if product.description %}
+                <div class="product-description">{{ product.description|safe }}</div>
+            {% endif %}
+
+            <!-- Durée de livraison -->
+            <div class="delivery-info">
+                <div class="delivery-icon">🚚</div>
+                <div class="delivery-text">
+                    <strong>Durée de livraison :</strong> Deux semaines à un mois
+                </div>
+            </div>
+
+            <div class="product-features">
+                <h4>Caractéristiques</h4>
+                <ul class="features-list">
+                    <li>Produit gaming de qualité premium</li>
+                    <li>Livraison rapide et sécurisée</li>
+                    <li>Support client 24/7</li>
+                    <li>Garantie satisfaction</li>
+                </ul>
+            </div>
+
+            <!-- Variantes - SUPPRIMÉES -->
+            {% comment %}
+            {% if product.variants.exists %}
+                <div class="variants-section">
+                    <h6 style="color: var(--primary-color); margin-bottom: 1rem; text-align: center;">Options disponibles</h6>
+                    {% for variant in product.variants.all %}
+                        <div class="variant-option">
+                            <input type="radio" name="variant" id="variant_{{ variant.id }}" value="{{ variant.id }}">
+                            <label for="variant_{{ variant.id }}">
+                                {{ variant.name }}: {{ variant.value }}
+                                {% if variant.price_adjustment > 0 %}
+                                    <span style="color: var(--secondary-color);">(+{{ variant.price_adjustment }} XOF)</span>
+                                {% endif %}
+                            </label>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% endcomment %}
+
+            <!-- Quantité -->
+            <div class="quantity-section">
+                <label class="quantity-label">Quantité</label>
+                <div class="quantity-control">
+                    <button class="quantity-btn" onclick="decreaseQuantity()">-</button>
+                    <input type="number" id="quantity" class="quantity-input" value="1" min="1" max="10">
+                    <button class="quantity-btn" onclick="increaseQuantity()">+</button>
+                </div>
+            </div>
+
+            <!-- Boutons d'action -->
+            <div class="product-actions">
+                <button id="addToCartBtn" class="btn-primary">
+                    <i class="fas fa-cart-plus"></i>
+                    Ajouter au panier
+                </button>
+                
+                <button id="buyNowBtn" class="btn-secondary">
+                    <i class="fas fa-bolt"></i>
+                    Acheter maintenant
+                </button>
+            </div>
+            
+            <a href="{% url 'cart_view' %}" style="background: rgba(255, 255, 255, 0.1); border: 1px solid white; color: white; padding: 0.75rem 1.5rem; border-radius: 20px; text-decoration: none; display: block; text-align: center; font-family: 'RussoOne', sans-serif; margin-top: 1rem;">
+                <i class="fas fa-shopping-cart"></i>
+                VOIR LE PANIER
+            </a>
+
+            <!-- Tags -->
+            {% if product.tags %}
+                <div style="margin-top: 2rem; text-align: center;">
+                    {% for tag in product.tags %}
+                        <span style="background: rgba(108, 92, 231, 0.3); color: white; padding: 0.25rem 0.75rem; border-radius: 15px; margin: 0.25rem; display: inline-block; font-size: 0.9rem;">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Informations supplémentaires -->
+            <div style="margin-top: 2rem; text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6);">
+                <p>Référence: {{ product.shopify_product_id|default:product.id }}</p>
+            </div>
+        </div>
+    </div>
+    </div>
+
+</div>
+
+<script>
+let currentSlide = 0;
+
+// NOUVEAU CARROUSEL SIMPLE ET EFFICACE
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCarousel();
+});
+
+function initializeCarousel() {
+    const carousel = document.querySelector('.gaming-carousel');
+    if (!carousel) return;
+    
+    // Initialiser les slides
+    const slides = document.querySelectorAll('.gaming-carousel .carousel-item');
+    if (slides.length > 0) {
+        // Masquer tous les slides sauf le premier
+        slides.forEach((slide, index) => {
+            if (index === 0) {
+                slide.classList.add('active');
+            } else {
+                slide.classList.remove('active');
+            }
+        });
+    }
+}
+
+function showSlide(index) {
+    const slides = document.querySelectorAll('.gaming-carousel .carousel-item');
+    const indicators = document.querySelectorAll('.carousel-indicators button');
+    
+    // Masquer tous les slides
+    slides.forEach(slide => slide.classList.remove('active'));
+    indicators.forEach(indicator => indicator.classList.remove('active'));
+    
+    // Afficher le slide sélectionné
+    if (slides[index]) {
+        slides[index].classList.add('active');
+    }
+    if (indicators[index]) {
+        indicators[index].classList.add('active');
+    }
+    
+    currentSlide = index;
+}
+
+function nextSlide() {
+    const slides = document.querySelectorAll('.gaming-carousel .carousel-item');
+    const nextIndex = (currentSlide + 1) % slides.length;
+    showSlide(nextIndex);
+}
+
+function prevSlide() {
+    const slides = document.querySelectorAll('.gaming-carousel .carousel-item');
+    const prevIndex = (currentSlide - 1 + slides.length) % slides.length;
+    showSlide(prevIndex);
+}
+
+// Auto-play du carrousel (optionnel)
+let autoPlayInterval;
+
+function startAutoPlay() {
+    autoPlayInterval = setInterval(() => {
+        nextSlide();
+    }, 5000); // Change de slide toutes les 5 secondes
+}
+
+function stopAutoPlay() {
+    if (autoPlayInterval) {
+        clearInterval(autoPlayInterval);
+    }
+}
+
+// Démarrer l'auto-play au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.gaming-carousel .carousel-item');
+    if (slides.length > 1) {
+        startAutoPlay();
+        
+        // Arrêter l'auto-play au survol
+        const carousel = document.querySelector('.gaming-carousel');
+        if (carousel) {
+            carousel.addEventListener('mouseenter', stopAutoPlay);
+            carousel.addEventListener('mouseleave', startAutoPlay);
+        }
+    }
+});
+
+
+function increaseQuantity() {
+    const quantityInput = document.getElementById('quantity');
+    const currentValue = parseInt(quantityInput.value);
+    if (currentValue < 10) {
+        quantityInput.value = currentValue + 1;
+    }
+}
+
+function decreaseQuantity() {
+    const quantityInput = document.getElementById('quantity');
+    const currentValue = parseInt(quantityInput.value);
+    if (currentValue > 1) {
+        quantityInput.value = currentValue - 1;
+    }
+}
+
+// Gestion des variantes - SUPPRIMÉE
+/*
+document.querySelectorAll('input[name="variant"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        // Mettre à jour le prix si nécessaire
+        console.log('Variante sélectionnée:', this.value);
+    });
+});
+*/
+
+// Add to cart functionality (sans variantes)
+document.getElementById('addToCartBtn').addEventListener('click', function() {
+    const quantity = document.getElementById('quantity').value;
+    
+    // Add loading state
+    const originalContent = this.innerHTML;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> AJOUT EN COURS...';
+    this.disabled = true;
+    
+    // Prepare form data (sans variantes)
+    const formData = new FormData();
+    formData.append('product_id', '{{ product.id }}');
+    formData.append('quantity', quantity);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    
+    // Send request
+    fetch('{% url "add_to_cart" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            this.innerHTML = '<i class="fas fa-check"></i> AJOUTÉ AU PANIER !';
+            this.style.background = '#28a745';
+            this.style.border = '2px solid #28a745';
+            
+            // Update cart count if exists
+            const cartCount = document.querySelector('.cart-count');
+            if (cartCount && data.cart_count) {
+                cartCount.textContent = data.cart_count;
+            }
+            
+            // Show success notification
+            showNotification('Produit ajouté au panier avec succès!', 'success');
+            
+            // Reset after 3 seconds
+            setTimeout(() => {
+                this.innerHTML = originalContent;
+                this.style.background = '';
+                this.style.border = '';
+                this.disabled = false;
+            }, 3000);
+        } else {
+            showNotification('Erreur: ' + (data.message || 'Impossible d\'ajouter le produit au panier'), 'error');
+            this.innerHTML = originalContent;
+            this.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Erreur de connexion. Veuillez réessayer.', 'error');
+        this.innerHTML = originalContent;
+        this.disabled = false;
+    });
+});
+
+// Buy Now functionality (sans variantes)
+document.getElementById('buyNowBtn').addEventListener('click', function() {
+    const quantity = document.getElementById('quantity').value;
+    
+    // Add loading state
+    const originalContent = this.innerHTML;
+    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> TRAITEMENT...';
+    this.disabled = true;
+    
+    // Prepare form data (sans variantes)
+    const formData = new FormData();
+    formData.append('product_id', '{{ product.id }}');
+    formData.append('quantity', quantity);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+    
+    // Add to cart first, then redirect to checkout
+    fetch('{% url "add_to_cart" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Redirect to checkout
+            window.location.href = '{% url "checkout" %}';
+        } else {
+            showErrorAlert('Erreur : ' + data.message, 'Erreur');
+            this.innerHTML = originalContent;
+            this.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showErrorAlert('Erreur de connexion', 'Erreur de Connexion');
+        this.innerHTML = originalContent;
+        this.disabled = false;
+    });
+});
+
+// Notification system
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notif => notif.remove());
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification notification-${type}`;
+    notification.innerHTML = `
+        <div class="notification-content">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+            <span>${message}</span>
+        </div>
+        <button class="notification-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    // Add styles
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 300px;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    
+    // Add animation keyframes if not already added
+    if (!document.querySelector('#notification-styles')) {
+        const style = document.createElement('style');
+        style.id = 'notification-styles';
+        style.textContent = `
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            .notification-content {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                flex: 1;
+            }
+            .notification-close {
+                background: none;
+                border: none;
+                color: white;
+                cursor: pointer;
+                padding: 5px;
+                border-radius: 3px;
+            }
+            .notification-close:hover {
+                background: rgba(255,255,255,0.2);
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // Add to page
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+</script>
+
+{% endblock %}

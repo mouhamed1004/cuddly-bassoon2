@@ -1,0 +1,15 @@
+[33mf61a02e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Fix: Corriger BASE_URL CinetPay pour redirection apres paiement
+[33m03fb128[m 🔍 DEBUG: Add comprehensive CinetPay API logging
+[33m02bd1d1[m 🚨 FIX: Disable all problematic migrations causing deployment failure
+[33m38c8730[m 🚨 FIX: Disable problematic migration 0074 causing deployment failure
+[33m007108b[m cool
+[33m973c5a5[m 🔍 DEBUG: Add visible logs (print + logger.error) to track MINIMUM_REQUIRED_FIELDS
+[33md3002e3[m cool
+[33m67327c8[m 🔍 DEBUG: Add comprehensive logging to track MINIMUM_REQUIRED_FIELDS issue
+[33m4959a56[m 🔧 CinetPay (gaming): add robust defaults in initiate_cinetpay_payment to prevent MINIMUM_REQUIRED_FIELDS at low prices (e.g., 7.60 EUR)
+[33m115f27f[m 🔧 FIX: Resolve MINIMUM_REQUIRED_FIELDS error in CinetPay
+[33m36b2c5b[m 🔧 FIX: Correct migration 0057 dependency
+[33mfa9717e[m 🔥 FIX: Remove all conflicting UserWarning/UserBan migrations
+[33mb79cbb3[m 🔥 NUCLEAR FIX: Remove problematic migration temporarily
+[33md1c5746[m 🎯 FINAL FIX: Use --fake-initial for existing tables
+[33m2863f22[m 🎯 FIX: Correct Render migration issue in render.yaml

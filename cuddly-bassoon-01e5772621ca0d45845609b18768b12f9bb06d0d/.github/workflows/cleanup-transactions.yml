@@ -1,0 +1,137 @@
+name: 🧹 Nettoyage des Transactions Abandonnées
+
+on:
+  schedule:
+    # Tous les jours à 02:00 UTC (04:00 heure française)
+    - cron: '0 2 * * *'
+  
+  # Permet d'exécuter manuellement le workflow
+  workflow_dispatch:
+    inputs:
+      timeout_hours:
+        description: 'Timeout en heures pour considérer une transaction comme abandonnée'
+        required: false
+        default: '2'
+        type: string
+
+jobs:
+  cleanup-transactions:
+    name: 🔄 Nettoyer les transactions
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 📋 Informations du workflow
+        run: |
+          echo "🎮 BLIZZ Game - Nettoyage des Transactions"
+          echo "📅 Déclenchement: ${{ github.event_name }}"
+          echo "⏰ Heure: $(date -u)"
+          echo "🌐 App URL: ${{ secrets.RENDER_APP_URL }}"
+          
+      - name: 🧹 Déclencher le nettoyage via webhook
+        run: |
+          # Préparer les paramètres
+          WEBHOOK_URL="${{ secrets.RENDER_APP_URL }}/api/cleanup-transactions/"
+          WEBHOOK_SECRET="${{ secrets.WEBHOOK_SECRET }}"
+          TIMEOUT_HOURS="${{ github.event.inputs.timeout_hours || '2' }}"
+          
+          echo "🔗 URL: $WEBHOOK_URL"
+          echo "⏱️ Timeout: ${TIMEOUT_HOURS}h"
+          
+          # Appeler le webhook
+          response=$(curl -s -w "%{http_code}" -o response.json \
+            -X POST \
+            -H "Content-Type: application/json" \
+            -H "X-Webhook-Secret: $WEBHOOK_SECRET" \
+            -d "{\"timeout_hours\": \"$TIMEOUT_HOURS\"}" \
+            "$WEBHOOK_URL")
+          
+          # Vérifier la réponse
+          http_code="${response: -3}"
+          
+          echo "📊 Code de réponse: $http_code"
+          
+          if [ "$http_code" = "200" ]; then
+            echo "✅ Nettoyage réussi!"
+            cat response.json | jq '.'
+          else
+            echo "❌ Erreur lors du nettoyage (Code: $http_code)"
+            cat response.json
+            exit 1
+          fi
+          
+      - name: 📈 Résumé des résultats
+        if: always()
+        run: |
+          echo "## 🎯 Résumé du Nettoyage" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -f response.json ]; then
+            # Extraire les informations de la réponse
+            success=$(cat response.json | jq -r '.success // false')
+            cleaned_count=$(cat response.json | jq -r '.cleaned_count // 0')
+            message=$(cat response.json | jq -r '.message // "Aucun message"')
+            
+            if [ "$success" = "true" ]; then
+              echo "✅ **Statut**: Succès" >> $GITHUB_STEP_SUMMARY
+              echo "🔢 **Transactions nettoyées**: $cleaned_count" >> $GITHUB_STEP_SUMMARY
+              echo "💬 **Message**: $message" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "❌ **Statut**: Échec" >> $GITHUB_STEP_SUMMARY
+              echo "💬 **Erreur**: $message" >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "❌ **Statut**: Pas de réponse du serveur" >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📅 **Exécuté le**: $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 **App**: ${{ secrets.RENDER_APP_URL }}" >> $GITHUB_STEP_SUMMARY
+
+  # Job de sauvegarde si le webhook échoue
+  fallback-notification:
+    name: 🚨 Notification d'échec
+    runs-on: ubuntu-latest
+    needs: cleanup-transactions
+    if: failure()
+    
+    steps:
+      - name: 📧 Créer une issue en cas d'échec
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `🚨 Échec du nettoyage automatique - ${new Date().toLocaleDateString('fr-FR')}`;
+            const body = `
+            ## ❌ Problème détecté
+            
+            Le nettoyage automatique des transactions abandonnées a échoué.
+            
+            **📅 Date**: ${new Date().toLocaleString('fr-FR')}
+            **🔗 Workflow**: [Voir l'exécution](${context.payload.repository.html_url}/actions/runs/${context.runId})
+            
+            ## 🔧 Actions à effectuer
+            
+            1. Vérifier les logs du workflow
+            2. Tester manuellement le nettoyage:
+               \`\`\`bash
+               python manage.py cleanup_expired_transactions --dry-run
+               \`\`\`
+            3. Vérifier que l'app Render est accessible
+            4. Vérifier les secrets GitHub (RENDER_APP_URL, WEBHOOK_SECRET)
+            
+            ## 🎯 Solution temporaire
+            
+            En attendant la résolution, tu peux nettoyer manuellement:
+            - Localement: Double-clique sur \`cleanup_transactions.bat\`
+            - Render: Exécute \`python manage.py cleanup_expired_transactions\`
+            
+            ---
+            *Cette issue a été créée automatiquement par le workflow de nettoyage.*
+            `;
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: title,
+              body: body,
+              labels: ['bug', 'automated', 'cleanup']
+            });

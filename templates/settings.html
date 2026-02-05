@@ -1,0 +1,1336 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load image_filters %}
+{% load i18n %}
+
+{% block title %}{{ page_title|default:"Paramètres - Blizz Gaming" }}{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="settings-card">
+        <h2>Personnalisation du profil</h2>
+        
+        <form method="POST" enctype="multipart/form-data" class="settings-form">
+            {% csrf_token %}
+            
+            <!-- Section Bannière -->
+            <div class="banner-upload">
+                <h3>Bannière</h3>
+                <div class="preview-banner">
+                    <img src="{{ user_profile|cloudinary_or_static:'banner' }}" alt="Banner Preview" id="bannerPreview">
+                    <label for="bannerPhoto" class="upload-overlay">
+                        <i class="fas fa-camera"></i>
+                        Changer la bannière
+                    </label>
+                </div>
+                <input type="file" id="bannerPhoto" name="banner" accept="image/*" hidden>
+            </div>
+
+            <!-- Section Photo de profil -->
+            <div class="profile-photo-upload">
+                <h3>Photo de profil</h3>
+                <div class="preview-circle">
+                    {% if user_profile and user_profile.profileimg %}
+                        <img src="{{ user_profile|cloudinary_or_static:'profileimg' }}" alt="Profile Preview" id="profilePreview">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="Profile Preview" id="profilePreview">
+                    {% endif %}
+                    <label for="profilePhoto" class="upload-overlay">
+                        <i class="fas fa-camera"></i>
+                    </label>
+                </div>
+                <input type="file" name="profileimg" id="profilePhoto" accept="image/*" hidden>
+            </div>
+
+            <!-- Informations du profil -->
+            <div class="profile-info-form">
+                <div class="form-group">
+                    <label for="pseudo">
+                        <i class="fas fa-user"></i>
+                        Nom d'utilisateur
+                    </label>
+                    <input name="username" type="text" id="pseudo" class="input-field" 
+                           placeholder="Votre pseudo" value="{{ user.username }}"
+                           {% if not can_change_username %}disabled{% endif %}>
+                    {% if not can_change_username %}
+                        <p class="warning-text">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Vous ne pouvez changer votre pseudo que tous les deux mois. 
+                            Prochain changement possible le : {{ next_username_change_date }}
+                        </p>
+                    {% endif %}
+                </div>
+
+                <!-- Section Sécurité -->
+                <div class="security-section">
+                    <h3>
+                        <i class="fas fa-shield-alt"></i>
+                        Sécurité du compte
+                    </h3>
+                    
+                    <!-- Champ Email (non modifiable) -->
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i>
+                            Adresse email
+                        </label>
+                        <div class="email-display">
+                            <input type="email" id="email" class="input-field email-field" 
+                                   value="{{ user.email }}" readonly>
+                            <div class="email-status">
+                                {% if user.email_verification.is_verified %}
+                                    <span class="verified-badge">
+                                        <i class="fas fa-check-circle"></i> Vérifié
+
+                                {% else %}
+                                    <span class="unverified-badge">
+                                        <i class="fas fa-exclamation-triangle"></i> Non vérifié
+
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="info-text">
+                            <i class="fas fa-info-circle"></i>
+                            L'adresse email ne peut pas être modifiée pour des raisons de sécurité.
+                        </p>
+                    </div>
+
+                    <!-- Champ Mot de passe (modifiable avec test de sécurité) -->
+                    <div class="form-group">
+                        <label for="current-password">
+                            <i class="fas fa-lock"></i>
+                            Mot de passe actuel
+                        </label>
+                        <div class="password-verification">
+                            <input type="password" id="current-password" class="input-field" 
+                                   placeholder="Entrez votre mot de passe actuel pour le modifier">
+                            <button type="button" id="verifyPasswordBtn" class="verify-password-btn">
+                                <i class="fas fa-check"></i> Vérifier
+                            </button>
+                        </div>
+                        <div class="password-actions" style="display: none;">
+                            <div class="form-group">
+                                <label for="new-password">
+                                    <i class="fas fa-key"></i>
+                                    Nouveau mot de passe
+                                </label>
+                                <input type="password" id="new-password" name="new_password" class="input-field" 
+                                       placeholder="Nouveau mot de passe" minlength="8">
+                                <div class="password-strength" id="passwordStrength">
+                                    <div class="strength-bar">
+                                        <div class="strength-fill" id="strengthFill"></div>
+                                    </div>
+                                    <span class="strength-text" id="strengthText">Entrez un mot de passe</span>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="confirm-password">
+                                    <i class="fas fa-check-double"></i>
+                                    Confirmer le nouveau mot de passe
+                                </label>
+                                <input type="password" id="confirm-password" name="confirm_password" class="input-field" 
+                                       placeholder="Confirmez le nouveau mot de passe">
+                                <div class="password-match" id="passwordMatch" style="display: none;">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Les mots de passe correspondent</span>
+                                </div>
+                            </div>
+                            
+                            <button type="button" id="updatePasswordBtn" class="update-password-btn" disabled>
+                                <i class="fas fa-save"></i> Mettre à jour le mot de passe
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label for="bio">
+                        <i class="fas fa-comment-alt"></i>
+                        Biographie
+                    </label>
+                    <textarea name="bio" id="bio" class="input-field" rows="4" 
+                              placeholder="Parlez-nous de vous...">{{ user_profile.bio }}</textarea>
+                </div>
+                
+
+                <!-- Section Jeux Favoris -->
+                <div class="favorite-games-section">
+                    <h3>
+                        <i class="fas fa-gamepad"></i>
+                        Jeux Favoris
+                    </h3>
+                    <p class="section-description">
+                        Sélectionnez vos jeux favoris pour personnaliser votre profil et recevoir des recommandations adaptées.
+                    </p>
+                    
+                    <div class="games-grid">
+                        {% for game_code, game_name in game_choices %}
+                            <div class="game-card" data-game="{{ game_code }}">
+                                <input type="checkbox" name="favorite_games" value="{{ game_code }}" 
+                                       id="game_{{ game_code }}" class="game-checkbox"
+                                       {% if game_code in user_favorite_games %}checked{% endif %}>
+                                <label for="game_{{ game_code }}" class="game-label">
+                                    <div class="game-icon">
+                                        {% if game_code == 'FreeFire' %}
+                                            <i class="fas fa-fire"></i>
+                                        {% elif game_code == '<span class="notranslate">PUBG</span>' %}
+                                            <i class="fas fa-crosshairs"></i>
+                                        {% elif game_code == 'COD' %}
+                                            <i class="fas fa-skull-crossbones"></i>
+                                        {% elif game_code == 'efootball' %}
+                                            <i class="fas fa-futbol"></i>
+                                        {% elif game_code == 'fc25' %}
+                                            <i class="fas fa-trophy"></i>
+                                        {% elif game_code == 'bloodstrike' %}
+                                            <i class="fas fa-bomb"></i>
+                                        {% else %}
+                                            <i class="fas fa-gamepad"></i>
+                                        {% endif %}
+                                    </div>
+                                    <div class="game-name">{{ game_name }}</div>
+                                    <div class="selection-indicator">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                </label>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <button type="submit" class="save-button">
+                    <i class="fas fa-save"></i>
+                    Sauvegarder les modifications
+                </button>
+            </div>
+        </form>
+        
+        <!-- Section Informations de Paiement -->
+        <div class="payment-info-section">
+            <h3>
+                <i class="fas fa-credit-card"></i>
+                Informations de Paiement
+            </h3>
+            <p class="payment-info-text">
+                Configurez vos informations de paiement pour recevoir votre argent lors des ventes.
+            </p>
+            <div class="payment-actions">
+                <a href="{% url 'seller_payment_setup' %}" class="payment-setup-button">
+                    <i class="fas fa-cog"></i>
+                    {% if user.payment_info.is_verified %}
+                        Modifier les Paiements
+                    {% else %}
+                        Configurer les Paiements
+                    {% endif %}
+                </a>
+                {% if user.payment_info.is_verified %}
+                    <div class="payment-status">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Informations configurées</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.settings-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.settings-card {
+    background: rgba(15, 23, 41, 0.95);
+    border-radius: 15px;
+    padding: 2.5rem;
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 30px rgba(108, 92, 231, 0.2);
+}
+
+.settings-card h2 {
+    text-align: center;
+    color: var(--primary-color);
+    font-family: 'RussoOne', sans-serif;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 15px var(--primary-color);
+}
+
+.settings-card h3 {
+    color: var(--text-color);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.banner-upload {
+    margin-bottom: 2rem;
+}
+
+.preview-banner {
+    position: relative;
+    height: 200px;
+    border-radius: 15px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--primary-color);
+}
+
+.preview-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.banner-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-color);
+    gap: 1rem;
+}
+
+.banner-placeholder i {
+    font-size: 2rem;
+}
+
+.profile-photo-upload {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.preview-circle {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 0 20px var(--primary-color);
+}
+
+.preview-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 3rem;
+    color: var(--text-color);
+}
+
+.upload-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+    color: white;
+    gap: 0.5rem;
+}
+
+.upload-overlay:hover {
+    opacity: 1;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+}
+
+.input-field {
+    width: 100%;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.input-field:focus {
+    outline: none;
+    box-shadow: 0 0 15px var(--primary-color);
+}
+
+.input-field:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.warning-text {
+    color: #ff9800;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.save-button {
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+}
+
+.save-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px var(--primary-color);
+}
+
+/* Section Jeux Favoris */
+.favorite-games-section {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 15px;
+    border: 1px solid rgba(108, 92, 231, 0.3);
+}
+
+.favorite-games-section h3 {
+    color: var(--primary-color);
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-description {
+    color: #b0b0b0;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.games-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.game-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.game-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(108, 92, 231, 0.3);
+    border-color: rgba(108, 92, 231, 0.5);
+}
+
+.game-checkbox {
+    display: none;
+}
+
+.game-label {
+    display: block;
+    padding: 1.5rem;
+    cursor: pointer;
+    text-align: center;
+    position: relative;
+    transition: all 0.3s ease;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.game-icon {
+    font-size: 2.5rem;
+    color: #888;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+.game-name {
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.selection-indicator {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 25px;
+    height: 25px;
+    background: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+    color: white;
+    font-size: 0.8rem;
+}
+
+/* États des cards de jeux */
+.game-checkbox:checked + .game-label {
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.2) 0%, rgba(108, 92, 231, 0.1) 100%);
+    border-color: var(--primary-color);
+}
+
+.game-checkbox:checked + .game-label .game-icon {
+    color: var(--primary-color);
+    transform: scale(1.1);
+}
+
+.game-checkbox:checked + .game-label .selection-indicator {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.game-checkbox:checked + .game-label .game-name {
+    color: var(--primary-color);
+}
+
+/* Couleurs spécifiques par jeu */
+.game-card[data-game="FreeFire"] .game-checkbox:checked + .game-label .game-icon {
+    color: #ff6b35;
+}
+
+.game-card[data-game="<span class="notranslate">PUBG</span>"] .game-checkbox:checked + .game-label .game-icon {
+    color: #f7931e;
+}
+
+.game-card[data-game="COD"] .game-checkbox:checked + .game-label .game-icon {
+    color: #00d4aa;
+}
+
+.game-card[data-game="efootball"] .game-checkbox:checked + .game-label .game-icon {
+    color: #00a8ff;
+}
+
+.game-card[data-game="fc25"] .game-checkbox:checked + .game-label .game-icon {
+    color: #ffd700;
+}
+
+.game-card[data-game="bloodstrike"] .game-checkbox:checked + .game-label .game-icon {
+    color: #e74c3c;
+}
+
+/* Animation au survol */
+.game-label:hover .game-icon {
+    transform: scale(1.1);
+    color: var(--primary-color);
+}
+
+.game-label:hover {
+    background: rgba(108, 92, 231, 0.1);
+}
+
+/* Section Informations de Paiement */
+.payment-info-section {
+    margin-top: 2rem;
+    padding: 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.payment-info-section h3 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.payment-info-text {
+    color: #b0b0b0;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+.payment-setup-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #00ff88 0%, #00cc6a 100%);
+    color: #000;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 15px rgba(0, 255, 136, 0.3);
+}
+
+.payment-setup-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 255, 136, 0.4);
+    color: #000;
+}
+
+.payment-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.payment-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #4caf50; /* Green color for success */
+    font-size: 0.9rem;
+}
+
+.payment-status i {
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .settings-card {
+        padding: 1.5rem;
+    }
+    
+    .preview-banner {
+        height: 150px;
+    }
+    
+    .payment-info-section {
+        padding: 1.5rem;
+    }
+}
+
+/* Styles pour la section sécurité */
+.security-section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.security-section h3 {
+    color: #6c5ce7;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.3rem;
+    border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+    padding-bottom: 0.5rem;
+}
+
+.email-display {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.email-field {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    cursor: not-allowed;
+    flex: 1;
+}
+
+.email-field:focus {
+    outline: none;
+    box-shadow: none !important;
+}
+
+.email-status {
+    display: flex;
+    align-items: center;
+}
+
+.verified-badge {
+    background: rgba(0, 255, 136, 0.1);
+    color: #00ff88;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid rgba(0, 255, 136, 0.3);
+}
+
+.unverified-badge {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.info-text {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.password-verification {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.password-verification .input-field {
+    flex: 1;
+}
+
+.verify-password-btn {
+    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.verify-password-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+}
+
+.verify-password-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.password-actions {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+.password-strength {
+    margin-top: 0.5rem;
+}
+
+.strength-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 0.3rem;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+}
+
+.strength-fill.weak {
+    width: 25%;
+    background: #ff4757;
+}
+
+.strength-fill.fair {
+    width: 50%;
+    background: #ffa502;
+}
+
+.strength-fill.good {
+    width: 75%;
+    background: #2ed573;
+}
+
+.strength-fill.strong {
+    width: 100%;
+    background: #00ff88;
+}
+
+.strength-text {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.password-match {
+    color: #00ff88;
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.update-password-btn {
+    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.update-password-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+}
+
+.update-password-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Animation pour l'apparition des champs */
+.password-actions.show {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Prévisualisation de la photo de profil
+    const profileInput = document.getElementById('profilePhoto');
+    const profilePreview = document.getElementById('profilePreview');
+
+    profileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.id = 'profilePreview';
+                const previewCircle = document.querySelector('.preview-circle');
+                const oldPreview = document.getElementById('profilePreview');
+                if (oldPreview) {
+                    oldPreview.remove();
+                }
+                const placeholder = previewCircle.querySelector('.profile-placeholder');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                previewCircle.insertBefore(img, previewCircle.firstChild);
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Prévisualisation de la bannière
+    const bannerInput = document.getElementById('bannerPhoto');
+    const bannerPreview = document.getElementById('bannerPreview');
+
+    bannerInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.id = 'bannerPreview';
+                const previewBanner = document.querySelector('.preview-banner');
+                const oldPreview = document.getElementById('bannerPreview');
+                if (oldPreview) {
+                    oldPreview.remove();
+                }
+                const placeholder = previewBanner.querySelector('.banner-placeholder');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+                previewBanner.insertBefore(img, previewBanner.firstChild);
+            }
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Gestion des champs de sécurité
+    const currentPasswordInput = document.getElementById('current-password');
+    const verifyPasswordBtn = document.getElementById('verifyPasswordBtn');
+    const passwordActions = document.querySelector('.password-actions');
+    const newPasswordInput = document.getElementById('new-password');
+    const confirmPasswordInput = document.getElementById('confirm-password');
+    const updatePasswordBtn = document.getElementById('updatePasswordBtn');
+    const strengthFill = document.getElementById('strengthFill');
+    const strengthText = document.getElementById('strengthText');
+    const passwordMatch = document.getElementById('passwordMatch');
+
+    // Vérification du mot de passe actuel avec le bouton
+    verifyPasswordBtn.addEventListener('click', function() {
+        const password = currentPasswordInput.value;
+        
+        if (!password) {
+            showCustomAlert('Veuillez entrer votre mot de passe actuel.', 'error');
+            return;
+        }
+
+        // Désactiver le bouton pendant la vérification
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Vérification...';
+
+        // Vérifier le mot de passe actuel via AJAX
+        fetch('/verify-current-password/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                'current_password': password
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mot de passe correct, afficher les champs de modification
+                passwordActions.style.display = 'block';
+                passwordActions.classList.add('show');
+                currentPasswordInput.style.borderColor = '#00ff88';
+                showCustomAlert('Mot de passe vérifié ! Vous pouvez maintenant le modifier.', 'success');
+            } else {
+                // Mot de passe incorrect
+                passwordActions.style.display = 'none';
+                currentPasswordInput.style.borderColor = '#ff4757';
+                showCustomAlert('Mot de passe incorrect. Veuillez réessayer.', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            passwordActions.style.display = 'none';
+            currentPasswordInput.style.borderColor = '#ff4757';
+            showCustomAlert('Erreur lors de la vérification. Veuillez réessayer.', 'error');
+        })
+        .finally(() => {
+            // Réactiver le bouton
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-check"></i> Vérifier';
+        });
+    });
+
+    // Vérification avec Enter
+    currentPasswordInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            verifyPasswordBtn.click();
+        }
+    });
+
+    // Réinitialiser les champs si l'utilisateur modifie le mot de passe
+    currentPasswordInput.addEventListener('input', function() {
+        if (passwordActions.style.display === 'block') {
+            passwordActions.style.display = 'none';
+            passwordActions.classList.remove('show');
+            this.style.borderColor = '';
+        }
+    });
+
+    // Validation de la force du mot de passe
+    newPasswordInput.addEventListener('input', function() {
+        const password = this.value;
+        const strength = calculatePasswordStrength(password);
+        
+        // Mettre à jour la barre de force
+        strengthFill.className = 'strength-fill ' + strength.level;
+        strengthText.textContent = strength.text;
+        
+        // Vérifier la correspondance des mots de passe
+        checkPasswordMatch();
+    });
+
+    // Vérification de la correspondance des mots de passe
+    confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+
+    function checkPasswordMatch() {
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        if (confirmPassword.length > 0) {
+            if (newPassword === confirmPassword) {
+                passwordMatch.style.display = 'flex';
+                confirmPasswordInput.style.borderColor = '#00ff88';
+                updatePasswordBtn.disabled = false;
+            } else {
+                passwordMatch.style.display = 'none';
+                confirmPasswordInput.style.borderColor = '#ff4757';
+                updatePasswordBtn.disabled = true;
+            }
+        } else {
+            passwordMatch.style.display = 'none';
+            confirmPasswordInput.style.borderColor = '';
+            updatePasswordBtn.disabled = true;
+        }
+    }
+
+    // Calcul de la force du mot de passe
+    function calculatePasswordStrength(password) {
+        let score = 0;
+        let feedback = [];
+
+        if (password.length >= 8) score += 1;
+        else feedback.push('Au moins 8 caractères');
+
+        if (/[a-z]/.test(password)) score += 1;
+        else feedback.push('Une minuscule');
+
+        if (/[A-Z]/.test(password)) score += 1;
+        else feedback.push('Une majuscule');
+
+        if (/[0-9]/.test(password)) score += 1;
+        else feedback.push('Un chiffre');
+
+        if (/[^A-Za-z0-9]/.test(password)) score += 1;
+        else feedback.push('Un caractère spécial');
+
+        if (password.length >= 12) score += 1;
+
+        if (score < 2) {
+            return { level: 'weak', text: 'Faible - ' + feedback.join(', ') };
+        } else if (score < 4) {
+            return { level: 'fair', text: 'Moyen - ' + feedback.join(', ') };
+        } else if (score < 5) {
+            return { level: 'good', text: 'Bon' };
+        } else {
+            return { level: 'strong', text: 'Très fort' };
+        }
+    }
+
+    // Mise à jour du mot de passe
+    updatePasswordBtn.addEventListener('click', function() {
+        const currentPassword = currentPasswordInput.value;
+        const newPassword = newPasswordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        if (newPassword !== confirmPassword) {
+            showCustomAlert('Les mots de passe ne correspondent pas.', 'error');
+            return;
+        }
+
+        if (newPassword.length < 8) {
+            showCustomAlert('Le mot de passe doit contenir au moins 8 caractères.', 'error');
+            return;
+        }
+
+        // Désactiver le bouton pendant la requête
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mise à jour...';
+
+        fetch('/update-password/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                'current_password': currentPassword,
+                'new_password': newPassword,
+                'confirm_password': confirmPassword
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showCustomAlert('Mot de passe mis à jour avec succès !', 'success');
+                // Réinitialiser les champs
+                currentPasswordInput.value = '';
+                newPasswordInput.value = '';
+                confirmPasswordInput.value = '';
+                passwordActions.style.display = 'none';
+                passwordActions.classList.remove('show');
+            } else {
+                showCustomAlert('Erreur: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            showCustomAlert('Erreur lors de la mise à jour du mot de passe.', 'error');
+        })
+        .finally(() => {
+            // Réactiver le bouton
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-save"></i> Mettre à jour le mot de passe';
+        });
+    });
+
+    // Fonction pour afficher les alertes personnalisées
+    function showCustomAlert(message, type) {
+        // Créer l'élément d'alerte
+        const alert = document.createElement('div');
+        alert.className = `custom-alert ${type}`;
+        alert.innerHTML = `
+            <div class="alert-content">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                <span>${message}</span>
+            </div>
+        `;
+
+        // Ajouter les styles
+        alert.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? 'rgba(0, 255, 136, 0.9)' : 'rgba(255, 71, 87, 0.9)'};
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            animation: slideInRight 0.3s ease-out;
+        `;
+
+        // Ajouter l'alerte au DOM
+        document.body.appendChild(alert);
+
+        // Supprimer l'alerte après 5 secondes
+        setTimeout(() => {
+            alert.style.animation = 'slideOutRight 0.3s ease-out';
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.parentNode.removeChild(alert);
+                }
+            }, 300);
+        }, 5000);
+    }
+
+    // ===== SYSTÈME DE DÉTECTION DES MODIFICATIONS NON SAUVEGARDÉES =====
+    
+    // Variables pour tracker les modifications
+    let hasUnsavedChanges = false;
+    let originalFormData = {};
+    let formSubmitted = false;
+    
+    // Fonction pour capturer l'état initial du formulaire
+    function captureInitialFormState() {
+        const form = document.querySelector('.settings-form');
+        const formData = new FormData(form);
+        
+        // Capturer les valeurs des champs textuels
+        originalFormData = {
+            username: document.getElementById('pseudo').value,
+            bio: document.getElementById('bio').value,
+            payout_phone: document.querySelector('input[name="payout_phone"]')?.value || '',
+            payout_country: document.querySelector('input[name="payout_country"]')?.value || '',
+            payout_operator: document.querySelector('input[name="payout_operator"]')?.value || '',
+            current_password: document.getElementById('current-password').value,
+            new_password: document.getElementById('new-password').value,
+            confirm_password: document.getElementById('confirm-password').value,
+            // Pour les jeux favoris, on capture l'état initial
+            favorite_games: Array.from(document.querySelectorAll('input[name="favorite_games"]:checked')).map(cb => cb.value)
+        };
+    }
+    
+    // Fonction pour vérifier si le formulaire a été modifié
+    function checkForChanges() {
+        const currentData = {
+            username: document.getElementById('pseudo').value,
+            bio: document.getElementById('bio').value,
+            payout_phone: document.querySelector('input[name="payout_phone"]')?.value || '',
+            payout_country: document.querySelector('input[name="payout_country"]')?.value || '',
+            payout_operator: document.querySelector('input[name="payout_operator"]')?.value || '',
+            current_password: document.getElementById('current-password').value,
+            new_password: document.getElementById('new-password').value,
+            confirm_password: document.getElementById('confirm-password').value,
+            favorite_games: Array.from(document.querySelectorAll('input[name="favorite_games"]:checked')).map(cb => cb.value)
+        };
+        
+        // Vérifier les changements dans les champs textuels
+        for (const [key, value] of Object.entries(currentData)) {
+            if (originalFormData[key] !== value) {
+                return true;
+            }
+        }
+        
+        // Vérifier les changements dans les fichiers
+        const profileFile = document.getElementById('profilePhoto').files[0];
+        const bannerFile = document.getElementById('bannerPhoto').files[0];
+        
+        if (profileFile || bannerFile) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    // Fonction pour marquer les modifications
+    function markAsChanged() {
+        hasUnsavedChanges = true;
+    }
+    
+    // Fonction pour marquer comme sauvegardé
+    function markAsSaved() {
+        hasUnsavedChanges = false;
+        formSubmitted = true;
+        captureInitialFormState(); // Recapturer l'état après sauvegarde
+    }
+    
+    // Ajouter les event listeners pour détecter les changements
+    function setupChangeDetection() {
+        // Champs textuels
+        const textFields = [
+            'pseudo', 'bio', 'current-password', 'new-password', 'confirm-password'
+        ];
+        
+        textFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.addEventListener('input', markAsChanged);
+                field.addEventListener('change', markAsChanged);
+            }
+        });
+        
+        // Champs de payout
+        const payoutFields = document.querySelectorAll('input[name^="payout_"]');
+        payoutFields.forEach(field => {
+            field.addEventListener('input', markAsChanged);
+            field.addEventListener('change', markAsChanged);
+        });
+        
+        // Jeux favoris
+        const gameCheckboxes = document.querySelectorAll('input[name="favorite_games"]');
+        gameCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', markAsChanged);
+        });
+        
+        // Fichiers
+        document.getElementById('profilePhoto').addEventListener('change', markAsChanged);
+        document.getElementById('bannerPhoto').addEventListener('change', markAsChanged);
+        
+        // Formulaire de soumission
+        const form = document.querySelector('.settings-form');
+        form.addEventListener('submit', function() {
+            markAsSaved();
+        });
+    }
+    
+    // Avertissement avant de quitter la page
+    function setupBeforeUnloadWarning() {
+        window.addEventListener('beforeunload', function(e) {
+            if (hasUnsavedChanges && !formSubmitted) {
+                const message = 'Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir quitter ?';
+                e.returnValue = message;
+                return message;
+            }
+        });
+    }
+    
+    // Avertissement pour les liens de navigation
+    function setupNavigationWarning() {
+        const links = document.querySelectorAll('a:not([href^="#"]):not([href^="javascript:"])');
+        links.forEach(link => {
+            link.addEventListener('click', function(e) {
+                if (hasUnsavedChanges && !formSubmitted) {
+                    const confirmed = confirm('Vous avez des modifications non sauvegardées. Êtes-vous sûr de vouloir quitter cette page ?');
+                    if (!confirmed) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+        });
+    }
+    
+    // Initialisation
+    captureInitialFormState();
+    setupChangeDetection();
+    setupBeforeUnloadWarning();
+    setupNavigationWarning();
+    
+    // Ajouter les animations CSS
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideOutRight {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+});
+</script>
+{% endblock %}

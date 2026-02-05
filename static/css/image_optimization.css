@@ -1,0 +1,116 @@
+/* 
+Optimisations d'images pour BLIZZ Game
+Support WebP avec fallback PNG pour compatibilité maximale
+*/
+
+/* Optimisations générales des images */
+img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* Carousel optimisé avec lazy loading */
+.carousel-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.3s ease;
+}
+
+/* Fallback PNG pour navigateurs sans support WebP */
+@supports not (background-image: url('image.webp')) {
+    .carousel-item:nth-child(1) img {
+        content: url('/static/images/carousel/freefire.png');
+    }
+    
+    .carousel-item:nth-child(2) img {
+        content: url('/static/images/carousel/efootball.png');
+    }
+    
+    .carousel-item:nth-child(3) img {
+        content: url('/static/images/carousel/codm.png');
+    }
+    
+    .carousel-item:nth-child(4) img {
+        content: url('/static/images/carousel/pubgm.png');
+    }
+    
+    .shop-header {
+        background: linear-gradient(135deg, rgba(108, 92, 231, 0.5), rgba(255, 107, 107, 0.5)), 
+                    url('/static/images/baniier_ecom.png') !important;
+    }
+}
+
+/* Préchargement des images critiques */
+.carousel::before {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 0;
+    background-image: 
+        url('/static/images/carousel_optimized/freefire.webp'),
+        url('/static/images/carousel_optimized/efootball.webp'),
+        url('/static/images/carousel_optimized/codm.webp'),
+        url('/static/images/carousel_optimized/pubgm.webp');
+    background-size: 0 0;
+}
+
+/* Optimisation du chargement */
+.carousel-item:not(.active) {
+    visibility: hidden;
+}
+
+.carousel-item.active {
+    visibility: visible;
+}
+
+/* Spinner de chargement pour les grandes images */
+.image-loading {
+    position: relative;
+    background: linear-gradient(45deg, #1a1a1a, #2a2a2a);
+    background-size: 400% 400%;
+    animation: shimmer 2s ease-in-out infinite;
+}
+
+.image-loading::after {
+    content: '⚡';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 2rem;
+    color: var(--primary-color);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+    50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+}
+
+/* Responsive - Réduction supplémentaire sur mobile */
+@media (max-width: 768px) {
+    .carousel-item img {
+        image-rendering: auto; /* Meilleure qualité sur petits écrans */
+    }
+}
+
+/* Performance - Désactiver les animations sur connexions lentes */
+@media (prefers-reduced-motion: reduce) {
+    .carousel-item {
+        transition: none;
+    }
+    
+    .image-loading {
+        animation: none;
+    }
+    
+    .image-loading::after {
+        animation: none;
+    }
+}

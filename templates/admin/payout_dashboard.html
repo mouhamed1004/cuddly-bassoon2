@@ -1,0 +1,248 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Tableau de bord Payouts{% endblock %}
+
+{% block extrahead %}
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-left: 4px solid #007cba;
+    }
+    
+    .stat-card.pending { border-left-color: #ff9800; }
+    .stat-card.processing { border-left-color: #2196f3; }
+    .stat-card.completed { border-left-color: #4caf50; }
+    .stat-card.failed { border-left-color: #f44336; }
+    
+    .stat-number {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #333;
+        margin: 0;
+    }
+    
+    .stat-label {
+        color: #666;
+        margin: 5px 0 0 0;
+        font-size: 0.9em;
+    }
+    
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .quick-actions {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 14px;
+    }
+    
+    .btn-primary { background: #007cba; color: white; }
+    .btn-success { background: #4caf50; color: white; }
+    .btn-warning { background: #ff9800; color: white; }
+    .btn-info { background: #2196f3; color: white; }
+    
+    .btn:hover { opacity: 0.9; }
+    
+    .table-responsive {
+        overflow-x: auto;
+    }
+    
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    
+    .table th, .table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    
+    .table th {
+        background: #f5f5f5;
+        font-weight: bold;
+    }
+    
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: bold;
+    }
+    
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-processing { background: #d1ecf1; color: #0c5460; }
+    .status-completed { background: #d4edda; color: #155724; }
+    .status-failed { background: #f8d7da; color: #721c24; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="payout-dashboard">
+    <h1>💰 Tableau de bord Payouts</h1>
+    
+    <!-- Actions rapides -->
+    <div class="quick-actions">
+        <a href="{% url 'admin_payout_list' %}" class="btn btn-primary">
+            📋 Voir tous les payouts
+        </a>
+        <a href="{% url 'admin_export_payouts_csv' %}" class="btn btn-success">
+            📥 Exporter CSV pour <span class="notranslate">CinetPay</span>
+        </a>
+        <a href="{% url 'admin:blizzgame_payoutrequest_changelist' %}?status__exact=pending" class="btn btn-warning">
+            ⏳ Payouts en attente ({{ pending_payouts }})
+        </a>
+        <a href="{% url 'admin:blizzgame_payoutrequest_changelist' %}?status__exact=processing" class="btn btn-info">
+            🔄 Payouts en cours ({{ processing_payouts }})
+        </a>
+    </div>
+    
+    <!-- Statistiques générales -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <p class="stat-number">{{ total_payouts }}</p>
+            <p class="stat-label">Total Payouts</p>
+        </div>
+        
+        <div class="stat-card pending">
+            <p class="stat-number">{{ pending_payouts }}</p>
+            <p class="stat-label">{% trans "En attente" %}</p>
+        </div>
+        
+        <div class="stat-card processing">
+            <p class="stat-number">{{ processing_payouts }}</p>
+            <p class="stat-label">En cours</p>
+        </div>
+        
+        <div class="stat-card completed">
+            <p class="stat-number">{{ completed_payouts }}</p>
+            <p class="stat-label">Terminés</p>
+        </div>
+        
+        <div class="stat-card failed">
+            <p class="stat-number">{{ failed_payouts }}</p>
+            <p class="stat-label">Échoués</p>
+        </div>
+    </div>
+    
+    <!-- Montants totaux -->
+    <div class="chart-container">
+        <h3>💵 Montants totaux</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h4>Montant total (EUR)</h4>
+                <p style="font-size: 2em; font-weight: bold; color: #007cba;">
+                    {{ total_amount_eur|floatformat:2 }} €
+                </p>
+            </div>
+            <div>
+                <h4>Montant total (XOF)</h4>
+                <p style="font-size: 2em; font-weight: bold; color: #4caf50;">
+                    {{ total_amount_xof|floatformat:0 }} FCFA
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Répartition par opérateur -->
+    {% if pending_by_operator %}
+    <div class="chart-container">
+        <h3>📱 Payouts en attente par opérateur</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Opérateur</th>
+                        <th>Nombre de payouts</th>
+                        <th>Pourcentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in pending_by_operator %}
+                    <tr>
+                        <td>{{ item.recipient_operator|upper }}</td>
+                        <td>{{ item.count }}</td>
+                        <td>
+                            {% widthratio item.count pending_payouts 100 %}%
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Répartition par pays -->
+    {% if pending_by_country %}
+    <div class="chart-container">
+        <h3>🌍 Payouts en attente par pays</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>{% trans "Pays" %}</th>
+                        <th>Nombre de payouts</th>
+                        <th>Pourcentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in pending_by_country %}
+                    <tr>
+                        <td>{{ item.recipient_country }}</td>
+                        <td>{{ item.count }}</td>
+                        <td>
+                            {% widthratio item.count pending_payouts 100 %}%
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Instructions <span class="notranslate">CinetPay</span> -->
+    <div class="chart-container">
+        <h3>📋 Instructions pour <span class="notranslate">CinetPay</span></h3>
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 4px; border-left: 4px solid #007cba;">
+            <ol>
+                <li><strong>Exporter les données :</strong> Cliquez sur "Exporter CSV pour <span class="notranslate">CinetPay</span>"</li>
+                <li><strong>Se connecter à <span class="notranslate">CinetPay</span> :</strong> Allez sur le dashboard <span class="notranslate">CinetPay</span> Règlements</li>
+                <li><strong>Importer le fichier :</strong> Utilisez le CSV exporté pour créer les payouts</li>
+                <li><strong>Valider les payouts :</strong> Effectuez les transferts via <span class="notranslate">CinetPay</span></li>
+                <li><strong>Marquer comme terminé :</strong> Revenez ici pour marquer les payouts comme terminés</li>
+            </ol>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,467 @@
+{% load i18n %}
+<!-- Composant de sélection de numéro de téléphone avec code pays -->
+<div class="phone-input-group">
+    <div class="phone-input-container">
+        <select name="{{ select_name }}" id="{{ select_id }}" class="country-code-select" required>
+            <option value="">Code pays</option>
+            <!-- Afrique de l'Ouest -->
+            <option value="+221" data-country="SN" data-flag="🇸🇳">🇸🇳 +221</option>
+            <option value="+225" data-country="CI" data-flag="🇨🇮">🇨🇮 +225</option>
+            <option value="+226" data-country="BF" data-flag="🇧🇫">🇧🇫 +226</option>
+            <option value="+223" data-country="ML" data-flag="🇲🇱">🇲🇱 +223</option>
+            <option value="+224" data-country="GN" data-flag="🇬🇳">🇬🇳 +224</option>
+            <option value="+227" data-country="NE" data-flag="🇳🇪">🇳🇪 +227</option>
+            <option value="+228" data-country="TG" data-flag="🇹🇬">🇹🇬 +228</option>
+            <option value="+229" data-country="BJ" data-flag="🇧🇯">🇧🇯 +229</option>
+            <option value="+233" data-country="GH" data-flag="🇬🇭">🇬🇭 +233</option>
+            <option value="+234" data-country="NG" data-flag="🇳🇬">🇳🇬 +234</option>
+            <option value="+235" data-country="TD" data-flag="🇹🇩">🇹🇩 +235</option>
+            <option value="+237" data-country="CM" data-flag="🇨🇲">🇨🇲 +237</option>
+            <option value="+238" data-country="CV" data-flag="🇨🇻">🇨🇻 +238</option>
+            <option value="+239" data-country="ST" data-flag="🇸🇹">🇸🇹 +239</option>
+            <option value="+240" data-country="GQ" data-flag="🇬🇶">🇬🇶 +240</option>
+            <option value="+241" data-country="GA" data-flag="🇬🇦">🇬🇦 +241</option>
+            <option value="+242" data-country="CG" data-flag="🇨🇬">🇨🇬 +242</option>
+            <option value="+243" data-country="CD" data-flag="🇨🇩">🇨🇩 +243</option>
+            <option value="+244" data-country="AO" data-flag="🇦🇴">🇦🇴 +244</option>
+            <option value="+245" data-country="GW" data-flag="🇬🇼">🇬🇼 +245</option>
+            <option value="+246" data-country="IO" data-flag="🇮🇴">🇮🇴 +246</option>
+            <option value="+248" data-country="SC" data-flag="🇸🇨">🇸🇨 +248</option>
+            <option value="+249" data-country="SD" data-flag="🇸🇩">🇸🇩 +249</option>
+            <option value="+250" data-country="RW" data-flag="🇷🇼">🇷🇼 +250</option>
+            <option value="+251" data-country="ET" data-flag="🇪🇹">🇪🇹 +251</option>
+            <option value="+252" data-country="SO" data-flag="🇸🇴">🇸🇴 +252</option>
+            <option value="+253" data-country="DJ" data-flag="🇩🇯">🇩🇯 +253</option>
+            <option value="+254" data-country="KE" data-flag="🇰🇪">🇰🇪 +254</option>
+            <option value="+255" data-country="TZ" data-flag="🇹🇿">🇹🇿 +255</option>
+            <option value="+256" data-country="UG" data-flag="🇺🇬">🇺🇬 +256</option>
+            <option value="+257" data-country="BI" data-flag="🇧🇮">🇧🇮 +257</option>
+            <option value="+258" data-country="MZ" data-flag="🇲🇿">🇲🇿 +258</option>
+            <option value="+260" data-country="ZM" data-flag="🇿🇲">🇿🇲 +260</option>
+            <option value="+261" data-country="MG" data-flag="🇲🇬">🇲🇬 +261</option>
+            <option value="+262" data-country="RE" data-flag="🇷🇪">🇷🇪 +262</option>
+            <option value="+263" data-country="ZW" data-flag="🇿🇼">🇿🇼 +263</option>
+            <option value="+264" data-country="NA" data-flag="🇳🇦">🇳🇦 +264</option>
+            <option value="+265" data-country="MW" data-flag="🇲🇼">🇲🇼 +265</option>
+            <option value="+266" data-country="LS" data-flag="🇱🇸">🇱🇸 +266</option>
+            <option value="+267" data-country="BW" data-flag="🇧🇼">🇧🇼 +267</option>
+            <option value="+268" data-country="SZ" data-flag="🇸🇿">🇸🇿 +268</option>
+            <option value="+269" data-country="KM" data-flag="🇰🇲">🇰🇲 +269</option>
+            <option value="+27" data-country="ZA" data-flag="🇿🇦">🇿🇦 +27</option>
+            <option value="+290" data-country="SH" data-flag="🇸🇭">🇸🇭 +290</option>
+            <option value="+291" data-country="ER" data-flag="🇪🇷">🇪🇷 +291</option>
+            <option value="+297" data-country="AW" data-flag="🇦🇼">🇦🇼 +297</option>
+            <option value="+298" data-country="FO" data-flag="🇫🇴">🇫🇴 +298</option>
+            <option value="+299" data-country="GL" data-flag="🇬🇱">🇬🇱 +299</option>
+            <!-- Europe -->
+            <option value="+33" data-country="FR" data-flag="🇫🇷">🇫🇷 +33</option>
+            <option value="+44" data-country="GB" data-flag="🇬🇧">🇬🇧 +44</option>
+            <option value="+49" data-country="DE" data-flag="🇩🇪">🇩🇪 +49</option>
+            <option value="+39" data-country="IT" data-flag="🇮🇹">🇮🇹 +39</option>
+            <option value="+34" data-country="ES" data-flag="🇪🇸">🇪🇸 +34</option>
+            <option value="+32" data-country="BE" data-flag="🇧🇪">🇧🇪 +32</option>
+            <option value="+41" data-country="CH" data-flag="🇨🇭">🇨🇭 +41</option>
+            <option value="+31" data-country="NL" data-flag="🇳🇱">🇳🇱 +31</option>
+            <option value="+45" data-country="DK" data-flag="🇩🇰">🇩🇰 +45</option>
+            <option value="+46" data-country="SE" data-flag="🇸🇪">🇸🇪 +46</option>
+            <option value="+47" data-country="NO" data-flag="🇳🇴">🇳🇴 +47</option>
+            <option value="+48" data-country="PL" data-flag="🇵🇱">🇵🇱 +48</option>
+            <option value="+351" data-country="PT" data-flag="🇵🇹">🇵🇹 +351</option>
+            <option value="+352" data-country="LU" data-flag="🇱🇺">🇱🇺 +352</option>
+            <option value="+353" data-country="IE" data-flag="🇮🇪">🇮🇪 +353</option>
+            <option value="+354" data-country="IS" data-flag="🇮🇸">🇮🇸 +354</option>
+            <option value="+355" data-country="AL" data-flag="🇦🇱">🇦🇱 +355</option>
+            <option value="+356" data-country="MT" data-flag="🇲🇹">🇲🇹 +356</option>
+            <option value="+357" data-country="CY" data-flag="🇨🇾">🇨🇾 +357</option>
+            <option value="+358" data-country="FI" data-flag="🇫🇮">🇫🇮 +358</option>
+            <option value="+359" data-country="BG" data-flag="🇧🇬">🇧🇬 +359</option>
+            <option value="+36" data-country="HU" data-flag="🇭🇺">🇭🇺 +36</option>
+            <option value="+370" data-country="LT" data-flag="🇱🇹">🇱🇹 +370</option>
+            <option value="+371" data-country="LV" data-flag="🇱🇻">🇱🇻 +371</option>
+            <option value="+372" data-country="EE" data-flag="🇪🇪">🇪🇪 +372</option>
+            <option value="+373" data-country="MD" data-flag="🇲🇩">🇲🇩 +373</option>
+            <option value="+374" data-country="AM" data-flag="🇦🇲">🇦🇲 +374</option>
+            <option value="+375" data-country="BY" data-flag="🇧🇾">🇧🇾 +375</option>
+            <option value="+376" data-country="AD" data-flag="🇦🇩">🇦🇩 +376</option>
+            <option value="+377" data-country="MC" data-flag="🇲🇨">🇲🇨 +377</option>
+            <option value="+378" data-country="SM" data-flag="🇸🇲">🇸🇲 +378</option>
+            <option value="+380" data-country="UA" data-flag="🇺🇦">🇺🇦 +380</option>
+            <option value="+381" data-country="RS" data-flag="🇷🇸">🇷🇸 +381</option>
+            <option value="+382" data-country="ME" data-flag="🇲🇪">🇲🇪 +382</option>
+            <option value="+383" data-country="XK" data-flag="🇽🇰">🇽🇰 +383</option>
+            <option value="+385" data-country="HR" data-flag="🇭🇷">🇭🇷 +385</option>
+            <option value="+386" data-country="SI" data-flag="🇸🇮">🇸🇮 +386</option>
+            <option value="+387" data-country="BA" data-flag="🇧🇦">🇧🇦 +387</option>
+            <option value="+389" data-country="MK" data-flag="🇲🇰">🇲🇰 +389</option>
+            <option value="+420" data-country="CZ" data-flag="🇨🇿">🇨🇿 +420</option>
+            <option value="+421" data-country="SK" data-flag="🇸🇰">🇸🇰 +421</option>
+            <option value="+423" data-country="LI" data-flag="🇱🇮">🇱🇮 +423</option>
+            <option value="+7" data-country="RU" data-flag="🇷🇺">🇷🇺 +7</option>
+            <!-- Amérique du Nord -->
+            <option value="+1" data-country="US" data-flag="🇺🇸">🇺🇸 +1</option>
+            <option value="+1" data-country="CA" data-flag="🇨🇦">🇨🇦 +1</option>
+            <!-- Amérique du Sud -->
+            <option value="+55" data-country="BR" data-flag="🇧🇷">🇧🇷 +55</option>
+            <option value="+54" data-country="AR" data-flag="🇦🇷">🇦🇷 +54</option>
+            <option value="+56" data-country="CL" data-flag="🇨🇱">🇨🇱 +56</option>
+            <option value="+57" data-country="CO" data-flag="🇨🇴">🇨🇴 +57</option>
+            <option value="+58" data-country="VE" data-flag="🇻🇪">🇻🇪 +58</option>
+            <option value="+59" data-country="GY" data-flag="🇬🇾">🇬🇾 +59</option>
+            <option value="+591" data-country="BO" data-flag="🇧🇴">🇧🇴 +591</option>
+            <option value="+592" data-country="GY" data-flag="🇬🇾">🇬🇾 +592</option>
+            <option value="+593" data-country="EC" data-flag="🇪🇨">🇪🇨 +593</option>
+            <option value="+594" data-country="GF" data-flag="🇬🇫">🇬🇫 +594</option>
+            <option value="+595" data-country="PY" data-flag="🇵🇾">🇵🇾 +595</option>
+            <option value="+596" data-country="MQ" data-flag="🇲🇶">🇲🇶 +596</option>
+            <option value="+597" data-country="SR" data-flag="🇸🇷">🇸🇷 +597</option>
+            <option value="+598" data-country="UY" data-flag="🇺🇾">🇺🇾 +598</option>
+            <!-- Amérique Centrale -->
+            <option value="+52" data-country="MX" data-flag="🇲🇽">🇲🇽 +52</option>
+            <option value="+502" data-country="GT" data-flag="🇬🇹">🇬🇹 +502</option>
+            <option value="+503" data-country="SV" data-flag="🇸🇻">🇸🇻 +503</option>
+            <option value="+504" data-country="HN" data-flag="🇭🇳">🇭🇳 +504</option>
+            <option value="+505" data-country="NI" data-flag="🇳🇮">🇳🇮 +505</option>
+            <option value="+506" data-country="CR" data-flag="🇨🇷">🇨🇷 +506</option>
+            <option value="+507" data-country="PA" data-flag="🇵🇦">🇵🇦 +507</option>
+            <option value="+508" data-country="PM" data-flag="🇵🇲">🇵🇲 +508</option>
+            <option value="+509" data-country="HT" data-flag="🇭🇹">🇭🇹 +509</option>
+            <option value="+590" data-country="GP" data-flag="🇬🇵">🇬🇵 +590</option>
+            <option value="+591" data-country="BO" data-flag="🇧🇴">🇧🇴 +591</option>
+            <option value="+592" data-country="GY" data-flag="🇬🇾">🇬🇾 +592</option>
+            <option value="+593" data-country="EC" data-flag="🇪🇨">🇪🇨 +593</option>
+            <option value="+594" data-country="GF" data-flag="🇬🇫">🇬🇫 +594</option>
+            <option value="+595" data-country="PY" data-flag="🇵🇾">🇵🇾 +595</option>
+            <option value="+596" data-country="MQ" data-flag="🇲🇶">🇲🇶 +596</option>
+            <option value="+597" data-country="SR" data-flag="🇸🇷">🇸🇷 +597</option>
+            <option value="+598" data-country="UY" data-flag="🇺🇾">🇺🇾 +598</option>
+            <!-- Asie -->
+            <option value="+81" data-country="JP" data-flag="🇯🇵">🇯🇵 +81</option>
+            <option value="+86" data-country="CN" data-flag="🇨🇳">🇨🇳 +86</option>
+            <option value="+91" data-country="IN" data-flag="🇮🇳">🇮🇳 +91</option>
+            <option value="+82" data-country="KR" data-flag="🇰🇷">🇰🇷 +82</option>
+            <option value="+84" data-country="VN" data-flag="🇻🇳">🇻🇳 +84</option>
+            <option value="+60" data-country="MY" data-flag="🇲🇾">🇲🇾 +60</option>
+            <option value="+62" data-country="ID" data-flag="🇮🇩">🇮🇩 +62</option>
+            <option value="+63" data-country="PH" data-flag="🇵🇭">🇵🇭 +63</option>
+            <option value="+64" data-country="NZ" data-flag="🇳🇿">🇳🇿 +64</option>
+            <option value="+65" data-country="SG" data-flag="🇸🇬">🇸🇬 +65</option>
+            <option value="+66" data-country="TH" data-flag="🇹🇭">🇹🇭 +66</option>
+            <option value="+90" data-country="TR" data-flag="🇹🇷">🇹🇷 +90</option>
+            <option value="+92" data-country="PK" data-flag="🇵🇰">🇵🇰 +92</option>
+            <option value="+93" data-country="AF" data-flag="🇦🇫">🇦🇫 +93</option>
+            <option value="+94" data-country="LK" data-flag="🇱🇰">🇱🇰 +94</option>
+            <option value="+95" data-country="MM" data-flag="🇲🇲">🇲🇲 +95</option>
+            <option value="+98" data-country="IR" data-flag="🇮🇷">🇮🇷 +98</option>
+            <option value="+212" data-country="MA" data-flag="🇲🇦">🇲🇦 +212</option>
+            <option value="+213" data-country="DZ" data-flag="🇩🇿">🇩🇿 +213</option>
+            <option value="+216" data-country="TN" data-flag="🇹🇳">🇹🇳 +216</option>
+            <option value="+20" data-country="EG" data-flag="🇪🇬">🇪🇬 +20</option>
+            <!-- Océanie -->
+            <option value="+61" data-country="AU" data-flag="🇦🇺">🇦🇺 +61</option>
+            <option value="+64" data-country="NZ" data-flag="🇳🇿">🇳🇿 +64</option>
+            <option value="+679" data-country="FJ" data-flag="🇫🇯">🇫🇯 +679</option>
+            <option value="+685" data-country="WS" data-flag="🇼🇸">🇼🇸 +685</option>
+            <option value="+686" data-country="KI" data-flag="🇰🇮">🇰🇮 +686</option>
+            <option value="+687" data-country="NC" data-flag="🇳🇨">🇳🇨 +687</option>
+            <option value="+688" data-country="TV" data-flag="🇹🇻">🇹🇻 +688</option>
+            <option value="+689" data-country="PF" data-flag="🇵🇫">🇵🇫 +689</option>
+            <option value="+690" data-country="TK" data-flag="🇹🇰">🇹🇰 +690</option>
+            <option value="+691" data-country="FM" data-flag="🇫🇲">🇫🇲 +691</option>
+            <option value="+692" data-country="MH" data-flag="🇲🇭">🇲🇭 +692</option>
+        </select>
+        <input type="tel" name="{{ input_name }}" id="{{ input_id }}" 
+               class="phone-number-input" placeholder="Numéro de téléphone" 
+               value="{{ input_value|default:'' }}" required>
+    </div>
+    <small class="phone-help-text">
+        <i class="fas fa-info-circle"></i>
+        Sélectionnez votre code pays et entrez votre numéro
+    </small>
+</div>
+
+<style>
+.phone-input-group {
+    width: 100%;
+}
+
+.phone-input-container {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.country-code-select {
+    flex: 0 0 140px;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    background: #ffffff;
+    color: #495057;
+    font-size: 1rem;
+    line-height: 1.5;
+    cursor: pointer;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    outline: none;
+}
+
+.country-code-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.country-code-select option {
+    padding: 0.5rem;
+    font-size: 1rem;
+    background: #ffffff;
+    color: #495057;
+}
+
+.phone-number-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    background: #ffffff;
+    color: #495057;
+    font-size: 1rem;
+    line-height: 1.5;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    outline: none;
+}
+
+.phone-number-input:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.phone-number-input::placeholder {
+    color: #6c757d;
+}
+
+/* Styles pour le thème sombre par défaut */
+body .country-code-select,
+body .phone-number-input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-color) !important;
+}
+
+body .country-code-select:focus,
+body .phone-number-input:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 15px var(--shadow-color) !important;
+}
+
+body .country-code-select option {
+    background: rgba(15, 23, 41, 0.95) !important;
+    color: var(--text-color) !important;
+}
+
+body .phone-number-input::placeholder {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Styles pour le thème sombre (body.dark-theme) */
+body.dark-theme .country-code-select,
+body.dark-theme .phone-number-input {
+    background: #2d3436 !important;
+    border-color: #636e72 !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme .country-code-select:focus,
+body.dark-theme .phone-number-input:focus {
+    border-color: #6c5ce7 !important;
+    box-shadow: 0 0 0 0.2rem rgba(108, 92, 231, 0.25) !important;
+}
+
+body.dark-theme .country-code-select option {
+    background: #2d3436 !important;
+    color: #ffffff !important;
+}
+
+body.dark-theme .phone-number-input::placeholder {
+    color: #b2bec3 !important;
+}
+
+/* Styles pour les thèmes avec fond sombre */
+[data-theme="dark"] .country-code-select,
+[data-theme="dark"] .phone-number-input {
+    background: #2d3436 !important;
+    border-color: #636e72 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .country-code-select:focus,
+[data-theme="dark"] .phone-number-input:focus {
+    border-color: #6c5ce7 !important;
+    box-shadow: 0 0 0 0.2rem rgba(108, 92, 231, 0.25) !important;
+}
+
+[data-theme="dark"] .country-code-select option {
+    background: #2d3436 !important;
+    color: #ffffff !important;
+}
+
+[data-theme="dark"] .phone-number-input::placeholder {
+    color: #b2bec3 !important;
+}
+
+.phone-help-text {
+    display: block;
+    margin-top: 6px;
+    color: var(--help-text-color, #666666);
+    font-size: 12px;
+    font-style: italic;
+}
+
+.phone-help-text i {
+    margin-right: 4px;
+    color: var(--primary-color, #6c5ce7);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .phone-input-container {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .country-code-select {
+        flex: none;
+        width: 100%;
+    }
+    
+    .phone-number-input {
+        flex: none;
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-remplissage du code pays basé sur le numéro existant
+    const phoneInput = document.getElementById('{{ input_id }}');
+    const countrySelect = document.getElementById('{{ select_id }}');
+    
+    if (phoneInput && countrySelect) {
+        // Si le numéro commence par +, extraire le code pays
+        const phoneValue = phoneInput.value;
+        if (phoneValue && phoneValue.startsWith('+')) {
+            const countryCode = phoneValue.match(/^\+\d{1,4}/)?.[0];
+            if (countryCode) {
+                const option = countrySelect.querySelector(`option[value="${countryCode}"]`);
+                if (option) {
+                    countrySelect.value = countryCode;
+                    phoneInput.value = phoneValue.substring(countryCode.length);
+                }
+            }
+        }
+        
+        // Validation en temps réel
+        phoneInput.addEventListener('input', function() {
+            const value = this.value;
+            const countryCode = countrySelect.value;
+            
+            // Supprimer les caractères non numériques
+            const cleanValue = value.replace(/\D/g, '');
+            this.value = cleanValue;
+            
+            // Validation de la longueur selon le pays
+            const minLength = getMinPhoneLength(countryCode);
+            const maxLength = getMaxPhoneLength(countryCode);
+            
+            if (cleanValue.length > 0) {
+                if (cleanValue.length < minLength) {
+                    this.style.borderColor = '#e74c3c';
+                } else if (cleanValue.length > maxLength) {
+                    this.style.borderColor = '#e74c3c';
+                } else {
+                    this.style.borderColor = '#27ae60';
+                }
+            } else {
+                this.style.borderColor = '';
+            }
+        });
+        
+        // Mise à jour du style lors du changement de pays
+        countrySelect.addEventListener('change', function() {
+            phoneInput.style.borderColor = '';
+            phoneInput.focus();
+        });
+    }
+    
+    function getMinPhoneLength(countryCode) {
+        const lengths = {
+            '+221': 9,  // Sénégal
+            '+225': 10, // Côte d'Ivoire
+            '+226': 8,  // Burkina Faso
+            '+223': 8,  // Mali
+            '+224': 8,  // Guinée
+            '+227': 8,  // Niger
+            '+228': 8,  // Togo
+            '+229': 8,  // Bénin
+            '+33': 9,   // France
+            '+1': 10,   // États-Unis/Canada
+            '+44': 10,  // Royaume-Uni
+            '+49': 10,  // Allemagne
+            '+39': 10,  // Italie
+            '+34': 9,   // Espagne
+            '+32': 9,   // Belgique
+            '+41': 9,   // Suisse
+            '+212': 9,  // Maroc
+            '+213': 9,  // Algérie
+            '+216': 8,  // Tunisie
+            '+20': 10,  // Égypte
+            '+234': 10, // Nigéria
+            '+254': 9,  // Kenya
+            '+27': 9,   // Afrique du Sud
+            '+81': 10,  // Japon
+            '+86': 11,  // Chine
+            '+91': 10,  // Inde
+            '+55': 10,  // Brésil
+            '+52': 10,  // Mexique
+            '+61': 9,   // Australie
+            '+7': 10,   // Russie
+        };
+        return lengths[countryCode] || 8;
+    }
+    
+    function getMaxPhoneLength(countryCode) {
+        const lengths = {
+            '+221': 9,  // Sénégal
+            '+225': 10, // Côte d'Ivoire
+            '+226': 8,  // Burkina Faso
+            '+223': 8,  // Mali
+            '+224': 8,  // Guinée
+            '+227': 8,  // Niger
+            '+228': 8,  // Togo
+            '+229': 8,  // Bénin
+            '+33': 9,   // France
+            '+1': 10,   // États-Unis/Canada
+            '+44': 10,  // Royaume-Uni
+            '+49': 10,  // Allemagne
+            '+39': 10,  // Italie
+            '+34': 9,   // Espagne
+            '+32': 9,   // Belgique
+            '+41': 9,   // Suisse
+            '+212': 9,  // Maroc
+            '+213': 9,  // Algérie
+            '+216': 8,  // Tunisie
+            '+20': 10,  // Égypte
+            '+234': 10, // Nigéria
+            '+254': 9,  // Kenya
+            '+27': 9,   // Afrique du Sud
+            '+81': 10,  // Japon
+            '+86': 11,  // Chine
+            '+91': 10,  // Inde
+            '+55': 10,  // Brésil
+            '+52': 10,  // Mexique
+            '+61': 9,   // Australie
+            '+7': 10,   // Russie
+        };
+        return lengths[countryCode] || 10;
+    }
+});
+</script>

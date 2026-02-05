@@ -1,0 +1,341 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ page_title|default:"Politique de confidentialité - Blizz Gaming" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.legal-page {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+.legal-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(108, 92, 231, 0.3);
+}
+
+.legal-title {
+    color: #6c5ce7;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.legal-subtitle {
+    color: #a29bfe;
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+.legal-content {
+    color: #e2e8f0;
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+.legal-section {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    color: #6c5ce7;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-content {
+    margin-bottom: 1.5rem;
+    padding-left: 1rem;
+}
+
+.section-content p {
+    margin-bottom: 1rem;
+}
+
+.section-content ul {
+    margin: 1rem 0;
+    padding-left: 2rem;
+}
+
+.section-content li {
+    margin-bottom: 0.5rem;
+}
+
+.highlight-box {
+    background: rgba(108, 92, 231, 0.1);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.highlight-box h4 {
+    color: #6c5ce7;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.contact-info {
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.contact-info h4 {
+    color: #00ff88;
+    margin-bottom: 1rem;
+}
+
+.contact-info p {
+    margin-bottom: 0.5rem;
+}
+
+.last-updated {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a29bfe;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .legal-page {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .legal-title {
+        font-size: 2rem;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="legal-page">
+    <div class="legal-header">
+        <h1 class="legal-title">
+            <i class="fas fa-shield-alt"></i>
+            Politique de Confidentialité
+        </h1>
+        <p class="legal-subtitle">Protection de vos données personnelles</p>
+    </div>
+
+    <div class="legal-content">
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-info-circle"></i>
+                Introduction
+            </h2>
+            <div class="section-content">
+                <p>
+                    Cette politique de confidentialité décrit comment nous collectons, utilisons et protégeons 
+                    vos informations personnelles lorsque vous utilisez notre plateforme de vente et d'achat 
+                    de comptes de jeux vidéo.
+                </p>
+                <p>
+                    En utilisant notre service, vous acceptez les pratiques décrites dans cette politique. 
+                    Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre plateforme.
+                </p>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-database"></i>
+                Informations que nous collectons
+            </h2>
+            <div class="section-content">
+                <h4>Informations que vous nous fournissez :</h4>
+                <ul>
+                    <li>Nom d'utilisateur et informations de profil</li>
+                    <li>Adresse e-mail pour la communication</li>
+                    <li>Informations de paiement (gérées par des tiers sécurisés)</li>
+                    <li>Contenu des annonces et messages</li>
+                    <li>Photos de profil et bannières</li>
+                </ul>
+
+                <h4>Informations collectées automatiquement :</h4>
+                <ul>
+                    <li>Adresse IP et données de connexion</li>
+                    <li>Type de navigateur et système d'exploitation</li>
+                    <li>Pages visitées et temps passé sur le site</li>
+                    <li>Cookies et technologies similaires</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-cogs"></i>
+                Utilisation de vos informations
+            </h2>
+            <div class="section-content">
+                <p>Nous utilisons vos informations pour :</p>
+                <ul>
+                    <li>Fournir et améliorer nos services</li>
+                    <li>Faciliter les transactions entre utilisateurs</li>
+                    <li>Communiquer avec vous concernant votre compte</li>
+                    <li>Prévenir la fraude et assurer la sécurité</li>
+                    <li>Respecter nos obligations légales</li>
+                    <li>Personnaliser votre expérience utilisateur</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-share-alt"></i>
+                Partage d'informations
+            </h2>
+            <div class="section-content">
+                <p>Nous ne vendons pas vos informations personnelles. Nous pouvons partager vos informations uniquement dans les cas suivants :</p>
+                <ul>
+                    <li>Avec votre consentement explicite</li>
+                    <li>Pour faciliter les transactions (avec l'autre partie impliquée)</li>
+                    <li>Avec des prestataires de services de confiance (paiement, hébergement)</li>
+                    <li>Pour respecter une obligation légale</li>
+                    <li>Pour protéger nos droits et la sécurité de nos utilisateurs</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-lock"></i>
+                Sécurité des données
+            </h2>
+            <div class="section-content">
+                <p>
+                    Nous mettons en place des mesures de sécurité appropriées pour protéger vos informations 
+                    contre l'accès non autorisé, la modification, la divulgation ou la destruction.
+                </p>
+                <ul>
+                    <li>Chiffrement des données sensibles</li>
+                    <li>Accès restreint aux informations personnelles</li>
+                    <li>Surveillance continue de la sécurité</li>
+                    <li>Formation du personnel sur la protection des données</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-cookie-bite"></i>
+                Cookies et technologies de suivi
+            </h2>
+            <div class="section-content">
+                <p>
+                    Nous utilisons des cookies et des technologies similaires pour améliorer votre expérience 
+                    et analyser l'utilisation de notre plateforme.
+                </p>
+                <p>
+                    Vous pouvez contrôler l'utilisation des cookies via les paramètres de votre navigateur, 
+                    mais cela peut affecter certaines fonctionnalités du site.
+                </p>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-user-cog"></i>
+                Vos droits
+            </h2>
+            <div class="section-content">
+                <p>Vous avez le droit de :</p>
+                <ul>
+                    <li>Accéder à vos informations personnelles</li>
+                    <li>Corriger les informations inexactes</li>
+                    <li>Demander la suppression de vos données</li>
+                    <li>Limiter le traitement de vos informations</li>
+                    <li>Retirer votre consentement à tout moment</li>
+                    <li>Exporter vos données</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-child"></i>
+                Protection des mineurs
+            </h2>
+            <div class="section-content">
+                <p>
+                    Notre service n'est pas destiné aux personnes de moins de 13 ans. Nous ne collectons 
+                    pas sciemment d'informations personnelles d'enfants de moins de 13 ans.
+                </p>
+                <p>
+                    Si vous êtes parent et que vous pensez que votre enfant nous a fourni des informations 
+                    personnelles, contactez-nous immédiatement.
+                </p>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-globe"></i>
+                Transferts internationaux
+            </h2>
+            <div class="section-content">
+                <p>
+                    Vos informations peuvent être transférées et traitées dans des pays autres que votre 
+                    pays de résidence. Nous nous assurons que ces transferts respectent les lois applicables 
+                    sur la protection des données.
+                </p>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-edit"></i>
+                Modifications de cette politique
+            </h2>
+            <div class="section-content">
+                <p>
+                    Nous pouvons modifier cette politique de confidentialité de temps à autre. Les modifications 
+                    importantes seront communiquées par e-mail ou via une notification sur notre plateforme.
+                </p>
+                <p>
+                    Nous vous encourageons à consulter régulièrement cette page pour rester informé de nos 
+                    pratiques de confidentialité.
+                </p>
+            </div>
+        </div>
+
+        <div class="contact-info">
+            <h4>
+                <i class="fas fa-envelope"></i>
+                Contact
+            </h4>
+            <p>Pour toute question concernant cette politique de confidentialité :</p>
+            <p><strong>Support :</strong> Via le formulaire de contact de la plateforme</p>
+        </div>
+
+        <div class="last-updated">
+            <p><i class="fas fa-calendar-alt"></i> Dernière mise à jour : {{ "now"|date:"d F Y" }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

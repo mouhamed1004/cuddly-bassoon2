@@ -1,0 +1,701 @@
+{% extends 'admin/base_admin.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Gestion des Signalements - <span class="notranslate">BLIZZ</span> Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reports-dashboard {
+        padding: 2rem;
+        background: var(--dark-blue);
+        min-height: 100vh;
+    }
+
+    .dashboard-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid var(--primary-color);
+    }
+
+    .dashboard-title {
+        color: white;
+        font-size: 2rem;
+        margin: 0;
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: linear-gradient(145deg, rgba(15, 23, 41, 0.9), rgba(108, 92, 231, 0.1));
+        border: 1px solid var(--primary-color);
+        border-radius: 15px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+    }
+
+    .filters-section {
+        background: rgba(15, 23, 41, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-group label {
+        color: white;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .filter-group select,
+    .filter-group input {
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        color: white;
+        font-size: 0.9rem;
+    }
+
+    .filter-btn {
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+        background: var(--secondary-color);
+        transform: translateY(-2px);
+    }
+
+    .reports-table {
+        background: rgba(15, 23, 41, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    .table-header {
+        background: var(--primary-color);
+        color: white;
+        padding: 1rem;
+        font-weight: 600;
+    }
+
+    .table-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 200px;
+        gap: 1rem;
+        padding: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        align-items: center;
+        transition: background 0.3s ease;
+    }
+
+    .table-row:hover {
+        background: rgba(108, 92, 231, 0.1);
+    }
+
+    .table-cell {
+        color: white;
+        font-size: 0.9rem;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-align: center;
+    }
+
+    .status-pending {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid #ffc107;
+    }
+
+    .status-under-review {
+        background: rgba(0, 123, 255, 0.2);
+        color: #007bff;
+        border: 1px solid #007bff;
+    }
+
+    .status-resolved {
+        background: rgba(40, 167, 69, 0.2);
+        color: #28a745;
+        border: 1px solid #28a745;
+    }
+
+    .status-dismissed {
+        background: rgba(108, 117, 125, 0.2);
+        color: #6c757d;
+        border: 1px solid #6c757d;
+    }
+
+    .action-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-width: 120px;
+    }
+
+    .btn-action {
+        padding: 0.5rem 1rem;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 0.8rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+    }
+
+    .btn-review {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-review:hover {
+        background: var(--secondary-color);
+    }
+
+    .btn-warning {
+        background: #ffc107;
+        color: #000;
+    }
+
+    .btn-warning:hover {
+        background: #e0a800;
+    }
+
+    .btn-ban {
+        background: #dc3545;
+        color: white;
+        border: 1px solid #dc3545;
+        min-width: 80px;
+        text-align: center;
+    }
+
+    .btn-ban:hover {
+        background: #c82333;
+        border-color: #c82333;
+    }
+
+    .btn-dismiss {
+        background: #6c757d;
+        color: white;
+    }
+
+    .btn-dismiss:hover {
+        background: #5a6268;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+    }
+
+    .modal-content {
+        background: linear-gradient(145deg, rgba(15, 23, 41, 0.95), rgba(108, 92, 231, 0.1));
+        margin: 5% auto;
+        padding: 2rem;
+        border: 1px solid var(--primary-color);
+        border-radius: 20px;
+        width: 90%;
+        max-width: 600px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal h3 {
+        color: white;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .form-group label {
+        display: block;
+        color: white;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+    }
+
+    .form-group select,
+    .form-group textarea,
+    .form-group input {
+        width: 100%;
+        padding: 0.75rem;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        color: white;
+        font-size: 0.9rem;
+    }
+
+    .modal-actions {
+        text-align: right;
+        margin-top: 1rem;
+    }
+
+    .btn-cancel,
+    .btn-submit {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-submit {
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+
+    .report-details h4 {
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+
+    .report-details p {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-back {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        text-decoration: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        border: 1px solid rgba(138, 43, 226, 0.3);
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-back:hover {
+        background: rgba(138, 43, 226, 0.3);
+        border-color: #8a2be2;
+        transform: translateY(-2px);
+    }
+    
+    .btn-examine {
+        background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        display: inline-block;
+        margin-top: 10px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-examine:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(108, 92, 231, 0.4);
+        text-decoration: none;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reports-dashboard">
+    <div class="dashboard-header">
+        <div>
+            <h1 class="dashboard-title">Gestion des Signalements</h1>
+        </div>
+        <div>
+            <a href="{% url 'admin_dispute_dashboard' %}" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Retour au Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="stats-cards">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.pending }}</div>
+            <div class="stat-label">{% trans "En attente" %}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.under_review }}</div>
+            <div class="stat-label">En cours d'examen</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.resolved }}</div>
+            <div class="stat-label">Résolus</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total }}</div>
+            <div class="stat-label">{% trans "Total" %}</div>
+        </div>
+    </div>
+
+    <!-- Filtres -->
+    <div class="filters-section">
+        <form method="GET" class="filters-grid">
+            <div class="filter-group">
+                <label>Type de contenu</label>
+                <select name="report_type">
+                    <option value="">Tous</option>
+                    <option value="highlight" {% if request.GET.report_type == 'highlight' %}selected{% endif %}>Highlights</option>
+                    <option value="gaming_post" {% if request.GET.report_type == 'gaming_post' %}selected{% endif %}>Ventes Gaming</option>
+                    <option value="chat_message" {% if request.GET.report_type == 'chat_message' %}selected{% endif %}>Messages Chat</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>{% trans "Statut" %}</label>
+                <select name="status">
+                    <option value="">Tous</option>
+                    <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>{% trans "En attente" %}</option>
+                    <option value="under_review" {% if request.GET.status == 'under_review' %}selected{% endif %}>En cours</option>
+                    <option value="resolved" {% if request.GET.status == 'resolved' %}selected{% endif %}>Résolus</option>
+                    <option value="dismissed" {% if request.GET.status == 'dismissed' %}selected{% endif %}>Rejetés</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Raison</label>
+                <select name="reason">
+                    <option value="">Toutes</option>
+                    <option value="spam" {% if request.GET.reason == 'spam' %}selected{% endif %}>Spam</option>
+                    <option value="inappropriate" {% if request.GET.reason == 'inappropriate' %}selected{% endif %}>Contenu inapproprié</option>
+                    <option value="harassment" {% if request.GET.reason == 'harassment' %}selected{% endif %}>Harcèlement</option>
+                    <option value="fake" {% if request.GET.reason == 'fake' %}selected{% endif %}>Faux contenu</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <button type="submit" class="filter-btn">Filtrer</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tableau des signalements -->
+    <div class="reports-table">
+        <div class="table-header table-row">
+            <div>Signalé par</div>
+            <div>Utilisateur signalé</div>
+            <div>Type / Raison</div>
+            <div>Date</div>
+            <div>{% trans "Statut" %}</div>
+            <div>Actions</div>
+        </div>
+
+        {% for report in reports %}
+        <div class="table-row">
+            <div class="table-cell">{{ report.reporter.username }}</div>
+            <div class="table-cell">{{ report.reported_user.username }}</div>
+            <div class="table-cell">
+                {{ report.get_report_type_display }}<br>
+                <small style="color: rgba(255,255,255,0.6);">{{ report.get_reason_display }}</small>
+            </div>
+            <div class="table-cell">{{ report.created_at|date:"d/m/Y H:i" }}</div>
+            <div class="table-cell">
+                <span class="status-badge status-{{ report.status }}">
+                    {{ report.get_status_display }}
+
+            </div>
+            <div class="table-cell">
+                <div class="action-buttons">
+                    <button class="btn-action btn-review" onclick="openReviewModal('{{ report.id }}')">
+                        Examiner
+                    </button>
+                    {% if report.status == 'pending' or report.status == 'under_review' %}
+                    <button class="btn-action btn-warning" onclick="openWarningModal('{{ report.id }}')">
+                        Avertir
+                    </button>
+                    <button class="btn-action btn-ban" onclick="openBanModal('{{ report.id }}')">
+                        Bannir
+                    </button>
+                    <button class="btn-action btn-dismiss" onclick="dismissReport('{{ report.id }}')">
+                        Rejeter
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="table-row">
+            <div class="table-cell" style="grid-column: 1 / -1; text-align: center; color: rgba(255,255,255,0.6);">
+                Aucun signalement trouvé
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal d'examen -->
+<div id="reviewModal" class="modal">
+    <div class="modal-content">
+        <h3>Examiner le signalement</h3>
+        <div id="reportDetails" class="report-details"></div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeModal('reviewModal')">Fermer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal d'avertissement -->
+<div id="warningModal" class="modal">
+    <div class="modal-content">
+        <h3>Envoyer un avertissement</h3>
+        <form id="warningForm">
+            <div class="form-group">
+                <label>Type d'avertissement :</label>
+                <select id="warningType" required>
+                    <option value="content_violation">Violation de contenu</option>
+                    <option value="behavior_violation">Violation de comportement</option>
+                    <option value="spam">Spam</option>
+                    <option value="other">Autre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Raison de l'avertissement :</label>
+                <textarea id="warningReason" rows="4" required placeholder="Expliquez la raison de l'avertissement..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal('warningModal')">{% trans "Annuler" %}</button>
+                <button type="button" class="btn-submit" onclick="submitWarning()">{% trans "Envoyer" %}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de bannissement -->
+<div id="banModal" class="modal">
+    <div class="modal-content">
+        <h3>Bannir l'utilisateur</h3>
+        <form id="banForm">
+            <div class="form-group">
+                <label>Type de bannissement :</label>
+                <select id="banType" required onchange="toggleBanDuration()">
+                    <option value="temporary">Temporaire</option>
+                    <option value="permanent">Permanent</option>
+                </select>
+            </div>
+            <div class="form-group" id="banDurationGroup">
+                <label>Durée (jours) :</label>
+                <input type="number" id="banDuration" min="1" max="365" value="7">
+            </div>
+            <div class="form-group">
+                <label>Raison du bannissement :</label>
+                <textarea id="banReason" rows="4" required placeholder="Expliquez la raison du bannissement..."></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn-cancel" onclick="closeModal('banModal')">{% trans "Annuler" %}</button>
+                <button type="button" class="btn-submit" onclick="submitBan()">Bannir</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let currentReportId = null;
+
+function openReviewModal(reportId) {
+    currentReportId = reportId;
+    
+    fetch(`/dispute-admin/reports/${reportId}/details/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const details = document.getElementById('reportDetails');
+                details.innerHTML = `
+                    <h4>Détails du signalement</h4>
+                    <p><strong>Signalé par :</strong> ${data.report.reporter}</p>
+                    <p><strong>Utilisateur signalé :</strong> ${data.report.reported_user}</p>
+                    <p><strong>Type :</strong> ${data.report.report_type}</p>
+                    <p><strong>Raison :</strong> ${data.report.reason}</p>
+                    <p><strong>Description :</strong> ${data.report.description}</p>
+                    <p><strong>Date :</strong> ${data.report.created_at}</p>
+                    ${data.report.content_url ? `<p><strong>Examiner :</strong> <a href="${data.report.content_url}" target="_blank" class="btn-examine">Voir le contenu signalé</a></p>` : ''}
+                `;
+                document.getElementById('reviewModal').style.display = 'block';
+            }
+        });
+}
+
+function openWarningModal(reportId) {
+    currentReportId = reportId;
+    document.getElementById('warningModal').style.display = 'block';
+}
+
+function openBanModal(reportId) {
+    currentReportId = reportId;
+    document.getElementById('banModal').style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+    currentReportId = null;
+}
+
+function toggleBanDuration() {
+    const banType = document.getElementById('banType').value;
+    const durationGroup = document.getElementById('banDurationGroup');
+    durationGroup.style.display = banType === 'temporary' ? 'block' : 'none';
+}
+
+function submitWarning() {
+    const warningType = document.getElementById('warningType').value;
+    const reason = document.getElementById('warningReason').value;
+    
+    if (!reason.trim()) {
+        showWarningAlert('Veuillez remplir la raison de l\'avertissement', 'Champ Requis');
+        return;
+    }
+    
+    fetch('/admin/reports/warning/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            report_id: currentReportId,
+            warning_type: warningType,
+            reason: reason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessAlert('Avertissement envoyé avec succès', 'Succès');
+            location.reload();
+        } else {
+            showErrorAlert('Erreur lors de l\'envoi de l\'avertissement', 'Erreur');
+        }
+    });
+}
+
+function submitBan() {
+    const banType = document.getElementById('banType').value;
+    const duration = banType === 'temporary' ? document.getElementById('banDuration').value : null;
+    const reason = document.getElementById('banReason').value;
+    
+    if (!reason.trim()) {
+        showWarningAlert('Veuillez remplir la raison du bannissement', 'Champ Requis');
+        return;
+    }
+    
+    fetch('/admin/reports/ban/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            report_id: currentReportId,
+            ban_type: banType,
+            duration: duration,
+            reason: reason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessAlert('Utilisateur banni avec succès', 'Succès');
+            location.reload();
+        } else {
+            showErrorAlert('Erreur lors du bannissement', 'Erreur');
+        }
+    });
+}
+
+function dismissReport(reportId) {
+    if (confirm('Êtes-vous sûr de vouloir rejeter ce signalement ?')) {
+        fetch('/admin/reports/dismiss/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                report_id: reportId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                showErrorAlert('Erreur lors du rejet du signalement', 'Erreur');
+            }
+        });
+    }
+}
+
+// Fermer les modals en cliquant à l'extérieur
+window.onclick = function(event) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

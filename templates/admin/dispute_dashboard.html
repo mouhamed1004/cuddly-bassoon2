@@ -1,0 +1,304 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Dashboard des Litiges - <span class="notranslate">BLIZZ</span> Admin{% endblock %}
+
+{% block extrahead %}
+<style>
+    .dashboard-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    .stat-card {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .stat-number {
+        font-size: 2.5em;
+        font-weight: bold;
+        color: #417690;
+        margin-bottom: 10px;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 0.9em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .overdue {
+        color: #dc3545;
+    }
+    
+    .investigating {
+        color: #ffc107;
+    }
+    
+    .pending {
+        color: #17a2b8;
+    }
+    
+    .disputes-section {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    
+    .section-header {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #ddd;
+        font-weight: bold;
+        color: #495057;
+    }
+    
+    .dispute-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .dispute-item:last-child {
+        border-bottom: none;
+    }
+    
+    .dispute-info {
+        flex-grow: 1;
+    }
+    
+    .dispute-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    
+    .dispute-meta {
+        color: #666;
+        font-size: 0.9em;
+    }
+    
+    .dispute-status {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .status-pending {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .status-investigating {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-resolved {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .no-disputes {
+        padding: 40px;
+        text-align: center;
+        color: #666;
+        font-style: italic;
+    }
+    
+    .action-buttons {
+        margin-top: 20px;
+    }
+    
+    .btn-primary {
+        background: #417690;
+        border-color: #417690;
+    }
+    
+    /* Styles responsive */
+    @media (max-width: 1200px) {
+        .dashboard-stats {
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-stats {
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-card {
+            padding: 15px;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+        }
+        
+        .dispute-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .dispute-info {
+            width: 100%;
+        }
+        
+        .dispute-status {
+            align-self: flex-end;
+        }
+        
+        .action-buttons {
+            text-align: center;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .dashboard-stats {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+        
+        .stat-card {
+            padding: 12px;
+        }
+        
+        .stat-number {
+            font-size: 1.8rem;
+        }
+        
+        .dispute-item {
+            padding: 10px 15px;
+        }
+        
+        .dispute-title {
+            font-size: 0.9rem;
+        }
+        
+        .dispute-meta {
+            font-size: 0.8rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Dashboard des Litiges <span class="notranslate">BLIZZ</span></h1>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <div class="stat-number">{{ total_disputes }}</div>
+        <div class="stat-label">Total Litiges</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-number pending">{{ pending_disputes }}</div>
+        <div class="stat-label">En Attente</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-number investigating">{{ investigating_disputes }}</div>
+        <div class="stat-label">En Investigation</div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-number overdue">{{ overdue_disputes }}</div>
+        <div class="stat-label">En Retard</div>
+    </div>
+</div>
+
+<div class="disputes-section">
+    <div class="section-header">
+        Mes Litiges Assignés
+    </div>
+    {% if my_disputes %}
+        {% for dispute in my_disputes %}
+        <div class="dispute-item">
+            <div class="dispute-info">
+                <div class="dispute-title">
+                    <a href="{% url 'admin_dispute_detail' dispute.id %}">
+                        {{ dispute.transaction.post.title|truncatechars:50 }}
+                    </a>
+                </div>
+                <div class="dispute-meta">
+                    {{ dispute.transaction.buyer.username }} vs {{ dispute.transaction.seller.username }} 
+                    - {{ dispute.disputed_amount }}€ - {{ dispute.created_at|date:"d/m/Y H:i" }}
+                </div>
+            </div>
+            <div class="dispute-status status-{{ dispute.status }}">
+                {{ dispute.get_status_display }}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-disputes">
+            Aucun litige assigné pour le moment
+        </div>
+    {% endif %}
+</div>
+
+<div class="disputes-section">
+    <div class="section-header">
+        Litiges Récents
+    </div>
+    {% if recent_disputes %}
+        {% for dispute in recent_disputes %}
+        <div class="dispute-item">
+            <div class="dispute-info">
+                <div class="dispute-title">
+                    <a href="{% url 'admin_dispute_detail' dispute.id %}">
+                        {{ dispute.transaction.post.title|truncatechars:50 }}
+                    </a>
+                </div>
+                <div class="dispute-meta">
+                    {{ dispute.transaction.buyer.username }} vs {{ dispute.transaction.seller.username }} 
+                    - {{ dispute.disputed_amount }}€ - {{ dispute.created_at|date:"d/m/Y H:i" }}
+                    {% if dispute.assigned_admin %}
+                        - Assigné à {{ dispute.assigned_admin.username }}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="dispute-status status-{{ dispute.status }}">
+                {{ dispute.get_status_display }}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-disputes">
+            Aucun litige récent
+        </div>
+    {% endif %}
+</div>
+
+<div class="action-buttons">
+    <a href="{% url 'admin:blizzgame_dispute_changelist' %}" class="btn btn-primary">
+        Voir Tous les Litiges
+    </a>
+    <a href="{% url 'admin:index' %}" class="btn btn-secondary">
+        Retour à l'Admin
+    </a>
+</div>
+
+{% endblock %}

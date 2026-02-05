@@ -1,0 +1,111 @@
+# BLIZZ Gaming Translation
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: ar\n"
+
+msgid "Accueil"
+msgstr "الرئيسية"
+
+msgid "Profil"
+msgstr "الملف الشخصي"
+
+msgid "Messages"
+msgstr "الرسائل"
+
+msgid "Notifications"
+msgstr "الإشعارات"
+
+msgid "Déconnexion"
+msgstr "تسجيل الخروج"
+
+msgid "Connexion"
+msgstr "تسجيل الدخول"
+
+msgid "Inscription"
+msgstr "التسجيل"
+
+msgid "Paramètres"
+msgstr "الإعدادات"
+
+msgid "Acheter"
+msgstr "شراء"
+
+msgid "Vendre"
+msgstr "بيع"
+
+msgid "Rechercher"
+msgstr "بحث"
+
+msgid "Créer"
+msgstr "إنشاء"
+
+msgid "Supprimer"
+msgstr "حذف"
+
+msgid "Modifier"
+msgstr "تعديل"
+
+msgid "Envoyer"
+msgstr "إرسال"
+
+msgid "Annuler"
+msgstr "إلغاء"
+
+msgid "Confirmer"
+msgstr "تأكيد"
+
+msgid "Voir plus"
+msgstr "عرض المزيد"
+
+msgid "Prix"
+msgstr "السعر"
+
+msgid "Description"
+msgstr "الوصف"
+
+msgid "Catégorie"
+msgstr "الفئة"
+
+msgid "Statut"
+msgstr "الحالة"
+
+msgid "Transaction"
+msgstr "المعاملة"
+
+msgid "Paiement"
+msgstr "الدفع"
+
+msgid "Vendeur"
+msgstr "البائع"
+
+msgid "Acheteur"
+msgstr "المشتري"
+
+msgid "Compte"
+msgstr "الحساب"
+
+msgid "Niveau"
+msgstr "المستوى"
+
+msgid "Jeu"
+msgstr "اللعبة"
+
+msgid "Disponible"
+msgstr "متاح"
+
+msgid "Vendu"
+msgstr "مباع"
+
+msgid "En attente"
+msgstr "قيد الانتظار"
+
+msgid "Bienvenue"
+msgstr "مرحبا"
+
+msgid "Bonjour"
+msgstr "مرحبا"
+
+msgid "Merci"
+msgstr "شكرا"
+

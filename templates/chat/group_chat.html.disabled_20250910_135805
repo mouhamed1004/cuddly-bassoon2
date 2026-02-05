@@ -1,0 +1,1299 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ group.name }} - BLIZZ{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Reset pour le chat */
+    .chat-page {
+        margin: 0;
+        padding: 0;
+        background-color: var(--dark-blue);
+    }
+    .chat-wrapper {
+        max-width: 900px;
+        margin: 20px auto;
+        background: linear-gradient(145deg, rgba(15, 23, 41, 0.95), rgba(108, 92, 231, 0.1));
+        border: 1px solid var(--primary-color);
+        border-radius: 20px;
+        box-shadow: 0 0 30px rgba(108, 92, 231, 0.3);
+        height: 85vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+    
+    .chat-wrapper::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.1) 0%, transparent 50%),
+                    radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    /* En-tête */
+    .chat-header {
+        background: rgba(15, 23, 42, 0.95);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(108, 92, 231, 0.3);
+        padding: 20px 25px;
+        border-bottom: 1px solid rgba(108, 92, 231, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+        box-shadow: 0 8px 32px rgba(108, 92, 231, 0.2);
+        position: relative;
+        z-index: 2;
+    }
+    
+    .btn-back {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid var(--primary-color);
+        padding: 8px 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .btn-back:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .group-info {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        margin: 0 20px;
+    }
+    
+    .group-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 15px;
+        object-fit: cover;
+        border: 2px solid rgba(108, 92, 231, 0.5);
+        box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        transition: all 0.3s ease;
+    }
+    
+    .group-avatar:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(108, 92, 231, 0.4);
+    }
+    
+    .group-avatar.default {
+        background: linear-gradient(135deg, rgba(108, 92, 231, 0.8), rgba(147, 51, 234, 0.8));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 20px;
+    }
+    
+    .group-details h3 {
+        margin: 0;
+        font-size: 18px;
+        color: var(--text-color);
+        font-weight: 600;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+    
+    .group-status {
+        margin: 4px 0 0 0;
+        color: #FFFFFF;
+        font-size: 13px;
+        opacity: 0.8;
+    }
+    
+    .group-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-action {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid var(--primary-color);
+        padding: 8px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .btn-action:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    /* Zone des messages */
+    .messages-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .message-wrapper {
+        max-width: 75%;
+        word-wrap: break-word;
+        animation: messageSlideIn 0.3s ease-out;
+        position: relative;
+        margin-bottom: 2px;
+    }
+    
+    .message-bubble {
+        position: relative;
+        padding: 2px 16px;
+        border-radius: 18px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 6px;
+        min-width: 20px;
+    }
+    
+    @keyframes messageSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .message-wrapper.own {
+        align-self: flex-end;
+    }
+    
+    .message-wrapper.other {
+        align-self: flex-start;
+    }
+    
+    .message-wrapper.own .message-bubble {
+        background: linear-gradient(135deg, rgba(108, 92, 231, 0.9), rgba(147, 51, 234, 0.9));
+        color: white;
+        border-radius: 18px 18px 4px 18px;
+        border: 1px solid rgba(108, 92, 231, 0.3);
+        box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+    }
+    
+    .message-wrapper.other .message-bubble {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-color);
+        border-radius: 18px 18px 18px 4px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .message-content-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    .message-sender {
+        font-size: 11px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.7);
+        margin-top: 0px;
+        text-align: left;
+        opacity: 0.8;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        justify-content: flex-start;
+    }
+    
+    .message-wrapper.own .message-sender {
+        justify-content: flex-end;
+    }
+    
+    .sender-avatar {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid rgba(108, 92, 231, 0.3);
+    }
+    
+    .sender-avatar.default {
+        background: linear-gradient(135deg, rgba(108, 92, 231, 0.8), rgba(147, 51, 234, 0.8));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 8px;
+        font-weight: 600;
+    }
+    
+    .sender-name {
+        flex: 1;
+    }
+    
+    .sender-link {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s ease;
+        border-radius: 8px;
+        padding: 2px 4px;
+        margin: -2px -4px;
+    }
+    
+    .sender-link:hover {
+        background: rgba(108, 92, 231, 0.2);
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+    }
+    
+    .sender-link:hover .sender-avatar {
+        transform: scale(1.1);
+        border-color: rgba(108, 92, 231, 0.6);
+    }
+    
+    .unread-separator {
+        display: flex;
+        align-items: center;
+        margin: 15px 0;
+        gap: 10px;
+    }
+    
+    .unread-line {
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.4);
+    }
+    
+    .unread-text {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 500;
+        padding: 0 8px;
+        white-space: nowrap;
+    }
+    
+    .message-content {
+        line-height: 1.5;
+        font-size: 14px;
+        font-weight: 400;
+        margin-bottom: 4px;
+        text-align: right;
+    }
+    
+    /* Styles pour les médias */
+    .message-image {
+        margin-bottom: 8px;
+    }
+    
+    .message-image img {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+    
+    .message-image img:hover {
+        transform: scale(1.02);
+    }
+    
+    .message-file {
+        background: rgba(255,255,255,0.1);
+        border: 1px solid var(--primary-color);
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .message-file i {
+        color: var(--primary-color);
+    }
+    
+    .message-file a {
+        color: var(--text-color);
+        text-decoration: none;
+    }
+    
+    .message-file a:hover {
+        text-decoration: underline;
+    }
+    
+    /* Styles pour les réponses */
+    .reply-indicator {
+        background: rgba(108, 92, 231, 0.2);
+        border-left: 3px solid var(--primary-color);
+        padding: 8px 12px;
+        margin-bottom: 5px;
+        border-radius: 8px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .reply-indicator i {
+        margin-right: 5px;
+        color: var(--primary-color);
+    }
+    
+    .reply-preview {
+        background: rgba(108, 92, 231, 0.2);
+        border: 1px solid var(--primary-color);
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .reply-content {
+        flex: 1;
+    }
+    
+    .reply-to {
+        font-size: 12px;
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+    
+    .cancel-reply {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 18px;
+        cursor: pointer;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .message-actions {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        display: flex;
+        gap: 5px;
+        position: absolute;
+        left: -40px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+    }
+    
+    .message-wrapper:hover .message-actions {
+        opacity: 1;
+    }
+    
+    .action-btn {
+        background: rgba(108, 92, 231, 0.2);
+        border: none;
+        border-radius: 50%;
+        width: 30px;
+        height: 30px;
+        color: var(--primary-color);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        background: rgba(108, 92, 231, 0.4);
+        transform: scale(1.1);
+    }
+    
+    /* Styles pour les contrôles de fichiers */
+    .input-controls {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .file-button {
+        background: rgba(108, 92, 231, 0.2);
+        border: 1px solid var(--primary-color);
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        color: var(--primary-color);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .file-button:hover {
+        background: rgba(108, 92, 231, 0.4);
+        transform: scale(1.1);
+    }
+    
+    .file-preview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 10px;
+    }
+    
+    .file-item {
+        background: rgba(108, 92, 231, 0.2);
+        border: 1px solid var(--primary-color);
+        border-radius: 8px;
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+    }
+    
+    .file-item .remove-file {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        cursor: pointer;
+        font-size: 14px;
+        padding: 0;
+        margin-left: 5px;
+    }
+    
+    /* Modal pour les images */
+    .image-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        cursor: pointer;
+    }
+    
+    .image-modal img {
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 8px;
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    }
+    
+    .message-time {
+        font-size: 10px;
+        opacity: 0.7;
+        text-align: right;
+        font-weight: 300;
+    }
+    
+    .message-wrapper.other .message-time {
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .message-wrapper.own .message-sender {
+        text-align: right;
+    }
+    
+    .message-wrapper.other .message-sender {
+        color: rgba(108, 92, 231, 0.9);
+    }
+    
+    
+    .message-input-area {
+        padding: 15px 20px;
+        background: rgba(15, 23, 42, 0.6);
+        border-top: 1px solid rgba(108, 92, 231, 0.3);
+    }
+    
+    .message-form {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        width: 100%;
+    }
+    
+    .message-input {
+        flex: 1;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(108, 92, 231, 0.3);
+        border-radius: 20px;
+        padding: 6px 12px;
+        resize: none;
+        font-family: inherit;
+        font-size: 14px;
+        color: var(--text-color);
+        outline: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        height: 28px;
+        min-height: 28px;
+        max-height: 28px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .message-input::placeholder {
+        color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .message-input:focus {
+        border-color: rgba(108, 92, 231, 0.8);
+        box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2), 0 4px 20px rgba(108, 92, 231, 0.3);
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .send-button {
+        width: 32px;
+        height: 32px;
+        background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+        border: none;
+        border-radius: 50%;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(10px);
+    }
+    
+    .send-button:hover:not(:disabled) {
+        background: linear-gradient(135deg, rgba(108, 92, 231, 1), rgba(147, 51, 234, 1));
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+    }
+    
+    .send-button:disabled {
+        background: rgba(108, 92, 231, 0.3);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .emoji-picker {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .emoji-picker:hover {
+        background: rgba(102, 126, 234, 0.1);
+    }
+
+    .empty-chat {
+        text-align: center;
+        padding: 80px 20px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .empty-chat i {
+        font-size: 80px;
+        margin-bottom: 25px;
+        opacity: 0.6;
+        background: linear-gradient(135deg, rgba(108, 92, 231, 0.8), rgba(147, 51, 234, 0.8));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .empty-chat h3 {
+        margin-bottom: 15px;
+        font-weight: 600;
+        font-size: 24px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Scrollbar personnalisée */
+    .messages-area::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .messages-area::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+
+    .messages-area::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, rgba(108, 92, 231, 0.6), rgba(147, 51, 234, 0.6));
+        border-radius: 4px;
+        border: 1px solid rgba(108, 92, 231, 0.3);
+    }
+
+    .messages-area::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, rgba(108, 92, 231, 0.8), rgba(147, 51, 234, 0.8));
+    }
+
+    @media (max-width: 768px) {
+        .message {
+            max-width: 85%;
+        }
+        
+        .group-chat-header {
+            padding: 12px 15px;
+        }
+        
+        .group-actions {
+            display: none;
+        }
+        
+        .messages-container {
+            padding: 15px;
+        }
+        
+        .message-input-container {
+            padding: 12px 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<script>document.body.classList.add('chat-page');</script>
+
+<div class="chat-wrapper">
+    <!-- En-tête -->
+    <div class="chat-header">
+        <a href="{% url 'group_list' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+        
+        <div class="group-info">
+            {% if group.avatar %}
+                <img src="{{ group.avatar.url }}" alt="{{ group.name }}" class="group-avatar">
+            {% else %}
+                <div class="group-avatar default">
+                    <i class="fas fa-users"></i>
+                </div>
+            {% endif %}
+            
+            <div class="group-details">
+                <h3>{{ group.name }} {% if membership.is_admin %}<i class="fas fa-crown" style="color: gold; font-size: 12px;"></i>{% endif %}</h3>
+                <p class="group-status">{{ members_count }} membre{{ members_count|pluralize }}</p>
+            </div>
+        </div>
+        
+        <div class="group-actions">
+            <a href="{% url 'group_members' group.id %}" class="btn-action">
+                <i class="fas fa-users"></i>
+            </a>
+            {% if membership.is_admin %}
+                <a href="{% url 'group_settings' group.id %}" class="btn-action">
+                    <i class="fas fa-cog"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" id="messagesArea">
+        {% for message in messages %}
+            {% if first_unread_message and message.id == first_unread_message.id %}
+                <div class="unread-separator">
+                    <div class="unread-line"></div>
+                    <span class="unread-text">Messages non lus</span>
+                    <div class="unread-line"></div>
+                </div>
+            {% endif %}
+            <div class="message-wrapper {% if message.sender == request.user %}own{% else %}other{% endif %}" data-message-id="{{ message.id }}">
+                {% if message.reply_to %}
+                    <div class="reply-indicator">
+                        <i class="fas fa-reply"></i>
+                        <span>{{ message.reply_to.sender.username }}: {{ message.reply_to.content|truncatechars:30 }}</span>
+                    </div>
+                {% endif %}
+                <div class="message-content-wrapper">
+                    <div class="message-bubble">
+                        {% if message.image %}
+                            <div class="message-image">
+                                <img src="{{ message.image.url }}" alt="Image" onclick="openImageModal('{{ message.image.url }}')">
+                            </div>
+                        {% endif %}
+                        {% if message.file %}
+                            <div class="message-file">
+                                <i class="fas fa-file"></i>
+                                <a href="{{ message.file.url }}" target="_blank">{{ message.file.name|default:"Fichier" }}</a>
+                            </div>
+                        {% endif %}
+                        {% if message.content %}
+                            <div class="message-content">{{ message.content }}</div>
+                        {% endif %}
+                        <div class="message-time" data-timestamp="{{ message.created_at|date:'c' }}"></div>
+                        <div class="message-actions">
+                            <button class="action-btn reply-btn" onclick="replyToMessage('{{ message.id }}', '{{ message.sender.username }}', '{{ message.content|escapejs }}')">
+                                <i class="fas fa-reply"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="message-sender">
+                        <a href="{% url 'profile' message.sender.username %}" class="sender-link">
+                            <span class="sender-name">{{ message.sender.username }}</span>
+                            {% if message.sender.profile.profile_picture %}
+                                <img src="{{ message.sender.profile.profile_picture.url }}" alt="{{ message.sender.username }}" class="sender-avatar">
+                            {% else %}
+                                <div class="sender-avatar default">{{ message.sender.username|first|upper }}</div>
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Zone de saisie -->
+    <div class="message-input-area">
+        <div id="replyPreview" class="reply-preview" style="display: none;">
+            <div class="reply-content">
+                <span class="reply-to">Répondre à <strong id="replyToUser"></strong></span>
+                <p id="replyToContent"></p>
+            </div>
+            <button type="button" id="cancelReply" class="cancel-reply">×</button>
+        </div>
+        
+        <div id="filePreview" class="file-preview"></div>
+        
+        <form id="chatForm" class="message-form">
+            {% csrf_token %}
+            <div class="input-controls">
+                <input type="file" id="fileInput" accept="image/*,*" style="display: none;" multiple>
+                <button type="button" id="fileBtn" class="file-button">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                
+                <textarea 
+                    id="messageInput" 
+                    class="message-input" 
+                    placeholder="Tapez votre message..."
+                    rows="1"
+                    style="flex: 1;"></textarea>
+                <button type="button" id="emojiBtn" class="emoji-trigger" style="background: linear-gradient(145deg, rgba(108, 92, 231, 0.8), rgba(120, 119, 198, 0.6)); border: none; font-size: 18px; cursor: pointer; padding: 8px; margin: 0 5px; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);">
+                    😀
+                </button>
+                <button type="submit" id="sendBtn" class="send-button">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/floating-chat.js' %}"></script>
+<script src="{% static 'js/emoji-picker.js' %}"></script>
+<script>
+const groupId = '{{ group.id }}';
+const messagesArea = document.getElementById('messagesArea');
+const messageInput = document.getElementById('messageInput');
+const chatForm = document.getElementById('chatForm');
+const sendBtn = document.getElementById('sendBtn');
+const fileInput = document.getElementById('fileInput');
+const fileBtn = document.getElementById('fileBtn');
+const filePreview = document.getElementById('filePreview');
+const replyPreview = document.getElementById('replyPreview');
+const cancelReply = document.getElementById('cancelReply');
+
+// Variables pour les fonctionnalités
+let selectedFiles = [];
+let replyToMessageId = null;
+    
+// Gestion des fichiers
+fileBtn.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    selectedFiles = selectedFiles.concat(files);
+    updateFilePreview();
+    updateSendButton();
+});
+
+// Gestion des réponses
+cancelReply.addEventListener('click', function() {
+    replyToMessageId = null;
+    replyPreview.style.display = 'none';
+});
+
+    // Auto-resize du textarea
+    messageInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        updateSendButton();
+    });
+
+// Initialiser le sélecteur d'emojis pour le chat de groupe
+document.addEventListener('DOMContentLoaded', function() {
+    const emojiBtn = document.getElementById('emojiBtn');
+    const messageInput = document.getElementById('messageInput');
+    
+    if (emojiBtn && messageInput) {
+        emojiBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Vérifier si EmojiPicker est disponible
+            if (typeof EmojiPicker === 'undefined') {
+                console.error('EmojiPicker non disponible');
+                return;
+            }
+            
+            const picker = window.emojiPickerInstance || EmojiPicker.init();
+            if (picker.isVisible && picker.currentInput === messageInput) {
+                picker.hide();
+            } else {
+                picker.show(messageInput, emojiBtn);
+            }
+        });
+    }
+});
+
+// Fonction pour mettre à jour le bouton d'envoi
+function updateSendButton() {
+    const hasContent = messageInput.value.trim().length > 0;
+    const hasFiles = selectedFiles.length > 0;
+    sendBtn.disabled = !hasContent && !hasFiles;
+}
+
+// Fonction pour mettre à jour l'aperçu des fichiers
+function updateFilePreview() {
+    filePreview.innerHTML = '';
+    selectedFiles.forEach((file, index) => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        
+        const icon = file.type.startsWith('image/') ? 'fas fa-image' : 'fas fa-file';
+        fileItem.innerHTML = `
+            <i class="${icon}"></i>
+            <span>${file.name}</span>
+            <button type="button" class="remove-file" onclick="removeFile(${index})">&times;</button>
+        `;
+        
+        filePreview.appendChild(fileItem);
+    });
+}
+
+// Fonction pour supprimer un fichier
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    updateFilePreview();
+    updateSendButton();
+}
+
+// Fonction pour répondre à un message
+function replyToMessage(messageId, senderName, content) {
+    replyToMessageId = messageId;
+    document.getElementById('replyToUser').textContent = senderName;
+    document.getElementById('replyToContent').textContent = content.substring(0, 100) + (content.length > 100 ? '...' : '');
+    replyPreview.style.display = 'flex';
+    messageInput.focus();
+}
+
+// Envoi avec Enter
+messageInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// Soumission du formulaire
+chatForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    sendMessage();
+});
+    
+// Fonction d'envoi de message avec support des médias et réponses
+function sendMessage() {
+    const content = messageInput.value.trim();
+    if (!content && selectedFiles.length === 0) return;
+    
+    // Désactiver temporairement
+    sendBtn.disabled = true;
+    messageInput.disabled = true;
+    
+    // Préparer les données
+    const formData = new FormData();
+    if (content) formData.append('content', content);
+    
+    // Ajouter les fichiers
+    selectedFiles.forEach((file, index) => {
+        if (file.type.startsWith('image/')) {
+            formData.append('image', file);
+        } else {
+            formData.append('file', file);
+        }
+    });
+    
+    // Ajouter la réponse si applicable
+    if (replyToMessageId) {
+        formData.append('reply_to', replyToMessageId);
+    }
+    
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    // Envoyer
+    fetch(`/chat/group/${groupId}/send/`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Ajouter le message immédiatement côté expéditeur avec le bon statut "own"
+            addMessageFromData(data.message, true);
+            
+            // Vider les champs
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            selectedFiles = [];
+            updateFilePreview();
+            replyToMessageId = null;
+            replyPreview.style.display = 'none';
+            updateSendButton();
+        } else {
+            alert('Erreur: ' + (data.error || 'Envoi échoué'));
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur de connexion');
+    })
+    .finally(() => {
+        // Réactiver
+        sendBtn.disabled = false;
+        messageInput.disabled = false;
+    });
+}
+
+// Fonction pour ajouter un message
+function addMessage(content, isOwn = false, timestamp = null, sender = null) {
+    // Créer le message wrapper
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message-wrapper ${isOwn ? 'own' : 'other'}`;
+    
+    // Créer la bulle de message
+    const bubbleDiv = document.createElement('div');
+    bubbleDiv.className = 'message-bubble';
+    
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'message-content';
+    contentDiv.textContent = content;
+    
+    const timeDiv = document.createElement('div');
+    timeDiv.className = 'message-time';
+    timeDiv.textContent = 'À l\'instant';
+    
+    bubbleDiv.appendChild(contentDiv);
+    bubbleDiv.appendChild(timeDiv);
+    
+    // Créer le pseudo à l'extérieur avec avatar
+    const senderDiv = document.createElement('div');
+    senderDiv.className = 'message-sender';
+    
+    // Pour les messages de l'utilisateur actuel, pas de lien
+    if (sender && sender !== 'Vous') {
+        const senderLink = document.createElement('a');
+        senderLink.href = `/profile/${sender}/`;
+        senderLink.className = 'sender-link';
+        
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'sender-name';
+        nameSpan.textContent = sender;
+        
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'sender-avatar default';
+        avatarDiv.textContent = sender[0].toUpperCase();
+        
+        senderLink.appendChild(nameSpan);
+        senderLink.appendChild(avatarDiv);
+        senderDiv.appendChild(senderLink);
+    } else {
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'sender-name';
+        nameSpan.textContent = sender || 'Vous';
+        
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'sender-avatar default';
+        avatarDiv.textContent = (sender || 'V')[0].toUpperCase();
+        
+        senderDiv.appendChild(nameSpan);
+        senderDiv.appendChild(avatarDiv);
+    }
+    
+    messageDiv.appendChild(bubbleDiv);
+    messageDiv.appendChild(senderDiv);
+    
+    messagesArea.appendChild(messageDiv);
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+}
+    
+// Échapper le HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+    
+// Initialisation
+sendBtn.disabled = true;
+messageInput.focus();
+
+// Fonction de rechargement des messages avec support complet
+function fetchGroupMessages() {
+    fetch(`/chat/group/${groupId}/messages/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                const messages = data.messages || [];
+                const scrollAtBottom = messagesArea.scrollTop + messagesArea.clientHeight >= messagesArea.scrollHeight - 10;
+                messagesArea.innerHTML = '';
+                messages.forEach(m => {
+                    addMessageWithReply(m);
+                });
+                // Maintenir la position de scroll si l'utilisateur était en bas
+                if (scrollAtBottom) {
+                    messagesArea.scrollTop = messagesArea.scrollHeight;
+                }
+                // Mettre à jour les timestamps après ajout des messages
+                setTimeout(() => {
+                    updateTimestamps();
+                }, 50);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des messages:', error);
+        });
+}
+// setInterval(fetchGroupMessages, 5000);
+// fetchGroupMessages();
+
+// Fonction pour formater les timestamps avec heure précise
+function formatTimestamp(timestamp) {
+    const now = new Date();
+    const messageTime = new Date(timestamp);
+    const diffMs = now - messageTime;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    // Toujours afficher l'heure
+    const timeString = messageTime.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    if (diffMins < 1) return `À l'instant (${timeString})`;
+    if (diffMins < 60) return `Il y a ${diffMins}min (${timeString})`;
+    if (diffHours < 24) return `Il y a ${diffHours}h (${timeString})`;
+    if (diffDays < 7) return `Il y a ${diffDays}j (${timeString})`;
+    
+    return messageTime.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: '2-digit'
+    }) + ` ${timeString}`;
+}
+
+// Fonction pour mettre à jour tous les timestamps
+function updateTimestamps() {
+    const timeElements = document.querySelectorAll('.message-time[data-timestamp]');
+    timeElements.forEach(timeElement => {
+        const timestamp = timeElement.getAttribute('data-timestamp');
+        if (timestamp) {
+            timeElement.textContent = formatTimestamp(timestamp);
+        }
+    });
+}
+
+// Fonction pour ouvrir la modal d'image
+function openImageModal(imageSrc) {
+    const modal = document.createElement('div');
+    modal.className = 'image-modal';
+    modal.innerHTML = `<img src="${imageSrc}" alt="Image">`;
+    
+    modal.addEventListener('click', function() {
+        document.body.removeChild(modal);
+    });
+    
+    document.body.appendChild(modal);
+}
+
+// Fonction complète pour ajouter un message avec support des réponses et médias
+function addMessageFromData(messageData, forceOwn = false) {
+    const messageWrapper = document.createElement('div');
+    const isOwn = forceOwn || (messageData.sender_id == '{{ request.user.id }}');
+    messageWrapper.className = `message-wrapper ${isOwn ? 'own' : 'other'}`;
+    messageWrapper.setAttribute('data-message-id', messageData.id);
+    
+    let messageHTML = '';
+    
+    // Indicateur de réponse
+    if (messageData.reply_to) {
+        messageHTML += `
+            <div class="reply-indicator">
+                <i class="fas fa-reply"></i>
+                <span>${messageData.reply_to.sender}: ${messageData.reply_to.content}</span>
+            </div>
+        `;
+    }
+    
+    messageHTML += '<div class="message-content-wrapper"><div class="message-bubble">';
+    
+    // Image
+    if (messageData.image) {
+        messageHTML += `
+            <div class="message-image">
+                <img src="${messageData.image}" alt="Image" onclick="openImageModal('${messageData.image}')">
+            </div>
+        `;
+    }
+    
+    // Fichier
+    if (messageData.file) {
+        messageHTML += `
+            <div class="message-file">
+                <i class="fas fa-file"></i>
+                <a href="${messageData.file}" target="_blank">${messageData.file_name || 'Fichier'}</a>
+            </div>
+        `;
+    }
+    
+    // Contenu texte
+    if (messageData.content) {
+        messageHTML += `<div class="message-content">${messageData.content}</div>`;
+    }
+    
+    messageHTML += `<div class="message-time" data-timestamp="${messageData.created_at}">${formatTimestamp(messageData.created_at)}</div>`;
+    
+    // Actions
+    messageHTML += '<div class="message-actions">';
+    const safeContent = messageData.content ? messageData.content.replace(/'/g, "\\'"): '';
+    messageHTML += `<button class="action-btn reply-btn" onclick="replyToMessage('${messageData.id}', '${messageData.sender}', '${safeContent}')">`;
+    messageHTML += '<i class="fas fa-reply"></i>';
+    messageHTML += '</button>';
+    messageHTML += '</div>';
+    
+    messageHTML += '</div>';
+    
+    // Informations de l'expéditeur directement collées
+    messageHTML += `
+        <div class="message-sender">
+            <a href="/profile/${messageData.sender}/" class="sender-link">
+                <span class="sender-name">${messageData.sender}</span>
+                <div class="sender-avatar default">${messageData.sender[0].toUpperCase()}</div>
+            </a>
+        </div>
+    `;
+    
+    messageHTML += '</div>';
+    
+    messageWrapper.innerHTML = messageHTML;
+    messagesArea.appendChild(messageWrapper);
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+}
+
+// WebSocket pour chat temps réel
+let chatSocket = null;
+
+function initWebSocket() {
+    const groupId = '{{ group.id }}';
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/chat/group/${groupId}/`;
+    
+    chatSocket = new WebSocket(wsUrl);
+    
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.type === 'new_message') {
+            // Ajouter le message reçu uniquement s'il n'est pas de nous
+            if (data.message.sender_id != '{{ request.user.id }}') {
+                addMessage(data.message);
+            }
+        }
+    };
+    
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket fermé de manière inattendue');
+        // Tentative de reconnexion après 3 secondes
+        setTimeout(function() {
+            initWebSocket();
+        }, 3000);
+    };
+    
+    chatSocket.onerror = function(e) {
+        console.error('Erreur WebSocket:', e);
+    };
+}
+
+// Initialisation
+updateSendButton();
+messageInput.focus();
+initWebSocket();
+
+// Mettre à jour les timestamps immédiatement
+updateTimestamps();
+
+// Formater tous les timestamps au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    updateTimestamps();
+});
+
+// Scroll initial vers le bas ou vers le premier message non lu
+window.addEventListener('load', function() {
+    const unreadSeparator = document.querySelector('.unread-separator');
+    if (unreadSeparator) {
+        // S'il y a des messages non lus, scroller vers le séparateur
+        unreadSeparator.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        // Sinon, scroller vers le bas
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+    updateTimestamps();
+});
+</script>
+{% endblock %}

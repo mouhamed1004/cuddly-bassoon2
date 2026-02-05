@@ -1,0 +1,388 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{{ page_title|default:"Conditions d'utilisation - Blizz Gaming" }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.legal-page {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+.legal-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(108, 92, 231, 0.3);
+}
+
+.legal-title {
+    color: #6c5ce7;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.legal-subtitle {
+    color: #a29bfe;
+    font-size: 1.1rem;
+    margin-bottom: 0;
+}
+
+.legal-content {
+    color: #e2e8f0;
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+.legal-section {
+    margin-bottom: 2rem;
+}
+
+.section-title {
+    color: #6c5ce7;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-content {
+    margin-bottom: 1.5rem;
+    padding-left: 1rem;
+}
+
+.section-content p {
+    margin-bottom: 1rem;
+}
+
+.section-content ul {
+    margin: 1rem 0;
+    padding-left: 2rem;
+}
+
+.section-content li {
+    margin-bottom: 0.5rem;
+}
+
+.highlight-box {
+    background: rgba(108, 92, 231, 0.1);
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.highlight-box h4 {
+    color: #6c5ce7;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.warning-box {
+    background: rgba(255, 107, 107, 0.1);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+}
+
+.warning-box h4 {
+    color: #ff6b6b;
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.contact-info {
+    background: rgba(0, 255, 136, 0.1);
+    border: 1px solid rgba(0, 255, 136, 0.3);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    text-align: center;
+}
+
+.contact-info h4 {
+    color: #00ff88;
+    margin-bottom: 1rem;
+}
+
+.contact-info p {
+    margin-bottom: 0.5rem;
+}
+
+.last-updated {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: #a29bfe;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .legal-page {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    .legal-title {
+        font-size: 2rem;
+    }
+    
+    .section-title {
+        font-size: 1.3rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="legal-page">
+    <div class="legal-header">
+        <h1 class="legal-title">
+            <i class="fas fa-file-contract"></i>
+            Conditions d'Utilisation
+        </h1>
+        <p class="legal-subtitle">Règles et conditions d'utilisation de la plateforme</p>
+    </div>
+
+    <div class="legal-content">
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-info-circle"></i>
+                Introduction
+            </h2>
+            <div class="section-content">
+                <p>
+                    Ces conditions d'utilisation régissent votre utilisation de notre plateforme de vente 
+                    et d'achat de comptes de jeux vidéo. En accédant à notre service, vous acceptez d'être 
+                    lié par ces conditions.
+                </p>
+                <p>
+                    Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser notre plateforme.
+                </p>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-user-check"></i>
+                Acceptation des conditions
+            </h2>
+            <div class="section-content">
+                <p>En utilisant notre plateforme, vous déclarez et garantissez que :</p>
+                <ul>
+                    <li>Vous avez au moins 18 ans ou l'âge légal dans votre juridiction</li>
+                    <li>Vous avez la capacité légale de conclure des contrats</li>
+                    <li>Vous n'êtes pas interdit d'utiliser nos services par la loi applicable</li>
+                    <li>Toutes les informations fournies sont exactes et à jour</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-gamepad"></i>
+                Description du service
+            </h2>
+            <div class="section-content">
+                <p>
+                    Notre plateforme facilite la vente et l'achat de comptes de jeux vidéo entre utilisateurs. 
+                    Nous agissons comme un intermédiaire pour faciliter ces transactions.
+                </p>
+                <div class="highlight-box">
+                    <h4>Important à retenir :</h4>
+                    <p>
+                        Nous ne sommes pas responsables du contenu des comptes vendus. Les vendeurs sont 
+                        seuls responsables de la légitimité et de la qualité de leurs comptes.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-user-plus"></i>
+                Compte utilisateur
+            </h2>
+            <div class="section-content">
+                <h4>Création de compte :</h4>
+                <ul>
+                    <li>Vous devez fournir des informations exactes et complètes</li>
+                    <li>Vous êtes responsable de la sécurité de votre compte</li>
+                    <li>Vous devez notifier immédiatement toute utilisation non autorisée</li>
+                    <li>Un seul compte par personne est autorisé</li>
+                </ul>
+
+                <h4>Responsabilités :</h4>
+                <ul>
+                    <li>Maintenir la confidentialité de vos identifiants</li>
+                    <li>Mettre à jour vos informations personnelles</li>
+                    <li>Respecter toutes les lois applicables</li>
+                    <li>Ne pas partager votre compte avec d'autres</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-shopping-cart"></i>
+                Transactions et paiements
+            </h2>
+            <div class="section-content">
+                <h4>Processus de transaction :</h4>
+                <ul>
+                    <li>Toutes les transactions sont finales une fois confirmées</li>
+                    <li>Les paiements sont traités par des tiers sécurisés</li>
+                    <li>Nous prenons une commission sur chaque vente</li>
+                    <li>Les remboursements sont soumis à notre politique de remboursement</li>
+                </ul>
+
+                <div class="warning-box">
+                    <h4>Attention :</h4>
+                    <p>
+                        Les transactions impliquant des comptes de jeux peuvent violer les conditions 
+                        d'utilisation des éditeurs de jeux. Vous assumez tous les risques associés.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-ban"></i>
+                Utilisations interdites
+            </h2>
+            <div class="section-content">
+                <p>Il est strictement interdit de :</p>
+                <ul>
+                    <li>Vendre des comptes obtenus illégalement</li>
+                    <li>Utiliser des informations de paiement frauduleuses</li>
+                    <li>Harceler ou menacer d'autres utilisateurs</li>
+                    <li>Publier du contenu illégal, offensant ou inapproprié</li>
+                    <li>Tenter de contourner nos mesures de sécurité</li>
+                    <li>Utiliser des bots ou des scripts automatisés</li>
+                    <li>Vendre des comptes de mineurs sans autorisation parentale</li>
+                    <li>Partager des informations personnelles d'autres utilisateurs</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-shield-alt"></i>
+                Propriété intellectuelle
+            </h2>
+            <div class="section-content">
+                <p>
+                    Notre plateforme et son contenu sont protégés par les lois sur la propriété 
+                    intellectuelle. Vous ne pouvez pas :
+                </p>
+                <ul>
+                    <li>Copier, modifier ou distribuer notre contenu</li>
+                    <li>Utiliser nos marques commerciales sans autorisation</li>
+                    <li>Reverse engineer notre plateforme</li>
+                    <li>Créer des œuvres dérivées basées sur notre service</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-exclamation-triangle"></i>
+                Limitation de responsabilité
+            </h2>
+            <div class="section-content">
+                <p>
+                    Dans la mesure permise par la loi, nous ne serons pas responsables de :
+                </p>
+                <ul>
+                    <li>La perte ou le vol de comptes de jeux</li>
+                    <li>Les sanctions imposées par les éditeurs de jeux</li>
+                    <li>Les dommages indirects ou consécutifs</li>
+                    <li>Les pertes de profits ou d'opportunités</li>
+                    <li>Les actions d'autres utilisateurs</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-gavel"></i>
+                Suspension et résiliation
+            </h2>
+            <div class="section-content">
+                <p>Nous nous réservons le droit de :</p>
+                <ul>
+                    <li>Suspendre ou résilier votre compte sans préavis</li>
+                    <li>Supprimer tout contenu inapproprié</li>
+                    <li>Refuser l'accès à notre service</li>
+                    <li>Prendre des mesures légales si nécessaire</li>
+                </ul>
+                <p>
+                    Vous pouvez résilier votre compte à tout moment en nous contactant.
+                </p>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-balance-scale"></i>
+                Droit applicable
+            </h2>
+            <div class="section-content">
+                <p>
+                    Ces conditions sont régies par les lois françaises. Tout litige sera soumis 
+                    à la juridiction exclusive des tribunaux français.
+                </p>
+                <p>
+                    Si une disposition de ces conditions est jugée invalide, les autres dispositions 
+                    restent en vigueur.
+                </p>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2 class="section-title">
+                <i class="fas fa-edit"></i>
+                Modifications des conditions
+            </h2>
+            <div class="section-content">
+                <p>
+                    Nous nous réservons le droit de modifier ces conditions à tout moment. 
+                    Les modifications importantes seront communiquées par e-mail ou via une 
+                    notification sur notre plateforme.
+                </p>
+                <p>
+                    Votre utilisation continue de notre service après les modifications constitue 
+                    votre acceptation des nouvelles conditions.
+                </p>
+            </div>
+        </div>
+
+        <div class="contact-info">
+            <h4>
+                <i class="fas fa-envelope"></i>
+                Contact
+            </h4>
+            <p>Pour toute question concernant ces conditions d'utilisation :</p>
+            <p><strong>Support :</strong> Via le formulaire de contact de la plateforme</p>
+        </div>
+
+        <div class="last-updated">
+            <p><i class="fas fa-calendar-alt"></i> Dernière mise à jour : {{ "now"|date:"d F Y" }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

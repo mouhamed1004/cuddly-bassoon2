@@ -1,0 +1,3383 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>{% block title %}Blizz - Plateforme Gaming & E-commerce{% endblock %}</title>
+    
+    {% block extra_head %}{% endblock %}
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}?v=1">
+    <link rel="icon" type="image/png" href="{% static 'icon.png' %}?v=1">
+    <link rel="shortcut icon" type="image/png" href="{% static 'icon.png' %}?v=1">
+    <link rel="apple-touch-icon" href="{% static 'icon.png' %}?v=1">
+    <style>
+        @font-face {
+            font-family: 'Halo';
+            src: url("{% static 'fonts/halo.ttf' %}") format('TrueType');
+            /* Assurez-vous d'avoir le fichier de police dans votre dossier fonts */
+        }
+
+        @font-face {
+            font-family: 'BaloonEveryday';
+            src: url("{% static 'fonts/BaloonEverydayRegular-4B8El.ttf' %}") format('truetype');
+        }
+
+        @font-face {
+            font-family: 'RussoOne';
+            src: url("{% static 'fonts/RussoOne-Regular.ttf' %}") format('truetype');
+        }
+
+        :root {
+            --primary-color: #6c5ce7;
+            --secondary-color: #a29bfe;
+            --dark-blue: #0f1729;
+            --text-color: #fff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Halo', Arial, sans-serif;
+            background-color: var(--dark-blue);
+            color: var(--text-color);
+        }
+
+        /* MENU PRINCIPAL PROPRE - SANS DÉPENDANCES EXTERNES */
+        .blizz-navbar {
+            /* Isolation complète des autres frameworks */
+            all: unset;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(180deg, rgba(15, 23, 41, 0.95) 0%, rgba(15, 23, 41, 0.85) 100%);
+            padding: 0.5rem 2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3),
+                       0 5px 15px rgba(162, 155, 254, 0.2);
+            position: relative;
+            height: 60px;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            /* Protection contre les conflits Bootstrap */
+            box-sizing: border-box;
+            margin: 0;
+            font-family: 'Halo', Arial, sans-serif;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-image {
+            max-height: 50px; /* Ajustez selon vos besoins */
+            width: auto;
+            filter: drop-shadow(0 0 3px white); /* Crée un contour blanc fin */
+        }
+
+        .logo-text {
+            font-family: 'RussoOne', sans-serif;
+            font-size: 2rem;
+            color: var(--primary-color);
+            text-shadow: 0 0 15px var(--primary-color);
+        }
+        
+        /* Badge Afrique dans le footer */
+        .footer-african-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #ff9800, #4caf50);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+        
+        .footer-african-badge span {
+            font-size: 1.2rem;
+        }
+        
+        /* Google Translate Widget Styling */
+        #google_translate_element {
+            position: fixed;
+            bottom: 90px;
+            left: 30px;
+            z-index: 9999;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 2px solid #6c5ce7;
+            box-shadow: 0 4px 20px rgba(108, 92, 231, 0.4);
+            display: none;
+            backdrop-filter: blur(10px);
+        }
+        
+        #google_translate_element.show {
+            display: block !important;
+        }
+        
+        /* Personnaliser le sélecteur Google Translate */
+        .goog-te-gadget {
+            font-family: 'Halo', Arial, sans-serif !important;
+            color: #333 !important;
+        }
+        
+        .goog-te-gadget-simple {
+            background-color: white !important;
+            border: 1px solid #6c5ce7 !important;
+            padding: 8px 12px !important;
+            font-size: 14px !important;
+            border-radius: 5px !important;
+        }
+        
+        .goog-te-gadget-simple .goog-te-menu-value {
+            color: #333 !important;
+        }
+        
+        .goog-te-gadget-simple .goog-te-menu-value span {
+            color: #333 !important;
+        }
+        
+        .goog-te-gadget-simple:hover {
+            background-color: #f8f9fa !important;
+            border-color: #5a4bc7 !important;
+        }
+        
+        /* Style pour le texte du gadget */
+        .goog-te-gadget-simple span {
+            color: #333 !important;
+        }
+        
+        /* Style pour la flèche dropdown */
+        .goog-te-gadget-simple .goog-te-menu-value span:first-child {
+            color: #6c5ce7 !important;
+            font-weight: 600;
+        }
+        
+        /* Cacher le logo "Powered by Google" */
+        .goog-logo-link {
+            display: none !important;
+        }
+        
+        .goog-te-gadget .goog-te-gadget-simple {
+            color: #333 !important;
+        }
+        
+        /* Bouton pour afficher/masquer le widget */
+        .translate-toggle-btn {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            z-index: 10000;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Halo', Arial, sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .translate-toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108, 92, 231, 0.5);
+        }
+        
+        .translate-toggle-btn i {
+            font-size: 16px;
+        }
+        
+        /* Exclure les noms de jeux de la traduction */
+        .notranslate {
+            display: inline; /* Les éléments avec cette classe ne seront pas traduits */
+        }
+
+        .blizz-nav-links {
+            /* Isolation complète */
+            all: unset;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            height: 100%;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .nav-group {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .blizz-nav-button {
+            /* Isolation complète */
+            all: unset;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            height: 36px;
+            padding: 0 1.5rem;
+            border: 1px solid var(--primary-color);
+            border-radius: 25px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, var(--dark-blue), rgba(108, 92, 231, 0.1));
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+
+        .blizz-nav-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .blizz-nav-button:hover::before {
+            left: 100%;
+        }
+
+        .blizz-nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px var(--primary-color);
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .blizz-nav-button i {
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
+        }
+
+        .blizz-nav-button:hover i {
+            transform: scale(1.1);
+        }
+
+        .hero {
+            position: relative;
+            padding: 2rem;
+            text-align: left;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-image {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            padding: 2rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            padding: 2rem;
+        }
+
+        .character-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            position: relative;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 15px var(--primary-color),
+                       0 0 25px var(--secondary-color);
+            overflow: visible;
+            transition: all 0.3s ease;
+            transform-origin: center;
+        }
+
+        .character-card:hover {
+            transform: scale(1.05) translateY(-10px);
+            z-index: 1; /* Pour s'assurer que la carte survolée passe au-dessus des autres */
+        }
+
+        .character-card img {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .character-card h3 {
+            color: white;
+            margin: 0.5rem 0;
+            font-family: 'Halo', sans-serif;
+        }
+
+        .button-primary {
+            background: var(--primary-color);
+            color: white;
+            padding: 0 1rem;
+            border-radius: 20px;
+            border: none;
+            cursor: pointer;
+            height: 40px;
+            line-height: 40px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 120px;
+            transition: all 0.3s ease;
+        }
+
+        .button-primary:hover {
+            background: white;
+            color: var(--primary-color);
+            box-shadow: 0 -5px 15px var(--primary-color),
+                       5px 0 15px var(--secondary-color),
+                       0 5px 15px var(--primary-color),
+                       -5px 0 15px var(--secondary-color);
+        }
+
+        .profile-container {
+            position: relative;
+        }
+
+        .profile-circle {
+            position: relative;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 2px solid var(--primary-color);
+        }
+
+        .profile-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-status {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background-color: #2ecc71;
+            border: 2px solid var(--dark-blue);
+            border-radius: 50%;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 50px;
+            background-color: var(--dark-blue);
+            min-width: 200px;
+            box-shadow: 0 0 15px var(--primary-color);
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 1000;
+            border: 1px solid var(--primary-color);
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-content button {
+            width: 100%;
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            color: white;
+            text-align: left;
+            cursor: pointer;
+            margin: 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .dropdown-content button:hover {
+            background-color: var(--primary-color);
+        }
+
+        .dropdown-content button i {
+            width: 20px;
+        }
+
+        .nav-links > * {
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+
+        .carousel {
+            position: relative;
+            width: 100%;
+            height: 550px;
+            overflow: hidden;
+            border: 1px solid white;
+        }
+
+        .carousel-item {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .carousel-item.active {
+            opacity: 1;
+        }
+
+        .carousel-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .carousel-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 2.5rem;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            font-family: 'Halo', sans-serif;
+        }
+
+        /* Suppression du texte "MONDE" */
+
+        .character-card .profile-image {
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid white;
+            object-fit: cover;
+            box-shadow: 0 0 15px var(--primary-color),
+                        0 0 25px var(--secondary-color);
+            z-index: 2;
+            transform: translate(0, 0);
+        }
+
+        .logo img {
+            height: 50px; /* Ajustez la taille selon vos besoins */
+            width: auto;
+            /* Conserve les proportions de l'image */
+        }
+
+        /* Settings Page Styles */
+        .settings-section {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .settings-section h2 {
+            color: #fff;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .profile-customization {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .banner-upload {
+            width: 100%;
+            height: 200px;
+            position: relative;
+        }
+
+        .preview-banner {
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .preview-banner img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-photo-upload {
+            margin-top: -50px;
+            margin-left: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .preview-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #1a1a1a;
+            position: relative;
+        }
+
+        .preview-circle img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .upload-overlay:hover {
+            opacity: 1;
+        }
+
+        .profile-info-form {
+            padding: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            color: #fff;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #333;
+            border-radius: 5px;
+            background-color: #2a2a2a;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .warning-text {
+            color: #ffc107;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .save-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        .save-button:hover {
+            background-color: #0056b3;
+        }
+
+        textarea.input-field {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        #localisation {
+            min-height: auto;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .settings-section {
+                margin: 1rem;
+                padding: 15px;
+            }
+
+            .preview-circle {
+                width: 100px;
+                height: 100px;
+            }
+
+            .banner-upload {
+                height: 150px;
+            }
+        }
+
+        .site-footer {
+            background-color: rgba(15, 23, 41, 0.95);
+            padding: 3rem 2rem 1rem;
+            border-top: 1px solid var(--primary-color);
+            box-shadow: 0 -5px 15px var(--primary-color),
+                       0 -5px 15px var(--secondary-color);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-family: 'RussoOne', sans-serif;
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .footer-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-color);
+            text-decoration: none;
+            margin-bottom: 0.8rem;
+            transition: all 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--primary-color);
+            transform: translateX(5px);
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        .footer-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .social-link {
+            color: var(--text-color);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.2rem;
+            padding: 0.5rem;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            width: 60px;
+            height: 60px;
+            text-align: center;
+        }
+        
+        .social-link span {
+            font-size: 0.6rem;
+            font-weight: 500;
+            color: var(--text-color);
+            margin-top: 0.05rem;
+        }
+
+        .social-link:hover {
+            color: var(--primary-color);
+            transform: translateY(-5px) scale(1.05);
+            text-shadow: 0 0 15px var(--primary-color);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .social-link:hover span {
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .footer-bottom {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .footer-link {
+                justify-content: center;
+            }
+
+            .social-links {
+                justify-content: center;
+            }
+        }
+
+        .clickable {
+            cursor: pointer;
+        }
+
+        .nav-dropdown {
+            position: relative;
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-dropdown .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: var(--dark-blue);
+            min-width: 200px;
+            box-shadow: 0 0 15px var(--primary-color);
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 1000;
+        }
+
+        .nav-dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown-content button {
+            width: 100%;
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            color: white;
+            text-align: left;
+            cursor: pointer;
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-content button:hover {
+            background-color: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .dropdown-content button i {
+            width: 20px;
+        }
+
+        /* Modifier le style existant pour la cohérence */
+        .profile-container .dropdown-content {
+            right: 0;
+            top: 100%;
+        }
+        /* Menu déroulant de profil esthétique */
+        .nav-right-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+        .simple-profile-menu {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .profile-btn {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            border-radius: 50%;
+            padding: 1.5px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .profile-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 0 20px rgba(108, 92, 231, 0.6);
+        }
+        
+        .profile-btn img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: border-color 0.3s ease;
+        }
+        
+        .profile-btn:hover img {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .blizz-dropdown-menu {
+            position: absolute;
+            right: 0;
+            top: 55px;
+            background: linear-gradient(135deg, 
+                rgba(15, 25, 35, 0.95) 0%, 
+                rgba(25, 35, 45, 0.95) 100%);
+            min-width: 240px;
+            border-radius: 12px;
+            border: 1px solid rgba(108, 92, 231, 0.3);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.5),
+                0 0 20px rgba(108, 92, 231, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            z-index: 9999;
+            padding: 8px 0;
+            backdrop-filter: blur(10px);
+            transform: translateY(-10px);
+            opacity: 0;
+            animation: blizzDropdownAppear 0.3s ease forwards;
+            list-style: none;
+            margin: 0;
+        }
+        
+        @keyframes blizzDropdownAppear {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        .blizz-dropdown-menu::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            right: 20px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid rgba(108, 92, 231, 0.3);
+        }
+        
+        .blizz-dropdown-menu::after {
+            content: '';
+            position: absolute;
+            top: -7px;
+            right: 21px;
+            width: 0;
+            height: 0;
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            border-bottom: 7px solid rgba(15, 25, 35, 0.95);
+        }
+        
+        .blizz-dropdown-menu a {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: #ffffff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+            border-left: 3px solid transparent;
+        }
+        
+        .blizz-dropdown-menu a:hover {
+            background: linear-gradient(90deg, 
+                rgba(108, 92, 231, 0.15) 0%, 
+                rgba(162, 155, 254, 0.05) 100%);
+            border-left-color: var(--primary-color);
+            transform: translateX(5px);
+            color: var(--primary-color);
+        }
+        
+        .blizz-dropdown-menu a:first-child {
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .blizz-dropdown-menu a:last-child {
+            border-radius: 0 0 12px 12px;
+        }
+        
+        .blizz-dropdown-menu a i {
+            margin-right: 12px;
+            width: 18px;
+            text-align: center;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .blizz-dropdown-menu a:hover i {
+            transform: scale(1.1);
+            text-shadow: 0 0 10px currentColor;
+        }
+        
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+
+        .profile-dropdown button {
+            width: 100%;
+            padding: 12px 16px;
+            background: none;
+            border: none;
+            color: white;
+            text-align: left;
+            cursor: pointer;
+            margin: 2px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .profile-dropdown button:hover {
+            background-color: var(--primary-color);
+        }
+
+        .profile-dropdown button i {
+            width: 20px;
+        }
+
+        /* CORRECTION ÉQUILIBRE VISUEL DES CHAMPS DE TEXTE */
+        input[type="text"], 
+        input[type="email"], 
+        input[type="password"], 
+        input[type="url"], 
+        input[type="tel"], 
+        input[type="number"],
+        textarea,
+        select,
+        .form-control,
+        .input-field,
+        .form-input,
+        .form-textarea,
+        .message-input {
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+            word-wrap: break-word !important;
+            overflow-wrap: break-word !important;
+            white-space: normal !important;
+        }
+
+        /* Correction spécifique pour les textarea */
+        textarea {
+            resize: vertical !important;
+            min-height: 100px;
+            max-height: 300px;
+        }
+
+        /* Correction pour les champs de saisie de messages */
+        .message-input {
+            max-height: 120px !important;
+            overflow-y: auto !important;
+        }
+
+        /* Correction pour les champs de formulaire dans les conteneurs */
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Correction pour les champs dans les cartes */
+        .card input,
+        .card textarea,
+        .card select {
+            max-width: 100% !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Correction responsive pour tablette */
+        @media (max-width: 768px) {
+            input[type="text"], 
+            input[type="email"], 
+            input[type="password"], 
+            input[type="url"], 
+            input[type="tel"], 
+            input[type="number"],
+            textarea,
+            select,
+            .form-control,
+            .input-field,
+            .form-input,
+            .form-textarea,
+            .message-input {
+                max-width: 100% !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                font-size: 16px !important; /* Évite le zoom sur mobile */
+            }
+            
+            textarea {
+                max-height: 200px !important;
+            }
+        }
+
+        /* Correction responsive pour mobile */
+        @media (max-width: 480px) {
+            input[type="text"], 
+            input[type="email"], 
+            input[type="password"], 
+            input[type="url"], 
+            input[type="tel"], 
+            input[type="number"],
+            textarea,
+            select,
+            .form-control,
+            .input-field,
+            .form-input,
+            .form-textarea,
+            .message-input {
+                max-width: 100% !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+                font-size: 16px !important; /* Évite le zoom sur mobile */
+                padding: 0.75rem !important;
+            }
+            
+            textarea {
+                max-height: 150px !important;
+                min-height: 80px !important;
+            }
+        }
+
+        /* ===== RESPONSIVE MENU PRINCIPAL ET FOOTER ===== */
+        
+        /* MENU MOBILE PROPRE - SANS DÉPENDANCES EXTERNES */
+        .blizz-mobile-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .blizz-mobile-toggle:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-color);
+        }
+
+        .blizz-mobile-toggle.active {
+            color: var(--primary-color);
+            background: rgba(108, 92, 231, 0.2);
+        }
+
+        /* Menu mobile overlay propre */
+        .blizz-mobile-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 9998;
+            backdrop-filter: blur(5px);
+        }
+
+        .blizz-mobile-overlay.active {
+            display: block;
+        }
+
+        /* Menu mobile propre */
+        .blizz-mobile-menu {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 320px;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(15, 23, 41, 0.98) 0%, rgba(15, 23, 41, 0.95) 100%);
+            backdrop-filter: blur(10px);
+            z-index: 9999;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .blizz-mobile-menu.active {
+            right: 0;
+        }
+
+        .blizz-mobile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .blizz-mobile-close {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .blizz-mobile-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-color);
+        }
+
+        .blizz-mobile-content {
+            padding: 1.5rem;
+        }
+
+        .blizz-mobile-section {
+            margin-bottom: 2rem;
+        }
+
+        .blizz-mobile-section h3 {
+            color: var(--primary-color);
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .blizz-mobile-nav-item {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blizz-mobile-nav-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .blizz-mobile-nav-item:hover::before {
+            left: 100%;
+        }
+
+        .blizz-mobile-nav-item:hover {
+            background: rgba(108, 92, 231, 0.15);
+            border-color: var(--primary-color);
+            transform: translateX(5px);
+            color: var(--primary-color);
+        }
+
+        .blizz-mobile-nav-item i {
+            margin-right: 12px;
+            width: 18px;
+            text-align: center;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .blizz-mobile-nav-item:hover i {
+            transform: scale(1.1);
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        /* Badge de notification dans le menu mobile */
+        .blizz-mobile-nav-item .notification-badge {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 50%;
+            padding: 0.2rem 0.4rem;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: auto;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+
+        /* Styles pour le sélecteur de devise mobile */
+        .mobile-currency-selector {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .mobile-currency-selector select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-currency-selector select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .mobile-currency-selector option {
+            background: #2c3e50;
+            color: white;
+        }
+
+        /* Styles pour les informations de profil mobile */
+        .mobile-profile-info {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .mobile-profile-avatar {
+            margin-right: 1rem;
+        }
+        
+        .mobile-profile-avatar img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-color);
+        }
+        
+        .mobile-profile-details h4 {
+            margin: 0 0 0.25rem 0;
+            color: var(--text-color);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .mobile-profile-details p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+        }
+
+        /* Profile mobile */
+        .mobile-profile-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Responsive breakpoints */
+        @media (max-width: 1024px) {
+            .navbar {
+                padding: 0.5rem 1rem;
+            }
+            
+            .nav-links {
+                gap: 1rem;
+            }
+            
+            .nav-button {
+                padding: 0 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* Breakpoint pour tablettes et écrans moyens */
+        @media (max-width: 1060px) {
+            .blizz-navbar {
+                padding: 0.5rem 1.5rem;
+            }
+
+            .blizz-nav-links {
+                gap: 0.5rem;
+            }
+
+            .blizz-nav-button {
+                padding: 0.5rem 0.75rem;
+                font-size: 0.9rem;
+            }
+
+            .blizz-nav-button i {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .blizz-navbar {
+                padding: 0.5rem 2rem;
+                height: 60px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .logo-text {
+                font-size: 1.5rem;
+            }
+
+            .logo-image {
+                max-height: 40px;
+            }
+
+            /* Masquer le menu desktop */
+            .blizz-nav-links {
+                display: none;
+            }
+
+            /* Afficher le bouton hamburger */
+            .blizz-mobile-toggle {
+                display: block;
+                order: 2;
+            }
+
+            /* Garder le profil visible sur mobile */
+            .nav-right-section {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                order: 1;
+            }
+
+            .simple-profile-menu {
+                display: flex;
+            }
+
+            /* Currency selector responsive */
+            .currency-selector {
+                position: relative;
+            }
+
+            .currency-selector select {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .blizz-navbar {
+                padding: 0.5rem 1rem;
+                height: 56px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .logo-text {
+                font-size: 1.2rem;
+            }
+
+            .logo-image {
+                max-height: 35px;
+            }
+
+            /* Garder le profil visible même sur très petit écran */
+            .nav-right-section {
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+            }
+
+            .simple-profile-menu .profile-btn {
+                width: 35px;
+                height: 35px;
+            }
+
+            .simple-profile-menu .profile-btn img {
+                width: 35px;
+                height: 35px;
+            }
+
+            .mobile-menu {
+                width: 100%;
+                right: -100%;
+            }
+
+            .mobile-menu.active {
+                right: 0;
+            }
+
+            .mobile-menu-content {
+                padding: 1rem;
+            }
+
+            .mobile-nav-item {
+                padding: 0.75rem;
+            }
+        }
+
+        /* Footer responsive amélioré */
+        @media (max-width: 768px) {
+            .site-footer {
+                padding: 2rem 1rem 1rem;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+                text-align: center;
+            }
+
+            .footer-section h3 {
+                font-size: 1.1rem;
+                margin-bottom: 1rem;
+            }
+
+            .footer-link {
+                justify-content: center;
+                padding: 0.5rem;
+                border-radius: 8px;
+                background: rgba(255, 255, 255, 0.05);
+                margin-bottom: 0.5rem;
+            }
+
+            .social-links {
+                justify-content: center;
+                gap: 1.5rem;
+            }
+
+            .social-link {
+                font-size: 1.2rem;
+                padding: 0.8rem;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.05);
+                border: 2px solid rgba(255, 255, 255, 0.1);
+                width: 80px;
+                height: 80px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 0.3rem;
+                text-decoration: none !important;
+                -webkit-text-decoration: none !important;
+                -moz-text-decoration: none !important;
+            }
+            
+            .social-link span {
+                font-size: 0.7rem;
+                font-weight: 600;
+                margin-top: 0.05rem;
+            }
+
+            .footer-bottom {
+                margin-top: 1.5rem;
+                padding-top: 1rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .site-footer {
+                padding: 1.5rem 0.5rem 1rem;
+            }
+
+            .footer-content {
+                gap: 1rem;
+            }
+
+            .footer-section h3 {
+                font-size: 1rem;
+            }
+
+            .footer-link {
+                font-size: 0.9rem;
+                padding: 0.4rem;
+            }
+
+            .social-links {
+                gap: 1rem;
+            }
+
+            .social-link {
+                font-size: 1rem;
+                padding: 0.6rem;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.05);
+                border: 2px solid rgba(255, 255, 255, 0.1);
+                width: 55px;
+                height: 55px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                gap: 0.15rem;
+                text-decoration: none !important;
+                -webkit-text-decoration: none !important;
+                -moz-text-decoration: none !important;
+            }
+            
+            .social-link span {
+                font-size: 0.5rem;
+                font-weight: 500;
+                margin-top: 0.02rem;
+            }
+        }
+        
+        /* Règle spécifique pour Android - suppression du soulignement */
+        @media screen and (-webkit-min-device-pixel-ratio: 1) {
+            .social-link {
+                text-decoration: none !important;
+                -webkit-text-decoration: none !important;
+                -moz-text-decoration: none !important;
+                border-bottom: none !important;
+                outline: none !important;
+            }
+            
+            .social-link:focus {
+                text-decoration: none !important;
+                -webkit-text-decoration: none !important;
+                -moz-text-decoration: none !important;
+                border-bottom: none !important;
+                outline: none !important;
+            }
+            
+            .social-link:active {
+                text-decoration: none !important;
+                -webkit-text-decoration: none !important;
+                -moz-text-decoration: none !important;
+                border-bottom: none !important;
+                outline: none !important;
+            }
+        }
+        
+        /* Styles pour l'alerte de suppression personnalisée */
+        .custom-alert-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-alert-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .custom-alert {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #e74c3c;
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 80px rgba(231, 76, 60, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1);
+            animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .custom-alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e74c3c, #ff6b6b, #e74c3c);
+            animation: shimmer 2s infinite;
+        }
+        
+        .custom-alert-icon {
+            font-size: 4rem;
+            color: #e74c3c;
+            margin-bottom: 1rem;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .custom-alert-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 1rem;
+            font-family: 'RussoOne', sans-serif;
+        }
+        
+        .custom-alert-message {
+            font-size: 1.1rem;
+            color: #ccc;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .custom-alert-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .custom-alert-btn {
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            min-width: 140px;
+            justify-content: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .custom-alert-btn-cancel {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+        }
+        
+        .custom-alert-btn-cancel:hover {
+            background: linear-gradient(135deg, #5a6268, #3d4043);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .custom-alert-btn-cancel:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        .custom-alert-btn-confirm {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+        
+        .custom-alert-btn-confirm:hover {
+            background: linear-gradient(135deg, #c0392b, #a93226);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.5);
+        }
+        
+        .custom-alert-btn-confirm:active {
+            transform: translateY(-1px) scale(1.02);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { 
+                opacity: 0;
+                transform: translateY(-50px) scale(0.9);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .custom-alert {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .custom-alert-title {
+                font-size: 1.5rem;
+            }
+            
+            .custom-alert-message {
+                font-size: 1rem;
+            }
+            
+            .custom-alert-actions {
+                flex-direction: column;
+            }
+            
+            .custom-alert-btn {
+                width: 100%;
+            }
+        }
+        
+        /* ===== ALERTE DE CONFIRMATION DE RÉCEPTION ===== */
+        .confirm-reception-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .confirm-reception-overlay.show {
+            opacity: 1;
+        }
+        
+        .confirm-reception-alert {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border: 2px solid #28a745;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(40, 167, 69, 0.3);
+            animation: slideInScale 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .confirm-reception-alert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #28a745, #20c997, #28a745);
+            animation: shimmer 2s infinite;
+        }
+        
+        .alert-header {
+            margin-bottom: 1.5rem;
+        }
+        
+        .alert-icon {
+            font-size: 4rem;
+            color: #28a745;
+            margin-bottom: 1rem;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .alert-header h3 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+            font-family: 'RussoOne', sans-serif;
+        }
+        
+        .alert-content {
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+        
+        .alert-content p {
+            font-size: 1.1rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        
+        .alert-content p strong {
+            color: #fff;
+        }
+        
+        .warning-text {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 10px;
+            padding: 1rem;
+            color: #ffc107 !important;
+            font-size: 1rem !important;
+        }
+        
+        .warning-text i {
+            margin-right: 0.5rem;
+        }
+        
+        .alert-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .alert-actions button {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 120px;
+            justify-content: center;
+        }
+        
+        .btn-cancel {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+        }
+        
+        .btn-cancel:hover {
+            background: linear-gradient(135deg, #5a6268, #3d4043);
+            transform: translateY(-2px);
+        }
+        
+        .btn-confirm {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+        
+        .btn-confirm:hover {
+            background: linear-gradient(135deg, #218838, #1e7e34);
+            transform: translateY(-2px);
+        }
+        
+        /* Animations */
+        @keyframes slideInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* Responsive pour l'alerte de confirmation */
+        @media (max-width: 768px) {
+            .confirm-reception-alert {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+            
+            .alert-header h3 {
+                font-size: 1.5rem;
+            }
+            
+            .alert-content p {
+                font-size: 1rem;
+            }
+            
+            .alert-actions {
+                flex-direction: column;
+            }
+            
+            .alert-actions button {
+                width: 100%;
+            }
+        }
+        
+        /* Bouton d'assistance WhatsApp flottant */
+        .whatsapp-assistance-btn {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: rgba(15, 23, 41, 0.9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            border: 2px solid rgba(37, 211, 102, 0.3);
+        }
+        
+        .whatsapp-assistance-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+            border-color: rgba(37, 211, 102, 0.6);
+        }
+        
+        .whatsapp-assistance-btn i {
+            color: #25D366;
+            font-size: 20px;
+            transition: transform 0.3s ease;
+        }
+        
+        .whatsapp-assistance-btn:hover i {
+            transform: scale(1.1);
+        }
+        
+        .whatsapp-tooltip {
+            position: absolute;
+            left: -120px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .whatsapp-tooltip::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 6px solid transparent;
+            border-left-color: rgba(0, 0, 0, 0.8);
+        }
+        
+        .whatsapp-assistance-btn:hover .whatsapp-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Responsive pour mobile */
+        @media (max-width: 768px) {
+            .whatsapp-assistance-btn {
+                width: 50px;
+                height: 50px;
+                bottom: 80px;
+                right: 15px;
+            }
+            
+            .whatsapp-assistance-btn i {
+                font-size: 20px;
+            }
+            
+            .whatsapp-tooltip {
+                left: -100px;
+                font-size: 11px;
+                padding: 5px 8px;
+            }
+        }
+        
+        /* Correction forcée du contraste des boutons */
+        button:hover,
+        .btn:hover,
+        [class*="button"]:hover {
+            color: #2d3436 !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3) !important;
+        }
+    </style>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/image_optimization.css' %}">
+    <link rel="stylesheet" href="{% static 'css/badge-animations.css' %}">
+    <link rel="stylesheet" href="{% static 'css/alerts.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+    <link rel="stylesheet" href="{% static 'css/button-contrast-fix.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if user.is_authenticated %}logged-in{% endif %}">
+    <nav class="blizz-navbar">
+        <div class="logo">
+            <a href="/">
+                <img src="{% load static %}{% static 'images/logo.png' %}" alt="Logo Blizz" class="logo-image">
+            </a>
+        </div>
+        
+        <!-- Bouton hamburger pour mobile -->
+        <button class="blizz-mobile-toggle" onclick="toggleBlizzMobileMenu()">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <div class="blizz-nav-links">
+            <div class="nav-group">
+                <a href="/create" class="blizz-nav-button" onclick="return checkAuthAndRedirect(this, 'Vous devez être connecté pour vendre des comptes.')">
+                    <i class="fas fa-store"></i>
+                    Vendre
+                </a>
+                <!-- Boutique temporairement désactivée
+                <a href="{% url 'shop_products' %}" class="blizz-nav-button">
+                    <i class="fas fa-shopping-bag"></i>
+                    Boutique
+                </a>
+                -->
+                <!-- Commandes temporairement désactivées
+                {% if user.is_authenticated %}
+                <a href="{% url 'my_orders' %}" class="blizz-nav-button">
+                    <i class="fas fa-list"></i>
+                    Commandes
+                </a>
+                {% endif %}
+                -->
+                <!-- Highlights temporairement désactivé pour le lancement
+                <a href="{% url 'highlights_for_you' %}" class="nav-button">
+                    <i class="fas fa-video"></i>
+                    <span translate="no">Highlights</span>
+                </a>
+                -->
+                {% if user.is_authenticated %}
+                <div class="nav-group">
+                    <a href="{% url 'transactions' %}" class="blizz-nav-button">
+                        <i class="fas fa-exchange-alt"></i>
+                        Transactions
+                    </a>
+                    <!-- Chat temporairement désactivé pour le lancement
+                    <a href="{% url 'chat_home' %}" class="nav-button">
+                        <i class="fas fa-comments"></i>
+                        <span translate="no">Chat</span>
+                    </a>
+                    -->
+                </div>
+                {% else %}
+                <div class="nav-group">
+                    <a href="{% url 'signin' %}" class="blizz-nav-button">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Connexion
+                    </a>
+                    <a href="{% url 'signup' %}" class="blizz-nav-button">
+                        <i class="fas fa-user-plus"></i>
+                        Inscription
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            
+
+            {% if user.is_authenticated %}
+            <div class="nav-right-section">
+                <!-- Sélecteur de devise -->
+                {% load currency_tags %}
+                {% currency_selector %}
+                
+                <div class="simple-profile-menu">
+                <div class="profile-btn" onclick="toggleBlizzMenu()">
+                    {% load image_filters %}
+                    {% if user_profile and user_profile.profileimg %}
+                        {% if user_profile and user_profile.profileimg %}
+                            <img src="{{ user_profile|cloudinary_or_static:'profileimg' }}" alt="Profile">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" alt="Profile">
+                        {% endif %}
+                    {% elif user.profile and user.profile.profileimg %}
+                        {% if user.profile and user.profile.profileimg %}
+                            <img src="{{ user.profile|cloudinary_or_static:'profileimg' }}" alt="Profile">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" alt="Profile">
+                        {% endif %}
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="Profile">
+                    {% endif %}
+                </div>
+                <div class="blizz-dropdown-menu" id="blizzDropdownMenu" style="display: none;">
+                    <a href="/profile/{{request.user.username}}">
+                        <i class="fas fa-user"></i> Profil
+                    </a>
+                    <!-- Panier temporairement désactivé
+                    <a href="{% url 'cart_view' %}">
+                        <i class="fas fa-shopping-cart"></i> Mon Panier
+                        <span id="cart-count-menu" class="notification-badge" style="display: none;">0</span>
+                    </a>
+                    -->
+                    <a href="{% url 'transactions' %}">
+                        <i class="fas fa-exchange-alt"></i> Mes Transactions
+                    </a>
+                    <a href="{% url 'notifications' %}">
+                        <i class="fas fa-bell"></i> Mes Notifications
+                    </a>
+                    <a href="/settings">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                    <a href="{% url 'seller_payment_setup' %}">
+                        <i class="fas fa-credit-card"></i> Configuration Paiement
+                    </a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'admin_access_page' %}">
+                        <i class="fas fa-cog"></i> Administration
+                    </a>
+                    {% endif %}
+                    <a href="/logout">
+                        <i class="fas fa-sign-out-alt"></i> Se déconnecter
+                    </a>
+                </div>
+            </div>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Menu mobile overlay -->
+    <div class="blizz-mobile-overlay" onclick="closeBlizzMobileMenu()"></div>
+    
+    <!-- Menu mobile -->
+    <div class="blizz-mobile-menu">
+        <div class="blizz-mobile-header">
+            <h3 style="color: var(--primary-color); margin: 0; font-family: 'RussoOne', sans-serif;">Menu</h3>
+            <button class="blizz-mobile-close" onclick="closeBlizzMobileMenu()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="blizz-mobile-content">
+            <!-- Navigation principale -->
+            <div class="blizz-mobile-section">
+                <h3>Navigation</h3>
+                <a href="/create" class="blizz-mobile-nav-item" onclick="return checkAuthAndRedirect(this, 'Vous devez être connecté pour vendre des comptes.')">
+                    <i class="fas fa-store"></i>
+                    Vendre
+                </a>
+                <!-- Boutique temporairement désactivée
+                <a href="{% url 'shop_products' %}" class="blizz-mobile-nav-item">
+                    <i class="fas fa-shopping-bag"></i>
+                    Boutique
+                </a>
+                -->
+                <!-- Commandes temporairement désactivées
+                {% if user.is_authenticated %}
+                <a href="{% url 'my_orders' %}" class="blizz-mobile-nav-item">
+                    <i class="fas fa-list"></i>
+                    Commandes
+                </a>
+                {% endif %}
+                -->
+                {% if user.is_authenticated %}
+                    <a href="{% url 'transactions' %}" class="blizz-mobile-nav-item">
+                        <i class="fas fa-exchange-alt"></i>
+                        Transactions
+                    </a>
+                {% endif %}
+            </div>
+            
+            {% if user.is_authenticated %}
+                <!-- Sélecteur de devise pour mobile -->
+                <div class="mobile-menu-section">
+                    <h3>Devise</h3>
+                    <div class="mobile-currency-selector">
+                        <select id="mobileCurrencySelect" onchange="changeCurrencyMobile(this.value)">
+                            <!-- Devises principales -->
+                            <optgroup label="Devises principales">
+                                <option value="EUR" {% if user.currency_preference.preferred_currency == 'EUR' or not user.currency_preference.preferred_currency %}selected{% endif %}>Euro (€)</option>
+                                <option value="USD" {% if user.currency_preference.preferred_currency == 'USD' %}selected{% endif %}>Dollar Américain ($)</option>
+                                <option value="GBP" {% if user.currency_preference.preferred_currency == 'GBP' %}selected{% endif %}>Livre Sterling (£)</option>
+                            </optgroup>
+                            
+                            <!-- Afrique -->
+                            <optgroup label="Afrique">
+                                <option value="XOF" {% if user.currency_preference.preferred_currency == 'XOF' %}selected{% endif %}>Franc CFA Ouest (FCFA)</option>
+                                <option value="XAF" {% if user.currency_preference.preferred_currency == 'XAF' %}selected{% endif %}>Franc CFA Central (FCFA)</option>
+                                <option value="GNF" {% if user.currency_preference.preferred_currency == 'GNF' %}selected{% endif %}>Franc Guinéen (GNF)</option>
+                                <option value="NGN" {% if user.currency_preference.preferred_currency == 'NGN' %}selected{% endif %}>Naira Nigérian (₦)</option>
+                                <option value="GHS" {% if user.currency_preference.preferred_currency == 'GHS' %}selected{% endif %}>Cedi Ghanéen (₵)</option>
+                            </optgroup>
+                            
+                            <!-- Maghreb -->
+                            <optgroup label="Maghreb">
+                                <option value="MAD" {% if user.currency_preference.preferred_currency == 'MAD' %}selected{% endif %}>Dirham Marocain (د.م.)</option>
+                                <option value="DZD" {% if user.currency_preference.preferred_currency == 'DZD' %}selected{% endif %}>Dinar Algérien (د.ج)</option>
+                                <option value="TND" {% if user.currency_preference.preferred_currency == 'TND' %}selected{% endif %}>Dinar Tunisien (د.ت)</option>
+                                <option value="EGP" {% if user.currency_preference.preferred_currency == 'EGP' %}selected{% endif %}>Livre Égyptienne (ج.م)</option>
+                            </optgroup>
+                            
+                            <!-- Asie -->
+                            <optgroup label="Asie">
+                                <option value="JPY" {% if user.currency_preference.preferred_currency == 'JPY' %}selected{% endif %}>Yen Japonais (¥)</option>
+                                <option value="CNY" {% if user.currency_preference.preferred_currency == 'CNY' %}selected{% endif %}>Yuan Chinois (¥)</option>
+                                <option value="INR" {% if user.currency_preference.preferred_currency == 'INR' %}selected{% endif %}>Roupie Indienne (₹)</option>
+                                <option value="KRW" {% if user.currency_preference.preferred_currency == 'KRW' %}selected{% endif %}>Won Sud-Coréen (₩)</option>
+                                <option value="THB" {% if user.currency_preference.preferred_currency == 'THB' %}selected{% endif %}>Baht Thaïlandais (฿)</option>
+                                <option value="VND" {% if user.currency_preference.preferred_currency == 'VND' %}selected{% endif %}>Dong Vietnamien (₫)</option>
+                                <option value="IDR" {% if user.currency_preference.preferred_currency == 'IDR' %}selected{% endif %}>Roupie Indonésienne (Rp)</option>
+                                <option value="PHP" {% if user.currency_preference.preferred_currency == 'PHP' %}selected{% endif %}>Peso Philippin (₱)</option>
+                                <option value="MYR" {% if user.currency_preference.preferred_currency == 'MYR' %}selected{% endif %}>Ringgit Malaisien (RM)</option>
+                                <option value="SGD" {% if user.currency_preference.preferred_currency == 'SGD' %}selected{% endif %}>Dollar Singapourien (S$)</option>
+                            </optgroup>
+                            
+                            <!-- Amérique latine -->
+                            <optgroup label="Amérique latine">
+                                <option value="BRL" {% if user.currency_preference.preferred_currency == 'BRL' %}selected{% endif %}>Real Brésilien (R$)</option>
+                                <option value="MXN" {% if user.currency_preference.preferred_currency == 'MXN' %}selected{% endif %}>Peso Mexicain ($)</option>
+                                <option value="ARS" {% if user.currency_preference.preferred_currency == 'ARS' %}selected{% endif %}>Peso Argentin ($)</option>
+                                <option value="CLP" {% if user.currency_preference.preferred_currency == 'CLP' %}selected{% endif %}>Peso Chilien ($)</option>
+                                <option value="COP" {% if user.currency_preference.preferred_currency == 'COP' %}selected{% endif %}>Peso Colombien ($)</option>
+                                <option value="PEN" {% if user.currency_preference.preferred_currency == 'PEN' %}selected{% endif %}>Sol Péruvien (S/)</option>
+                                <option value="UYU" {% if user.currency_preference.preferred_currency == 'UYU' %}selected{% endif %}>Peso Uruguayen ($)</option>
+                                <option value="VES" {% if user.currency_preference.preferred_currency == 'VES' %}selected{% endif %}>Bolívar Vénézuélien (Bs)</option>
+                            </optgroup>
+                            
+                            <!-- Amérique du Nord -->
+                            <optgroup label="Amérique du Nord">
+                                <option value="CAD" {% if user.currency_preference.preferred_currency == 'CAD' %}selected{% endif %}>Dollar Canadien (CAD)</option>
+                                <option value="AUD" {% if user.currency_preference.preferred_currency == 'AUD' %}selected{% endif %}>Dollar Australien (A$)</option>
+                                <option value="NZD" {% if user.currency_preference.preferred_currency == 'NZD' %}selected{% endif %}>Dollar Néo-Zélandais (NZ$)</option>
+                            </optgroup>
+                            
+                            <!-- Europe -->
+                            <optgroup label="Europe">
+                                <option value="CHF" {% if user.currency_preference.preferred_currency == 'CHF' %}selected{% endif %}>Franc Suisse (CHF)</option>
+                                <option value="SEK" {% if user.currency_preference.preferred_currency == 'SEK' %}selected{% endif %}>Couronne Suédoise (kr)</option>
+                                <option value="NOK" {% if user.currency_preference.preferred_currency == 'NOK' %}selected{% endif %}>Couronne Norvégienne (kr)</option>
+                                <option value="DKK" {% if user.currency_preference.preferred_currency == 'DKK' %}selected{% endif %}>Couronne Danoise (kr)</option>
+                                <option value="PLN" {% if user.currency_preference.preferred_currency == 'PLN' %}selected{% endif %}>Zloty Polonais (zł)</option>
+                                <option value="CZK" {% if user.currency_preference.preferred_currency == 'CZK' %}selected{% endif %}>Couronne Tchèque (Kč)</option>
+                                <option value="HUF" {% if user.currency_preference.preferred_currency == 'HUF' %}selected{% endif %}>Forint Hongrois (Ft)</option>
+                                <option value="RON" {% if user.currency_preference.preferred_currency == 'RON' %}selected{% endif %}>Leu Roumain (lei)</option>
+                                <option value="BGN" {% if user.currency_preference.preferred_currency == 'BGN' %}selected{% endif %}>Lev Bulgare (лв)</option>
+                                <option value="HRK" {% if user.currency_preference.preferred_currency == 'HRK' %}selected{% endif %}>Kuna Croate (kn)</option>
+                                <option value="RSD" {% if user.currency_preference.preferred_currency == 'RSD' %}selected{% endif %}>Dinar Serbe (дин)</option>
+                                <option value="UAH" {% if user.currency_preference.preferred_currency == 'UAH' %}selected{% endif %}>Hryvnia Ukrainienne (₴)</option>
+                                <option value="RUB" {% if user.currency_preference.preferred_currency == 'RUB' %}selected{% endif %}>Rouble Russe (₽)</option>
+                                <option value="TRY" {% if user.currency_preference.preferred_currency == 'TRY' %}selected{% endif %}>Livre Turque (₺)</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Photo de profil et informations utilisateur -->
+                <div class="mobile-menu-section">
+                    <h3>Mon Profil</h3>
+                    <div class="mobile-profile-info">
+                        <div class="mobile-profile-avatar">
+                            {% if user_profile and user_profile.profileimg %}
+                                {% if user_profile and user_profile.profileimg %}
+                            <img src="{{ user_profile|cloudinary_or_static:'profileimg' }}" alt="Profile">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" alt="Profile">
+                        {% endif %}
+                            {% elif user.profile and user.profile.profileimg %}
+                                {% if user.profile and user.profile.profileimg %}
+                            <img src="{{ user.profile|cloudinary_or_static:'profileimg' }}" alt="Profile">
+                        {% else %}
+                            <img src="{% static 'images/default-avatar.png' %}" alt="Profile">
+                        {% endif %}
+                            {% else %}
+                                <img src="{% static 'images/default-avatar.png' %}" alt="Profile">
+                            {% endif %}
+                        </div>
+                        <div class="mobile-profile-details">
+                            <h4>{{ user.username }}</h4>
+                            <!-- Email supprimé du menu mobile -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Menu utilisateur connecté (identique au menu desktop) -->
+                <div class="blizz-mobile-section">
+                    <h3>Mon Compte</h3>
+                    <a href="/profile/{{request.user.username}}" class="blizz-mobile-nav-item">
+                        <i class="fas fa-user"></i>
+                        Profil
+                    </a>
+                    <!-- Panier temporairement désactivé
+                    <a href="{% url 'cart_view' %}" class="blizz-mobile-nav-item">
+                        <i class="fas fa-shopping-cart"></i>
+                        Mon Panier
+                        <span id="cart-count-menu-mobile" class="notification-badge" style="display: none;">0</span>
+                    </a>
+                    -->
+                    <a href="{% url 'transactions' %}" class="blizz-mobile-nav-item">
+                        <i class="fas fa-exchange-alt"></i>
+                        Mes Transactions
+                    </a>
+                    <a href="{% url 'notifications' %}" class="blizz-mobile-nav-item">
+                        <i class="fas fa-bell"></i>
+                        Mes Notifications
+                    </a>
+                    <a href="/settings" class="blizz-mobile-nav-item">
+                        <i class="fas fa-edit"></i>
+                        Modifier
+                    </a>
+                    <a href="{% url 'seller_payment_setup' %}" class="blizz-mobile-nav-item">
+                        <i class="fas fa-credit-card"></i>
+                        Configuration Paiement
+                    </a>
+                    {% if user.is_staff %}
+                    <a href="{% url 'admin_access_page' %}" class="blizz-mobile-nav-item">
+                        <i class="fas fa-cog"></i>
+                        Administration
+                    </a>
+                    {% endif %}
+                    <a href="/logout" class="blizz-mobile-nav-item" style="color: #e17055;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Se déconnecter
+                    </a>
+                </div>
+            {% else %}
+                <!-- Connexion/Inscription pour utilisateurs non connectés -->
+                <div class="blizz-mobile-section">
+                    <h3>Compte</h3>
+                    <a href="{% url 'signin' %}" class="blizz-mobile-nav-item">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Connexion
+                    </a>
+                    <a href="{% url 'signup' %}" class="blizz-mobile-nav-item">
+                        <i class="fas fa-user-plus"></i>
+                        Inscription
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+   
+    {% block content %}{% endblock %}
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Légal</h3>
+                <a href="{% url 'condition_utilisation' %}" class="footer-link">
+                    <i class="fas fa-file-contract"></i>
+                    Conditions d'utilisation
+                </a>
+                <a href="{% url 'politique_confidentialite' %}" class="footer-link">
+                    <i class="fas fa-shield-alt"></i>
+                    Politique de confidentialité
+                </a>
+            </div>
+            <div class="footer-section">
+                <h3>Communauté</h3>
+                <a href="#" class="footer-link">
+                    <i class="fas fa-users"></i>
+                    Forum
+                </a>
+                <a href="#" class="footer-link">
+                    <i class="fas fa-headset"></i>
+                    Support
+                </a>
+            </div>
+            <div class="footer-section">
+                <h3>Suivez-nous</h3>
+                <div class="social-links">
+                    <a href="https://www.tiktok.com/@blizz_4real" class="social-link" target="_blank" rel="noopener noreferrer">
+                        <i class="fab fa-tiktok"></i>
+                        <span>TikTok</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-african-badge">
+                <span>🌍</span>
+                <span>Plateforme 100% Africaine</span>
+            </div>
+            <p>&copy; 2024 Blizz. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <!-- Google Translate Widget Container -->
+    <button class="translate-toggle-btn" id="translateToggleBtn" onclick="toggleTranslateWidget()">
+        <i class="fas fa-language"></i>
+        <span>Translate</span>
+    </button>
+    <div id="google_translate_element"></div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.carousel-item');
+        
+        function showSlide(index) {
+            if (slides && slides.length > 0 && index >= 0 && index < slides.length) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[index].classList.add('active');
+            }
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        }
+
+        // Initialiser le premier slide seulement s'il y a des slides
+        if (slides && slides.length > 0) {
+        showSlide(0);
+        }
+
+        // Changer de slide toutes les 3 secondes seulement s'il y a des slides
+        if (slides && slides.length > 0) {
+        setInterval(nextSlide, 3000);
+        }
+
+        const cards = document.querySelectorAll('.character-card');
+        const hoverSound = document.getElementById('hoverSound');
+        const clickSound = document.getElementById('clickSound');
+
+        cards.forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                // hoverSound.currentTime = 0; // Réinitialise le son
+                // hoverSound.play(); // DÉSACTIVÉ
+            });
+            card.addEventListener('click', () => {
+                // clickSound.currentTime = 0;
+                // clickSound.play(); // DÉSACTIVÉ
+            });
+        });
+
+        // Ajout du son pour les boutons du menu
+        const menuButtons = document.querySelectorAll('.nav-links .button-primary');
+        
+        menuButtons.forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                // hoverSound.currentTime = 0;
+                // hoverSound.play(); // DÉSACTIVÉ
+            });
+            button.addEventListener('click', () => {
+                // clickSound.currentTime = 0;
+                // clickSound.play(); // DÉSACTIVÉ
+            });
+        });
+
+        // Ajout du son pour tous les éléments de nav-links
+        const navElements = document.querySelectorAll('.nav-links > *');
+        
+        navElements.forEach(element => {
+            element.addEventListener('mouseenter', () => {
+                // hoverSound.currentTime = 0;
+                // hoverSound.play(); // DÉSACTIVÉ
+            });
+            element.addEventListener('click', () => {
+                // clickSound.currentTime = 0;
+                // clickSound.play(); // DÉSACTIVÉ
+            });
+        });
+
+        // Menu déroulant simple
+        // Solution ultra-simple et fiable
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM entièrement chargé');
+    const button = document.getElementById('profile-button');
+    const menu = document.getElementById('profile-dropdown');
+    
+    console.log('Bouton trouvé:', !!button);
+    console.log('Menu trouvé:', !!menu);
+    
+    // Ouvre/ferme le menu au clic sur le bouton
+    if (button && menu) {
+        console.log('Ajout des écouteurs d\'événements');
+        button.onclick = function(e) {
+            console.log('Clic sur le bouton profil');
+            e.stopPropagation();
+            const isVisible = menu.style.display === 'block';
+            console.log('Menu actuel:', isVisible ? 'visible' : 'caché');
+            menu.style.display = isVisible ? 'none' : 'block';
+            console.log('Nouvel état:', isVisible ? 'caché' : 'visible');
+        };
+    } else {
+        console.error('ERREUR: Bouton ou menu non trouvé!');
+    }
+    
+    // Ferme le menu si on clique ailleurs
+    document.onclick = function(e) {
+        console.log('Clic sur le document');
+        if (menu && !menu.contains(e.target) && e.target.id !== 'profile-button' && !button.contains(e.target)) {
+            console.log('Fermeture du menu (clic en dehors)');
+            menu.style.display = 'none';
+        }
+    };
+});
+    </script>
+    
+    <!-- Script simple pour le menu déroulant -->
+    <script>
+        function toggleBlizzMenu() {
+            const menu = document.getElementById('blizzDropdownMenu');
+            if (menu.style.display === 'none' || menu.style.display === '') {
+                menu.style.display = 'block';
+                console.log('📝 Menu Blizz ouvert');
+            } else {
+                menu.style.display = 'none';
+                console.log('📝 Menu Blizz fermé');
+            }
+        }
+        
+        // Fermer le menu en cliquant ailleurs
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('blizzDropdownMenu');
+            const profileBtn = document.querySelector('.profile-btn');
+            
+            if (menu && profileBtn && !profileBtn.contains(event.target)) {
+                menu.style.display = 'none';
+            }
+        });
+    </script>
+    
+    <script src="{% static 'js/alerts.js' %}"></script>
+    
+    <!-- Google Translate Widget - Disponible pour tous -->
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'fr',
+                includedLanguages: 'en,fr,es,ar,pt,de,it,zh-CN,ja,ko,ru',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false,
+                multilanguagePage: true
+            }, 'google_translate_element');
+            
+            // Détecter la langue du navigateur et afficher le widget automatiquement
+            const browserLang = navigator.language || navigator.userLanguage;
+            const langCode = browserLang.split('-')[0];
+            
+            setTimeout(function() {
+                const translateWidget = document.getElementById('google_translate_element');
+                const translateBtn = document.getElementById('translateToggleBtn');
+                
+                if (langCode !== 'fr') {
+                    // Afficher automatiquement si la langue n'est pas français
+                    if (translateWidget) {
+                        translateWidget.classList.add('show');
+                    }
+                    if (translateBtn) {
+                        translateBtn.innerHTML = '<i class="fas fa-times"></i><span>Close</span>';
+                    }
+                }
+                
+                // Ajouter la classe notranslate aux noms de jeux
+                addNotranslateToGameNames();
+            }, 1000);
+        }
+        
+        function toggleTranslateWidget() {
+            const widget = document.getElementById('google_translate_element');
+            const btn = document.getElementById('translateToggleBtn');
+            
+            if (widget.classList.contains('show')) {
+                widget.classList.remove('show');
+                btn.innerHTML = '<i class="fas fa-language"></i><span>Translate</span>';
+            } else {
+                widget.classList.add('show');
+                btn.innerHTML = '<i class="fas fa-times"></i><span>Close</span>';
+            }
+        }
+        
+        function addNotranslateToGameNames() {
+            // Liste des noms de jeux à ne pas traduire
+            const gameNames = ['Free Fire', 'PUBG', 'PUBG Mobile', 'Call of Duty', 'COD', 'Mobile Legends', 'Fortnite', 'FIFA', 'eFootball', 'Clash of Clans', 'Brawl Stars', 'Valorant', 'League of Legends'];
+            
+            // Parcourir tous les éléments de texte
+            const walker = document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+            
+            let node;
+            while (node = walker.nextNode()) {
+                let text = node.textContent;
+                let modified = false;
+                
+                gameNames.forEach(gameName => {
+                    if (text.includes(gameName)) {
+                        const parent = node.parentElement;
+                        if (parent && !parent.classList.contains('notranslate')) {
+                            parent.classList.add('notranslate');
+                            modified = true;
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    
+    {% if user.is_authenticated %}
+    <script src="{% static 'js/notification_sound.js' %}"></script>
+    {% comment %}<!-- Son de notification -->
+    <audio id="notificationSound" preload="auto">
+        <source src="{% static 'sounds/notification.mp3' %}" type="audio/mpeg">
+        <source src="{% static 'sounds/notification.wav' %}" type="audio/wav">
+    </audio>{% endcomment %}
+    {% endif %}
+    
+    {% block extra_js %}{% endblock %}
+
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="message {% if message.tags %}{{ message.tags }}{% endif %} glass-effect" id="message-{{ forloop.counter }}">
+            <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+            <span>{{ message }}</span>
+            <button class="message-close" onclick="closeMessage('message-{{ forloop.counter }}')">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <style>
+        /* Styles pour les messages */
+        .messages-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+        
+        /* Masquer les notifications dans les pages de chat */
+        body.chat-page .messages-container {
+            display: none;
+        }
+        
+        .message {
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: bold;
+            animation: slideIn 0.3s ease-out;
+            backdrop-filter: blur(10px);
+        }
+        
+        .message.error {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff4444;
+            border: 1px solid #ff4444;
+        }
+        
+        .message.success {
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            border: 1px solid #00ff88;
+        }
+        
+        .message.info {
+            background: rgba(0, 123, 255, 0.1);
+            color: #007bff;
+            border: 1px solid #007bff;
+        }
+        
+        .message.warning {
+            background: rgba(255, 193, 7, 0.1);
+            color: #ffc107;
+            border: 1px solid #ffc107;
+        }
+        
+        .message-close {
+            background: none;
+            border: none;
+            color: inherit;
+            cursor: pointer;
+            margin-left: auto;
+            padding: 0.25rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .message-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
+        /* Styles globaux pour les listes déroulantes */
+        select.form-control,
+        select,
+        .form-control[type="select"] {
+            padding: 1rem;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        
+        select.form-control:focus,
+        select:focus,
+        .form-control[type="select"]:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(108, 92, 231, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Styles pour les options des listes déroulantes */
+        select.form-control option,
+        select option,
+        .form-control[type="select"] option {
+            background: #0f1729;
+            color: white;
+            padding: 0.5rem;
+            font-family: inherit;
+        }
+        
+        select.form-control:focus option,
+        select:focus option,
+        .form-control[type="select"]:focus option {
+            background: #1a1a2e;
+            color: white;
+        }
+        
+        /* Style pour les options au survol */
+        select.form-control option:hover,
+        select option:hover,
+        .form-control[type="select"] option:hover,
+        select.form-control option:focus,
+        select option:focus,
+        .form-control[type="select"] option:focus,
+        select.form-control option:active,
+        select option:active,
+        .form-control[type="select"] option:active {
+            background: var(--primary-color) !important;
+            color: white !important;
+        }
+        
+        /* Amélioration de l'apparence générale des select */
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            padding-right: 2.5rem;
+        }
+        
+        /* Style pour les options dans les navigateurs modernes */
+        select::-ms-expand {
+            display: none;
+        }
+        
+        /* Style pour Firefox */
+        select:-moz-focusring {
+            color: transparent;
+            text-shadow: 0 0 0 white;
+        }
+        
+        /* Modal d'authentification requise */
+        .auth-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .auth-modal {
+            background: rgba(15, 23, 41, 0.95);
+            border-radius: 15px;
+            border: 1px solid var(--primary-color);
+            box-shadow: 0 0 30px rgba(108, 92, 231, 0.3);
+            max-width: 500px;
+            width: 90%;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .auth-modal-overlay.show .auth-modal {
+            transform: scale(1);
+        }
+        
+        .auth-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(108, 92, 231, 0.3);
+        }
+        
+        .auth-modal-header h3 {
+            color: var(--primary-color);
+            font-family: 'RussoOne', sans-serif;
+            font-size: 1.3rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .auth-modal-close {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        
+        .auth-modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--primary-color);
+        }
+        
+        .auth-modal-body {
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .auth-modal-body p {
+            color: var(--text-color);
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+        
+        .auth-modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .auth-modal-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            min-width: 140px;
+            justify-content: center;
+        }
+        
+        .auth-modal-btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .auth-modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+        }
+        
+        .auth-modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .auth-modal-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .auth-modal {
+                width: 95%;
+                margin: 1rem;
+            }
+            
+            .auth-modal-actions {
+                flex-direction: column;
+            }
+            
+            .auth-modal-btn {
+                width: 100%;
+            }
+        }
+    </style>
+    
+    <script>
+        function closeMessage(messageId) {
+            const message = document.getElementById(messageId);
+            if (message) {
+                message.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => {
+                    message.remove();
+                }, 300);
+            }
+        }
+        
+        // Auto-hide messages after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const messages = document.querySelectorAll('.message');
+            messages.forEach((message, index) => {
+                setTimeout(() => {
+                    closeMessage(`message-${index + 1}`);
+                }, 5000);
+            });
+        });
+        
+        // Fonction pour vérifier l'authentification avant de rediriger
+        function checkAuthAndRedirect(linkElement, message) {
+            {% if user.is_authenticated %}
+                // Utilisateur connecté, autoriser la navigation
+                return true;
+            {% else %}
+                // Utilisateur non connecté, afficher message et rediriger vers connexion
+                event.preventDefault();
+                showAuthRequiredModal(message);
+                return false;
+            {% endif %}
+        }
+        
+        // Fonction pour afficher une modal d'authentification requise
+        function showAuthRequiredModal(message) {
+            // Créer la modal
+            const modal = document.createElement('div');
+            modal.className = 'auth-modal-overlay';
+            modal.innerHTML = `
+                <div class="auth-modal">
+                    <div class="auth-modal-header">
+                        <h3><i class="fas fa-lock"></i> Connexion requise</h3>
+                        <button class="auth-modal-close" onclick="closeAuthModal()">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="auth-modal-body">
+                        <p>${message}</p>
+                        <div class="auth-modal-actions">
+                            <a href="{% url 'signin' %}" class="auth-modal-btn auth-modal-btn-primary">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Se connecter
+                            </a>
+                            <a href="{% url 'signup' %}" class="auth-modal-btn auth-modal-btn-secondary">
+                                <i class="fas fa-user-plus"></i>
+                                Créer un compte
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Animation d'apparition
+            setTimeout(() => {
+                modal.classList.add('show');
+            }, 10);
+        }
+        
+        // Fonction pour fermer la modal
+        function closeAuthModal() {
+            const modal = document.querySelector('.auth-modal-overlay');
+            if (modal) {
+                modal.classList.remove('show');
+                setTimeout(() => {
+                    modal.remove();
+                }, 300);
+            }
+        }
+
+        // ===== FONCTIONS MENU MOBILE ===== 
+        function toggleBlizzMobileMenu() {
+            const menu = document.querySelector('.blizz-mobile-menu');
+            const overlay = document.querySelector('.blizz-mobile-overlay');
+            const toggle = document.querySelector('.blizz-mobile-toggle');
+            
+            menu.classList.toggle('active');
+            overlay.classList.toggle('active');
+            toggle.classList.toggle('active');
+            
+            // Empêcher le scroll du body quand le menu est ouvert
+            if (menu.classList.contains('active')) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        }
+
+        function closeBlizzMobileMenu() {
+            const menu = document.querySelector('.blizz-mobile-menu');
+            const overlay = document.querySelector('.blizz-mobile-overlay');
+            const toggle = document.querySelector('.blizz-mobile-toggle');
+            
+            menu.classList.remove('active');
+            overlay.classList.remove('active');
+            toggle.classList.remove('active');
+            
+            // Rétablir le scroll du body
+            document.body.style.overflow = '';
+        }
+
+        // Fermer le menu mobile quand on clique sur un lien
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileNavItems = document.querySelectorAll('.blizz-mobile-nav-item');
+            mobileNavItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    // Délai pour permettre la navigation
+                    setTimeout(() => {
+                        closeBlizzMobileMenu();
+                    }, 100);
+                });
+            });
+        });
+
+        // Fermer le menu mobile avec la touche Escape
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeBlizzMobileMenu();
+            }
+        });
+
+        // Gérer le redimensionnement de la fenêtre
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeBlizzMobileMenu();
+            }
+        });
+
+        // Synchroniser le badge du panier entre desktop et mobile
+        function syncCartBadge() {
+            const desktopBadge = document.getElementById('cart-count-menu');
+            const mobileBadge = document.getElementById('cart-count-menu-mobile');
+            
+            if (desktopBadge && mobileBadge) {
+                mobileBadge.textContent = desktopBadge.textContent;
+                mobileBadge.style.display = desktopBadge.style.display;
+            }
+        }
+
+        // Synchroniser au chargement de la page
+        document.addEventListener('DOMContentLoaded', function() {
+            syncCartBadge();
+        });
+        
+        // Fonction pour afficher l'alerte de suppression personnalisée
+        window.showCustomDeleteAlert = function(title, message, confirmCallback, cancelCallback) {
+            // Créer l'overlay
+            const overlay = document.createElement('div');
+            overlay.className = 'custom-alert-overlay';
+            overlay.id = 'custom-delete-alert';
+            
+            // Créer l'alerte
+            overlay.innerHTML = `
+                <div class="custom-alert">
+                    <div class="custom-alert-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="custom-alert-title">${title}</div>
+                    <div class="custom-alert-message">${message}</div>
+                    <div class="custom-alert-actions">
+                        <button class="custom-alert-btn custom-alert-btn-cancel" onclick="closeCustomDeleteAlert()">
+                            <i class="fas fa-times"></i>
+                            Annuler
+                        </button>
+                        <button class="custom-alert-btn custom-alert-btn-confirm" onclick="confirmCustomDelete()">
+                            <i class="fas fa-trash"></i>
+                            Supprimer
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Ajouter au body
+            document.body.appendChild(overlay);
+            
+            // Afficher avec animation
+            setTimeout(() => {
+                overlay.classList.add('show');
+            }, 10);
+            
+            // Stocker les callbacks
+            window.customDeleteConfirmCallback = confirmCallback;
+            window.customDeleteCancelCallback = cancelCallback;
+        }
+        
+        // Fonction pour fermer l'alerte
+        function closeCustomDeleteAlert() {
+            const overlay = document.getElementById('custom-delete-alert');
+            if (overlay) {
+                overlay.classList.remove('show');
+                setTimeout(() => {
+                    overlay.remove();
+                }, 300);
+            }
+            
+            // Exécuter le callback d'annulation si fourni
+            if (window.customDeleteCancelCallback) {
+                window.customDeleteCancelCallback();
+            }
+        }
+        
+        // Fonction pour confirmer la suppression
+        function confirmCustomDelete() {
+            const overlay = document.getElementById('custom-delete-alert');
+            if (overlay) {
+                overlay.classList.remove('show');
+                setTimeout(() => {
+                    overlay.remove();
+                }, 300);
+            }
+            
+            // Exécuter le callback de confirmation si fourni
+            if (window.customDeleteConfirmCallback) {
+                window.customDeleteConfirmCallback();
+            }
+        }
+        
+        // Fonction de remplacement pour confirm() native
+        function customConfirm(message, confirmCallback, cancelCallback) {
+            showCustomDeleteAlert(
+                '⚠️ Confirmation de suppression',
+                message,
+                confirmCallback,
+                cancelCallback
+            );
+        }
+        
+        // Fonction pour changer la devise depuis le menu mobile
+        function changeCurrencyMobile(currencyCode) {
+            // Afficher un indicateur de chargement
+            const select = document.getElementById('mobileCurrencySelect');
+            const originalValue = select.value;
+            select.disabled = true;
+            select.style.opacity = '0.6';
+            
+            // Envoyer la requête AJAX pour changer la devise
+            fetch('{% url "change_currency" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    'currency': currencyCode
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Mettre à jour l'affichage du sélecteur
+                    select.disabled = false;
+                    select.style.opacity = '1';
+                    
+                    // Mettre à jour le sélecteur de devise desktop si présent
+                    const desktopCurrencyBtn = document.querySelector('.current-currency');
+                    if (desktopCurrencyBtn) {
+                        desktopCurrencyBtn.textContent = currencyCode;
+                    }
+                    
+                    // Recharger la page pour afficher les nouveaux prix
+                    window.location.reload();
+                } else {
+                    showErrorAlert('Erreur lors du changement de devise : ' + data.message, 'Erreur de Devise');
+                    select.value = originalValue;
+                    select.disabled = false;
+                    select.style.opacity = '1';
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                showErrorAlert('Erreur de connexion', 'Erreur de Connexion');
+                select.value = originalValue;
+                select.disabled = false;
+                select.style.opacity = '1';
+            });
+        }
+        
+        // Fonction utilitaire pour récupérer le token CSRF
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Fonction pour ouvrir WhatsApp
+        function openWhatsApp() {
+            // Numéro de téléphone pour l'assistance
+            const phoneNumber = '+221781613137';
+            
+            // Message par défaut
+            const defaultMessage = 'Bonjour, j\'ai besoin d\'assistance sur BlizzGame.';
+            
+            // URL WhatsApp
+            const whatsappUrl = `https://wa.me/${phoneNumber.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(defaultMessage)}`;
+            
+            // Ouvrir dans un nouvel onglet
+            window.open(whatsappUrl, '_blank');
+        }
+    </script>
+    
+    <!-- HTML pour l'alerte de suppression personnalisée -->
+    <div id="custom-delete-alert" class="custom-alert-overlay" style="display: none;"></div>
+    
+    <!-- Bouton d'assistance WhatsApp flottant -->
+    <div class="whatsapp-assistance-btn" onclick="openWhatsApp()">
+        <i class="fab fa-whatsapp"></i>
+        <span class="whatsapp-tooltip">Besoin d'aide ?</span>
+    </div>
+    
+    <!-- Notification marketing pour la boutique dropshipping - SUPPRIMÉE -->
+</body>
+</html>

@@ -1,0 +1,15 @@
+
+# Configuration Mailgun pour BLIZZ Gaming - PRODUCTION PRÊTE !
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.mailgun.org'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'postmaster@sandboxaf622f82ae64ea8b9fdb11bcf460b1b.mailgun.org'
+EMAIL_HOST_PASSWORD = '1004SENE.'
+
+# Configuration de vérification email (déjà configuré)
+EMAIL_VERIFICATION_REQUIRED = True
+EMAIL_VERIFICATION_EXPIRE_HOURS = 24
+
+# Configuration de base (déjà configuré)
+BASE_URL = 'http://127.0.0.1:8000'

@@ -1,0 +1,954 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_tags %}
+{% load i18n %}
+
+{% block content %}
+<div class="main-container">
+    <div class="transaction-detail-container">
+        <!-- Détails de la transaction -->
+        <div class="transaction-info-panel">
+            <h1 class="transaction-title">Transaction: {{ transaction.post.title }}</h1>
+            
+            <div class="transaction-status-bar">
+                <div class="status-indicator status-{{ transaction.status }}">
+                    {{ transaction.get_status_display }}
+                </div>
+                
+            </div>
+            
+            <div class="transaction-details">
+                <div class="detail-row">
+                    <span class="detail-label">Acheteur:</span>
+                    <span class="detail-value">{{ transaction.buyer.username }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Vendeur:</span>
+                    <span class="detail-value">{{ transaction.seller.username }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Prix:</span>
+                    <span class="detail-value">{% display_price transaction.amount "EUR" request.user %}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date:</span>
+                    <span class="detail-value">{{ transaction.created_at|date:"d/m/Y H:i" }}</span>
+                </div>
+            </div>
+            
+            {% if is_buyer and transaction.status == 'pending' %}
+            <div class="transaction-actions">
+                <a href="{% url 'initiate_cinetpay_payment' transaction.id %}" class="btn-payment">
+                    <i class="fas fa-credit-card"></i> Payer avec <span class="notranslate">CinetPay</span>
+                </a>
+            </div>
+            {% endif %}
+            
+            {% if is_buyer and transaction.status == 'processing' %}
+            <div class="transaction-actions">
+                {% if cinetpay_payment_validated %}
+                <a href="{% url 'confirm_reception' transaction.id %}" class="btn-confirm" onclick="return showConfirmReceptionAlert(this, '{{ transaction.post.title }}', '{% display_price transaction.amount "EUR" request.user %}')">
+                    <i class="fas fa-check-circle"></i> Confirmer la Réception
+                </a>
+                {% endif %}
+                <a href="{% url 'dispute_transaction' transaction.id %}" class="btn-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Signaler un Problème
+                </a>
+            </div>
+            {% endif %}
+            
+            {% if not is_buyer and transaction.status == 'processing' %}
+            <div class="transaction-actions">
+                <a href="{% url 'dispute_transaction' transaction.id %}" class="btn-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Signaler un Problème
+                </a>
+            </div>
+            {% endif %}
+            
+            {% if transaction.status == 'disputed' %}
+            <div class="dispute-info">
+                <h3><i class="fas fa-exclamation-triangle"></i> Transaction en litige</h3>
+                <p>Cette transaction est actuellement en cours d'examen par notre équipe. Nous vous contacterons prochainement.</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- CHAT AJAX PUR - SANS WEBSOCKET -->
+        {% if chat_enabled %}
+        <div class="pusher-chat-container">
+            <div class="pusher-chat-header">
+                <h3>💬 Discussion de transaction</h3>
+                {% if chat_locked %}
+                    <span class="status-badge status-pending">🔒 Chat bloqué</span>
+                {% endif %}
+            </div>
+            
+            {% if chat %}
+                {% if chat_locked %}
+                    <div class="pusher-chat-locked">
+                        {% if has_open_dispute %}
+                            <p>🔒 Le chat est verrouillé en raison d'un litige en cours.</p>
+                            <div class="chat-status-info">
+                                <small>💡 Le chat sera réactivé une fois le litige résolu</small>
+                            </div>
+                        {% elif not cinetpay_payment_validated %}
+                            <p>🔒 Le chat sera disponible une fois le paiement validé.</p>
+                            <div class="chat-status-info">
+                                <small>💡 Le chat sera activé après validation du paiement <span class="notranslate">CinetPay</span></small>
+                            </div>
+                        {% else %}
+                            <p>🔒 Le chat est temporairement verrouillé.</p>
+                            <div class="chat-status-info">
+                                <small>💡 Le chat sera disponible quand le statut sera "En cours de traitement"</small>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div class="pusher-messages" id="pusher-messages">
+                        {% for message in chat_messages %}
+                        <div class="pusher-message {% if message.sender == request.user %}own{% else %}other{% endif %}">
+                            <div class="pusher-message-content {% if message.content|length <= 10 %}short-message{% endif %}">
+                                <p>{{ message.content }}</p>
+                                <span class="pusher-message-time">{{ message.created_at|date:"H:i" }}</span>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="pusher-message other">
+                            <p>Aucun message pour le moment. Commencez la conversation!</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <form class="pusher-message-form" id="pusher-message-form">
+                        {% csrf_token %}
+                        <input type="text" id="pusher-message-input" placeholder="Tapez votre message..." 
+                               autocomplete="off" spellcheck="false" autocorrect="off" autocapitalize="off" required>
+                        <button type="submit">{% trans "Envoyer" %}</button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <div class="pusher-chat-locked">
+                    <p>🔒 Chat non disponible pour cette transaction.</p>
+                    <div class="chat-status-info">
+                        <small>💡 Le chat sera créé automatiquement quand les conditions seront remplies</small>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .transaction-detail-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+    }
+    
+    .transaction-info-panel {
+        background: rgba(15, 23, 41, 0.8);
+        border-radius: 15px;
+        padding: 2rem;
+        border: 1px solid rgba(108, 92, 231, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .transaction-title {
+        color: #fff;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+    }
+    
+    .transaction-status-bar {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .status-indicator {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .status-processing {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        color: white;
+    }
+    
+    .status-pending {
+        background: linear-gradient(45deg, #ffc107, #fd7e14);
+        color: white;
+    }
+    
+    .status-completed {
+        background: linear-gradient(45deg, #28a745, #20c997);
+        color: white;
+    }
+    
+    .status-disputed {
+        background: linear-gradient(45deg, #dc3545, #e83e8c);
+        color: white;
+    }
+    
+    
+    .transaction-details {
+        margin-bottom: 2rem;
+        background: rgba(15, 23, 41, 0.4);
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid rgba(108, 92, 231, 0.1);
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(108, 92, 231, 0.1);
+    }
+    
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+    
+    .detail-label {
+        color: #ccc;
+        font-weight: 500;
+    }
+    
+    .detail-value {
+        color: #fff;
+        font-weight: bold;
+    }
+    
+    .transaction-actions {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        background: rgba(15, 23, 41, 0.6);
+        padding: 1.5rem;
+        border-radius: 15px;
+        border: 1px solid rgba(108, 92, 231, 0.2);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        margin-top: 1rem;
+    }
+    
+    .btn-confirm, .btn-danger, .btn-payment {
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        font-family: 'Halo', Arial, sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+    }
+    
+    /* Bouton de réception - Vert normal */
+    .btn-confirm {
+        background: linear-gradient(45deg, #28a745, #34ce57);
+        color: #fff;
+    }
+    
+    .btn-confirm:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 12px 30px rgba(40, 167, 69, 0.5);
+        background: linear-gradient(45deg, #34ce57, #28a745);
+        color: #fff;
+    }
+    
+    /* Bouton de signalement - Rouge normal */
+    .btn-danger {
+        background: linear-gradient(45deg, #dc3545, #e74c3c);
+        color: #fff;
+    }
+    
+    .btn-danger:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 12px 30px rgba(220, 53, 69, 0.5);
+        background: linear-gradient(45deg, #e74c3c, #dc3545);
+        color: #fff;
+    }
+    
+    /* Bouton de paiement - Violet comme la plateforme */
+    .btn-payment, .btn-cinetpay {
+        background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+        color: #fff;
+    }
+    
+    .btn-payment:hover, .btn-cinetpay:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 12px 30px rgba(108, 92, 231, 0.5);
+        background: linear-gradient(45deg, #a29bfe, #6c5ce7);
+        color: #fff;
+    }
+    
+    /* Bouton de configuration - Bleu foncé */
+    .btn-setup {
+        background: linear-gradient(45deg, #2c3e50, #34495e);
+        color: #fff;
+    }
+    
+    .btn-setup:hover {
+        transform: translateY(-3px) scale(1.02);
+        box-shadow: 0 12px 30px rgba(44, 62, 80, 0.5);
+        background: linear-gradient(45deg, #34495e, #2c3e50);
+        color: #fff;
+    }
+    
+    .dispute-info {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid #dc3545;
+        border-radius: 10px;
+        padding: 1rem;
+        color: #dc3545;
+    }
+    
+    .pusher-chat-container {
+        background: rgba(15, 23, 41, 0.9);
+        border-radius: 15px;
+        border: 1px solid rgba(108, 92, 231, 0.2);
+        display: flex;
+        flex-direction: column;
+        height: 600px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .pusher-chat-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(108, 92, 231, 0.2);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(15, 23, 41, 0.5);
+        border-radius: 15px 15px 0 0;
+    }
+    
+    .pusher-chat-header h3 {
+        color: #fff;
+        margin: 0;
+    }
+    
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    
+    .status-pending {
+        background: rgba(255, 193, 7, 0.15);
+        color: #ffc107;
+        border: 1px solid rgba(255, 193, 7, 0.3);
+    }
+    
+    .status-success {
+        background: rgba(40, 167, 69, 0.15);
+        color: #28a745;
+        border: 1px solid rgba(40, 167, 69, 0.3);
+    }
+    
+    .pusher-messages {
+        flex: 1;
+        padding: 1rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        background: rgba(15, 23, 41, 0.3);
+    }
+    
+    /* Style de la scrollbar */
+    .pusher-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .pusher-messages::-webkit-scrollbar-track {
+        background: rgba(15, 23, 41, 0.5);
+        border-radius: 3px;
+    }
+    
+    .pusher-messages::-webkit-scrollbar-thumb {
+        background: rgba(108, 92, 231, 0.5);
+        border-radius: 3px;
+    }
+    
+    .pusher-messages::-webkit-scrollbar-thumb:hover {
+        background: rgba(108, 92, 231, 0.7);
+    }
+    
+    .pusher-message {
+        display: flex;
+        margin-bottom: 0.5rem;
+        align-items: flex-end;
+    }
+    
+    .pusher-message.own {
+        justify-content: flex-end;
+    }
+    
+    .pusher-message.other {
+        justify-content: flex-start;
+    }
+    
+    .pusher-message-content {
+        max-width: 70%;
+        min-width: 60px;
+        padding: 0.5rem 0.75rem;
+        border-radius: 15px;
+        position: relative;
+        display: inline-block;
+        word-wrap: break-word;
+    }
+    
+    .pusher-message.own .pusher-message-content {
+        background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+        color: white;
+        border: 1px solid rgba(108, 92, 231, 0.5);
+        box-shadow: 0 2px 8px rgba(108, 92, 231, 0.2);
+    }
+    
+    .pusher-message.other .pusher-message-content {
+        background: linear-gradient(45deg, #2d3748, #4a5568) !important;
+        color: #fff !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+    }
+    
+    /* Assurer que tous les messages ont un fond */
+    .pusher-message .pusher-message-content {
+        background: linear-gradient(45deg, #2d3748, #4a5568);
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .pusher-message-content p {
+        margin: 0;
+        word-wrap: break-word;
+        line-height: 1.3;
+    }
+    
+    .pusher-message-time {
+        font-size: 0.65rem;
+        opacity: 0.6;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    
+    /* Styles pour les messages courts */
+    .pusher-message-content:has(p:only-child) {
+        padding: 0.4rem 0.6rem;
+    }
+    
+    /* Alternative pour les navigateurs qui ne supportent pas :has() */
+    .pusher-message-content.short-message {
+        padding: 0.4rem 0.6rem;
+    }
+    
+    .pusher-message-form {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid rgba(108, 92, 231, 0.2);
+        display: flex;
+        gap: 1rem;
+        background: rgba(15, 23, 41, 0.5);
+        border-radius: 0 0 15px 15px;
+    }
+    
+    .pusher-message-form input {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid rgba(108, 92, 231, 0.3);
+        border-radius: 10px;
+        background: rgba(15, 23, 41, 0.8);
+        color: #fff;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .pusher-message-form input:focus {
+        outline: none;
+        border-color: rgba(108, 92, 231, 0.6);
+        background: rgba(15, 23, 41, 0.9);
+        box-shadow: 0 0 10px rgba(108, 92, 231, 0.2);
+    }
+    
+    .pusher-message-form input::placeholder {
+        color: #ccc;
+    }
+    
+    .pusher-message-form button {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(45deg, #1e293b, #334155);
+        color: white;
+        border: 1px solid rgba(108, 92, 231, 0.5);
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .pusher-message-form button:hover {
+        background: linear-gradient(45deg, #334155, #475569);
+        border-color: rgba(108, 92, 231, 0.7);
+        transform: translateY(-1px);
+    }
+    
+    .pusher-chat-locked {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        padding: 2rem;
+        text-align: center;
+        color: #ccc;
+    }
+    
+    .chat-status-info {
+        margin-top: 1rem;
+        padding: 0.5rem;
+        background: rgba(0, 123, 255, 0.1);
+        border-radius: 5px;
+        border-left: 3px solid #007bff;
+        max-width: 300px;
+    }
+    
+    .chat-status-info small {
+        color: #007bff;
+        font-style: italic;
+    }
+    
+    @media (max-width: 768px) {
+        .transaction-detail-container {
+            grid-template-columns: 1fr;
+            padding: 1rem;
+        }
+        
+        .pusher-chat-container {
+            height: 400px;
+        }
+    }
+</style>
+
+<script>
+// CHAT AJAX PUR - SANS WEBSOCKET
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Initialisation du chat AJAX pur...');
+    
+    const chatMessages = document.getElementById('pusher-messages');
+    const chatForm = document.getElementById('pusher-message-form');
+    const chatInput = document.getElementById('pusher-message-input');
+    
+    if (!chatForm || !chatInput) {
+        console.log('❌ Éléments de chat non trouvés');
+        return;
+    }
+    
+    // Fonction pour ajouter un message à l'interface
+    function addMessage(content, isOwn = false, timestamp = null) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `pusher-message ${isOwn ? 'own' : 'other'}`;
+        
+        const time = timestamp ? new Date(timestamp).toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        }) : new Date().toLocaleTimeString('fr-FR', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+        });
+        
+        // Déterminer si c'est un message court
+        const isShortMessage = content.length <= 10;
+        const contentClass = isShortMessage ? 'pusher-message-content short-message' : 'pusher-message-content';
+        
+        messageDiv.innerHTML = `
+            <div class="${contentClass}">
+                <p>${content}</p>
+                <span class="pusher-message-time">${time}</span>
+            </div>
+        `;
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Fonction pour récupérer le cookie CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Gestion de l'envoi de messages
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const content = chatInput.value.trim();
+        if (!content) return;
+        
+        console.log('📤 Envoi du message via AJAX:', content);
+        
+        // Vider le champ immédiatement pour meilleure UX
+        chatInput.value = '';
+        
+        // Désactiver le bouton d'envoi temporairement
+        const submitBtn = chatForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        
+        // Envoyer le message au serveur
+        {% if chat %}
+        fetch('{% url "send_message" chat.id %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: 'content=' + encodeURIComponent(content) + '&message_type=text'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                console.log('✅ Message envoyé avec succès');
+                // Forcer le chargement immédiat des nouveaux messages
+                loadNewMessages();
+            } else {
+                console.error('❌ Erreur lors de l\'envoi:', data.error);
+                // Restaurer le message en cas d'erreur
+                chatInput.value = content;
+            }
+        })
+        .catch(error => {
+            console.error('❌ Erreur AJAX:', error);
+            // Restaurer le message en cas d'erreur
+            chatInput.value = content;
+        })
+        .finally(() => {
+            // Réactiver le bouton
+            submitBtn.disabled = false;
+        });
+        {% else %}
+        console.error('Chat non disponible');
+        submitBtn.disabled = false;
+        {% endif %}
+    });
+    
+    // Auto-scroll vers le bas
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // Scroll initial
+    scrollToBottom();
+    
+    // ===== SYSTÈME DE POLLING POUR LES NOUVEAUX MESSAGES =====
+    let lastMessageCount = {{ chat_messages|length }};
+    let isPolling = true;
+    
+    function loadNewMessages() {
+        if (!isPolling) return;
+        
+        fetch('{% url "get_transaction_messages" transaction.id %}', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.messages && data.messages.length > lastMessageCount) {
+                // Il y a de nouveaux messages
+                const newMessages = data.messages.slice(lastMessageCount);
+                
+                newMessages.forEach(message => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.className = `pusher-message ${message.is_mine ? 'own' : 'other'}`;
+                    messageDiv.innerHTML = `
+                        <div class="pusher-message-content">
+                            <p>${message.content}</p>
+                            <span class="pusher-message-time">${message.created_at}</span>
+                        </div>
+                    `;
+                    chatMessages.appendChild(messageDiv);
+                });
+                
+                lastMessageCount = data.messages.length;
+                scrollToBottom();
+                
+                // Son de notification pour les nouveaux messages
+                if (newMessages.some(msg => !msg.is_mine)) {
+                    playNotificationSound();
+                }
+            }
+        })
+        .catch(error => {
+            console.error('❌ Erreur lors du chargement des messages:', error);
+        });
+    }
+    
+    // Fonction pour jouer un son de notification
+    function playNotificationSound() {
+        try {
+            const audio = new Audio('/static/sounds/song_notif.wav');
+            audio.volume = 0.5;
+            audio.play().catch(() => {}); // Ignorer les erreurs de lecture
+        } catch (e) {
+            // Fallback vers le son intégré si le fichier n'est pas disponible
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT');
+                audio.volume = 0.3;
+                audio.play().catch(() => {});
+            } catch (e2) {
+                // Ignorer les erreurs
+            }
+        }
+    }
+    
+    // Démarrer le polling toutes les 3 secondes
+    const pollingInterval = setInterval(loadNewMessages, 3000);
+    
+    // Arrêter le polling quand l'utilisateur quitte la page
+    window.addEventListener('beforeunload', function() {
+        isPolling = false;
+        clearInterval(pollingInterval);
+    });
+    
+    // Arrêter le polling quand l'onglet n'est plus visible
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            isPolling = false;
+            clearInterval(pollingInterval);
+        } else {
+            isPolling = true;
+            // Redémarrer le polling
+            setTimeout(() => {
+                if (isPolling) {
+                    setInterval(loadNewMessages, 3000);
+                }
+            }, 1000);
+        }
+    });
+    
+    console.log('✅ Chat AJAX initialisé avec succès - Polling activé');
+});
+
+// ===== FONCTION D'ALERTE DE CONFIRMATION DE RÉCEPTION =====
+function showConfirmReceptionAlert(linkElement, productTitle, amount) {
+    // Empêcher la navigation immédiate
+    event.preventDefault();
+    
+    // Créer l'overlay d'alerte
+    const alertOverlay = document.createElement('div');
+    alertOverlay.className = 'confirm-reception-overlay';
+    alertOverlay.innerHTML = `
+        <div class="confirm-reception-alert">
+            <div class="alert-header">
+                <div class="alert-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>⚠️ Confirmer la Réception</h3>
+            </div>
+            <div class="alert-content">
+                <p><strong>Produit :</strong> ${productTitle}</p>
+                <p><strong>Montant :</strong> ${amount}</p>
+                <div class="warning-box">
+                    <p class="warning-text">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>ATTENTION :</strong> Cette action est irréversible !
+                    </p>
+                    <ul class="warning-list">
+                        <li>Vous confirmez avoir reçu le produit</li>
+                        <li>Le paiement sera libéré au vendeur</li>
+                        <li>Vous ne pourrez plus annuler cette transaction</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="alert-actions">
+                <button class="btn-cancel" onclick="closeConfirmReceptionAlert()">
+                    <i class="fas fa-times"></i>{% trans "Annuler" %}</button>
+                <button class="btn-confirm-final" onclick="proceedWithConfirmation('${linkElement.href}')">
+                    <i class="fas fa-check"></i> Je confirme la réception
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Ajouter au DOM
+    document.body.appendChild(alertOverlay);
+    
+    // Animation d'apparition
+    setTimeout(() => {
+        alertOverlay.classList.add('show');
+    }, 10);
+}
+
+function closeConfirmReceptionAlert() {
+    const overlay = document.querySelector('.confirm-reception-overlay');
+    if (overlay) {
+        overlay.classList.remove('show');
+        setTimeout(() => {
+            overlay.remove();
+        }, 300);
+    }
+}
+
+function proceedWithConfirmation(url) {
+    // Fermer l'alerte
+    closeConfirmReceptionAlert();
+    
+    // Rediriger vers la confirmation
+    window.location.href = url;
+}
+
+// Styles pour l'alerte de confirmation
+const alertStyles = document.createElement('style');
+alertStyles.textContent = `
+    .confirm-reception-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .confirm-reception-overlay.show {
+        opacity: 1;
+    }
+    
+    .confirm-reception-alert {
+        background: linear-gradient(135deg, #1a1a2e, #16213e);
+        border: 2px solid #e74c3c;
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        transform: scale(0.9);
+        transition: transform 0.3s ease;
+    }
+    
+    .confirm-reception-overlay.show .confirm-reception-alert {
+        transform: scale(1);
+    }
+    
+    .alert-header {
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .alert-icon {
+        font-size: 3rem;
+        color: #e74c3c;
+        margin-bottom: 1rem;
+    }
+    
+    .alert-header h3 {
+        color: #fff;
+        margin: 0;
+        font-size: 1.5rem;
+    }
+    
+    .alert-content {
+        margin-bottom: 2rem;
+    }
+    
+    .alert-content p {
+        color: #ccc;
+        margin: 0.5rem 0;
+        font-size: 1.1rem;
+    }
+    
+    .warning-box {
+        background: rgba(231, 76, 60, 0.1);
+        border: 1px solid rgba(231, 76, 60, 0.3);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .warning-text {
+        color: #e74c3c !important;
+        font-weight: bold;
+        margin-bottom: 0.5rem !important;
+    }
+    
+    .warning-list {
+        color: #ccc;
+        margin: 0.5rem 0 0 1rem;
+        padding: 0;
+    }
+    
+    .warning-list li {
+        margin: 0.3rem 0;
+    }
+    
+    .alert-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+    
+    .btn-cancel, .btn-confirm-final {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 10px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-cancel {
+        background: #6c757d;
+        color: #fff;
+    }
+    
+    .btn-cancel:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+    }
+    
+    .btn-confirm-final {
+        background: linear-gradient(45deg, #e74c3c, #c0392b);
+        color: #fff;
+    }
+    
+    .btn-confirm-final:hover {
+        background: linear-gradient(45deg, #c0392b, #e74c3c);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+    }
+`;
+document.head.appendChild(alertStyles);
+</script>
+{% endblock %}
+

@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_tags %}
+{% load i18n %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/notifications.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="main-container">
+    <div class="notifications-container">
+        <div class="notifications-header">
+            <h1 class="page-title">Mes notifications</h1>
+            {% if notifications %}
+                <div class="notifications-actions">
+                    <form method="post" action="{% url 'mark_all_notifications_read' %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary mark-all-read-btn">
+                            <i class="fas fa-check-double"></i> Marquer tout comme lu
+                        </button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+        
+        {% if notifications %}
+            <div class="notifications-list">
+                {% for notification in notifications %}
+                    <div class="notification-card {% if not notification.is_read %}unread{% endif %} {% if 'avertissement' in notification.title|lower or 'warning' in notification.title|lower or notification.type == 'warning' %}warning{% endif %}">
+                        <div class="notification-icon">
+                            {% if notification.type == 'purchase_intent' %}
+                                <i class="fas fa-shopping-cart"></i>
+                            {% elif notification.type == 'transaction_started' %}
+                                <i class="fas fa-handshake"></i>
+                            {% elif notification.type == 'new_message' %}
+                                <i class="fas fa-comment"></i>
+                            {% elif notification.type == 'transaction_update' %}
+                                <i class="fas fa-exchange-alt"></i>
+                            {% elif notification.type == 'dispute_message' %}
+                                <i class="fas fa-question-circle"></i>
+                            {% elif 'avertissement' in notification.title|lower or 'warning' in notification.title|lower or notification.type == 'warning' %}
+                                <i class="fas fa-exclamation-triangle"></i>
+                            {% else %}
+                                <i class="fas fa-bell"></i>
+                            {% endif %}
+                        </div>
+                        <div class="notification-content">
+                            <h3 class="notification-title">
+                                {% if notification.type == 'new_message' and notification.message_count > 1 %}
+                                    {{ notification.message_count }} nouveaux messages
+                                {% else %}
+                                    {{ notification.title }}
+                                {% endif %}
+                            </h3>
+                            <p class="notification-text">{{ notification.content|convert_notification_content:request.user }}</p>
+                            <span class="notification-time">{{ notification.created_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div class="notification-actions">
+                            {% if not notification.is_read %}
+                                <form method="post" action="{% url 'mark_notification_read' notification.id %}" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="mark-read-btn" title="Marquer comme lu">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                            {% else %}
+                                <span class="read-indicator">
+                                    <i class="fas fa-check-circle text-success"></i> Lu
+
+                            {% endif %}
+                            
+                            {% if notification.type == 'dispute_message' and notification.dispute %}
+                                {% if notification.pending_request %}
+                                    <a href="{% url 'respond_to_information_request' notification.pending_request.id %}" class="action-btn info-request-btn">
+                                        <i class="fas fa-question-circle"></i> Répondre à l'admin
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'admin_dispute_detail' notification.dispute.id %}" class="action-btn">
+                                        <i class="fas fa-eye"></i> Voir le litige
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                            
+                            {% if notification.transaction %}
+                                {% if notification.type == 'new_message' %}
+                                    <a href="{% url 'transaction_detail' notification.transaction.id %}" class="action-btn">
+                                        <i class="fas fa-comment"></i> Voir la conversation
+                                    </a>
+                                {% elif notification.message %}
+                                    <a href="{% url 'chat_detail' notification.message.chat.id %}" class="action-btn">
+                                        <i class="fas fa-comment"></i> Voir le message
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'transaction_detail' notification.transaction.id %}" class="action-btn">
+                                        <i class="fas fa-exchange-alt"></i> Voir la transaction
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-bell-slash empty-icon"></i>
+                <p>Vous n'avez pas encore de notifications.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .page-title {
+        color: var(--primary-color);
+        font-family: 'RussoOne', sans-serif;
+        font-size: 2.5rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .notifications-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .notifications-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .notification-card {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 1.5rem;
+        display: flex;
+        gap: 1rem;
+        position: relative;
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        word-wrap: break-word;
+        word-break: break-word;
+    }
+    
+    .notification-card.unread {
+        background: rgba(108, 92, 231, 0.1);
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .notification-icon {
+        font-size: 1.5rem;
+        color: var(--primary-color);
+        background: rgba(108, 92, 231, 0.1);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    
+    .notification-content {
+        flex: 1;
+        min-width: 0;
+        word-wrap: break-word;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .notification-title {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.2rem;
+        color: white;
+        word-wrap: break-word;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    .notification-text {
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 0.5rem;
+        word-wrap: break-word;
+        word-break: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
+    
+    .notification-time {
+        font-size: 0.8rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .notification-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: flex-end;
+    }
+    
+    .mark-read-btn {
+        background: rgba(108, 92, 231, 0.2);
+        color: white;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .mark-read-btn:hover {
+        background: var(--primary-color);
+    }
+    
+    .action-btn {
+        background: var(--primary-color);
+        color: white;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+        transition: all 0.3s ease;
+    }
+    
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+    }
+    
+    .info-request-btn {
+        background: linear-gradient(45deg, #f39c12, #e67e22);
+        animation: pulse 2s infinite;
+    }
+    
+    .info-request-btn:hover {
+        background: linear-gradient(45deg, #e67e22, #d35400);
+        box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+    }
+    
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(243, 156, 18, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(243, 156, 18, 0); }
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 0;
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        color: rgba(255, 255, 255, 0.2);
+    }
+    
+    @media (max-width: 768px) {
+        .notifications-container {
+            padding: 1rem;
+        }
+        
+        .notification-card {
+            flex-direction: column;
+            padding: 1rem;
+        }
+        
+        .notification-title {
+            font-size: 1rem;
+        }
+        
+        .notification-text {
+            font-size: 0.9rem;
+        }
+        
+        .notification-actions {
+            flex-direction: row;
+            justify-content: flex-end;
+            margin-top: 1rem;
+        }
+    }
+</style>
+{% endblock %}

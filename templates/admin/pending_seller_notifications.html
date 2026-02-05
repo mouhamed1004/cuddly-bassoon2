@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Notifications Vendeurs en Attente - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+    }
+    
+    .admin-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .admin-header h1 {
+        margin: 0 0 0.5rem 0;
+        font-size: 2rem;
+    }
+    
+    .admin-header p {
+        margin: 0;
+        opacity: 0.9;
+    }
+    
+    .stats-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #667eea;
+        margin: 0;
+    }
+    
+    .stat-label {
+        color: #666;
+        font-size: 1rem;
+        margin-top: 0.5rem;
+    }
+    
+    .notifications-table {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .table-header {
+        background: #f8f9fa;
+        padding: 1rem;
+        border-bottom: 2px solid #dee2e6;
+        font-weight: bold;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 150px;
+        gap: 1rem;
+        align-items: center;
+    }
+    
+    .table-row {
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr 1fr 150px;
+        gap: 1rem;
+        align-items: center;
+        transition: background 0.2s;
+    }
+    
+    .table-row:hover {
+        background: #f8f9fa;
+    }
+    
+    .seller-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .seller-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .seller-details {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .seller-username {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .seller-email {
+        font-size: 0.85rem;
+        color: #666;
+        word-break: break-all;
+    }
+    
+    .time-badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    
+    .time-critical {
+        background: #fee;
+        color: #c00;
+    }
+    
+    .time-warning {
+        background: #ffeaa7;
+        color: #d63031;
+    }
+    
+    .transaction-link {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .transaction-link:hover {
+        text-decoration: underline;
+    }
+    
+    .btn-notify {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.2s;
+    }
+    
+    .btn-notify:hover {
+        background: #5568d3;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #666;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        color: #ddd;
+        margin-bottom: 1rem;
+    }
+    
+    .message-preview {
+        font-size: 0.9rem;
+        color: #666;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    @media (max-width: 1200px) {
+        .table-header, .table-row {
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 0.5rem;
+        }
+        
+        .table-header span:nth-child(4),
+        .table-header span:nth-child(5),
+        .table-row > div:nth-child(4),
+        .table-row > div:nth-child(5) {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1><i class="fas fa-bell"></i> Notifications Vendeurs en Attente</h1>
+        <p>Vendeurs qui n'ont pas répondu aux messages après 2h30</p>
+    </div>
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" style="padding: 1rem; margin-bottom: 1rem; border-radius: 5px; background: {% if message.tags == 'success' %}#d4edda{% else %}#f8d7da{% endif %}; border: 1px solid {% if message.tags == 'success' %}#c3e6cb{% else %}#f5c6cb{% endif %};">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <div class="stats-card">
+        <p class="stat-number">{{ total_count }}</p>
+        <p class="stat-label">Vendeur(s) à notifier</p>
+    </div>
+    
+    {% if pending_notifications %}
+        <div class="notifications-table">
+            <div class="table-header">
+                <span>{% trans "Vendeur" %}</span>
+                <span>{% trans "Acheteur" %}</span>
+                <span>{% trans "Transaction" %}</span>
+                <span>Dernier Message</span>
+                <span>Temps Écoulé</span>
+                <span>Action</span>
+            </div>
+            
+            {% for notif in pending_notifications %}
+                <div class="table-row">
+                    <div class="seller-info">
+                        <div class="seller-details">
+                            <span class="seller-username">@{{ notif.seller.username }}</span>
+                            <span class="seller-email">{{ notif.seller_email }}</span>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <span class="seller-username">@{{ notif.buyer.username }}</span>
+                    </div>
+                    
+                    <div>
+                        <a href="{% url 'transaction_detail' notif.transaction.id %}" class="transaction-link" target="_blank">
+                            <i class="fas fa-external-link-alt"></i> Voir
+                        </a>
+                    </div>
+                    
+                    <div class="message-preview" title="{{ notif.last_buyer_message.content }}">
+                        {{ notif.last_buyer_message.content|truncatewords:10 }}
+                    </div>
+                    
+                    <div>
+                        {% if notif.time_elapsed.total_seconds > 21600 %}
+                            <span class="time-badge time-critical">
+                                <i class="fas fa-exclamation-triangle"></i> {{ notif.time_elapsed.total_seconds|floatformat:0|add:"0"|divisibleby:3600 }}h
+
+                        {% else %}
+                            <span class="time-badge time-warning">
+                                {{ notif.time_elapsed.total_seconds|floatformat:0|add:"0"|divisibleby:60 }}min
+
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <form method="POST" action="{% url 'mark_seller_notified' notif.transaction.id %}" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-notify" onclick="return confirm('Confirmer que vous avez envoyé l\'email à @{{ notif.seller.username }} ?')">
+                                <i class="fas fa-check"></i> Notifié
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-check-circle"></i>
+            <h2>Aucune notification en attente</h2>
+            <p>Tous les vendeurs ont répondu à temps !</p>
+        </div>
+    {% endif %}
+    
+    <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
+        <h3><i class="fas fa-info-circle"></i> Instructions</h3>
+        <ol>
+            <li>Copiez l'email du vendeur</li>
+            <li>Envoyez-lui un email depuis votre Gmail pour lui rappeler de répondre</li>
+            <li>Cliquez sur "Notifié" pour retirer le vendeur de cette liste</li>
+            <li>Si le vendeur répond, il sera automatiquement retiré de la liste</li>
+        </ol>
+        
+        <h4 style="margin-top: 1.5rem;">Template d'email suggéré :</h4>
+        <div style="background: white; padding: 1rem; border-radius: 5px; font-family: monospace; font-size: 0.9rem;">
+            Bonjour @[username],<br><br>
+            
+            Vous avez reçu un message de votre acheteur concernant la transaction #[transaction_id] il y a plus de 2h30.<br><br>
+            
+            Merci de répondre rapidement pour maintenir une bonne expérience utilisateur.<br><br>
+            
+            Lien de la transaction : https://blizz.boutique/transaction/[transaction_id]/<br><br>
+            
+            Cordialement,<br>
+            L'équipe <span class="notranslate">Blizz Gaming</span>
+        </div>
+    </div>
+</div>
+{% endblock %}

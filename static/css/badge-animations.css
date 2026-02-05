@@ -1,0 +1,145 @@
+/* Animations globales pour les insignes BLIZZ */
+
+.animated-badge {
+    position: relative;
+    animation: badgeGlow 3s ease-in-out infinite;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+}
+
+.animated-badge:hover {
+    transform: scale(1.15);
+    animation: badgeGlowHover 1.5s ease-in-out infinite;
+}
+
+.animated-badge::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    background: radial-gradient(circle, rgba(108, 92, 231, 0.3), transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+.animated-badge::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: conic-gradient(from 0deg, transparent, rgba(255, 255, 255, 0.4), transparent, rgba(108, 92, 231, 0.3), transparent);
+    border-radius: 50%;
+    animation: shimmerRotate 4s linear infinite;
+    z-index: 1;
+    pointer-events: none;
+}
+
+/* Animations pour les badges dans les profils */
+.badge-icon .badge-image {
+    position: relative;
+    animation: badgeGlow 3s ease-in-out infinite;
+    transition: all 0.3s ease;
+    z-index: 2;
+}
+
+.badge-icon:hover .badge-image {
+    transform: scale(1.1);
+    animation: badgeGlowHover 1.5s ease-in-out infinite;
+}
+
+/* Keyframes pour les animations */
+@keyframes badgeGlow {
+    0%, 100% { 
+        filter: drop-shadow(0 0 5px rgba(108, 92, 231, 0.5)) drop-shadow(0 4px 8px rgba(0,0,0,0.5)); 
+    }
+    50% { 
+        filter: drop-shadow(0 0 15px rgba(108, 92, 231, 0.8)) drop-shadow(0 0 25px rgba(108, 92, 231, 0.4)) drop-shadow(0 4px 8px rgba(0,0,0,0.5)); 
+    }
+}
+
+@keyframes badgeGlowHover {
+    0%, 100% { 
+        filter: drop-shadow(0 0 10px rgba(108, 92, 231, 0.8)) drop-shadow(0 4px 8px rgba(0,0,0,0.5)); 
+    }
+    50% { 
+        filter: drop-shadow(0 0 20px rgba(108, 92, 231, 1)) drop-shadow(0 0 35px rgba(108, 92, 231, 0.6)) drop-shadow(0 4px 8px rgba(0,0,0,0.5)); 
+    }
+}
+
+@keyframes pulseGlow {
+    0%, 100% { 
+        opacity: 0.2; 
+        transform: scale(1); 
+    }
+    50% { 
+        opacity: 0.5; 
+        transform: scale(1.2); 
+    }
+}
+
+@keyframes shimmerRotate {
+    0% { 
+        transform: rotate(0deg); 
+        opacity: 0; 
+    }
+    25% { 
+        opacity: 0.3; 
+    }
+    50% { 
+        opacity: 0.6; 
+    }
+    75% { 
+        opacity: 0.3; 
+    }
+    100% { 
+        transform: rotate(360deg); 
+        opacity: 0; 
+    }
+}
+
+/* Animation spéciale pour les badges de haut niveau */
+.animated-badge[alt*="Or"], .animated-badge[alt*="Gold"] {
+    animation: goldBadgeGlow 2.5s ease-in-out infinite;
+}
+
+.animated-badge[alt*="Diamant"], .animated-badge[alt*="Diamond"] {
+    animation: diamondBadgeGlow 2s ease-in-out infinite;
+}
+
+@keyframes goldBadgeGlow {
+    0%, 100% { 
+        filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.6)) drop-shadow(0 4px 8px rgba(0,0,0,0.5)); 
+    }
+    50% { 
+        filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.5)) drop-shadow(0 4px 8px rgba(0,0,0,0.5)); 
+    }
+}
+
+@keyframes diamondBadgeGlow {
+    0%, 100% { 
+        filter: drop-shadow(0 0 10px rgba(185, 242, 255, 0.7)) drop-shadow(0 4px 8px rgba(0,0,0,0.5)); 
+    }
+    50% { 
+        filter: drop-shadow(0 0 20px rgba(185, 242, 255, 1)) drop-shadow(0 0 35px rgba(185, 242, 255, 0.6)) drop-shadow(0 4px 8px rgba(0,0,0,0.5)); 
+    }
+}
+
+/* Animation de flottement subtile */
+@keyframes badgeFloat {
+    0%, 100% { 
+        transform: translateY(0px); 
+    }
+    50% { 
+        transform: translateY(-3px); 
+    }
+}
+
+/* Appliquer le flottement aux badges dans les cartes */
+.seller-badge-centered .animated-badge {
+    animation: badgeGlow 3s ease-in-out infinite, badgeFloat 4s ease-in-out infinite;
+}

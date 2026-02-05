@@ -1,0 +1,287 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+{% load i18n %}
+
+{% block content %}
+<div class="main-container">
+    <div class="payment-simulation-container glass-effect">
+        <div class="payment-header">
+            <h1 class="payment-title">
+                <i class="fas fa-credit-card"></i>
+                Simulation Paiement <span class="notranslate">CinetPay</span>
+            </h1>
+            <div class="simulation-notice">
+                <i class="fas fa-info-circle"></i>
+                <p>Ceci est une simulation pour le développement. En production, vous seriez redirigé vers la vraie page <span class="notranslate">CinetPay</span>.</p>
+            </div>
+        </div>
+
+        <div class="transaction-summary glass-effect">
+            <h3>Détails du paiement</h3>
+            <div class="summary-item">
+                <span class="label">Transaction ID:</span>
+                <span class="value">{{ transaction_id }}</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Montant:</span>
+                <span class="value price">{% display_price amount "EUR" request.user %}</span>
+            </div>
+            <div class="summary-item">
+                <span class="label">Marchant:</span>
+                <span class="value"><span class="notranslate">BLIZZ</span> Gaming Marketplace</span>
+            </div>
+        </div>
+
+        <div class="payment-methods">
+            <h3>Moyens de paiement disponibles</h3>
+            <div class="payment-options">
+                <div class="payment-option" onclick="simulatePayment('mobile_money')">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span>Mobile Money</span>
+                    <small>Orange Money, MTN Money, Moov Money</small>
+                </div>
+                <div class="payment-option" onclick="simulatePayment('card')">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Carte Bancaire</span>
+                    <small>Visa, Mastercard</small>
+                </div>
+                <div class="payment-option" onclick="simulatePayment('bank_transfer')">
+                    <i class="fas fa-university"></i>
+                    <span>Virement Bancaire</span>
+                    <small>Transfert direct</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="simulation-actions">
+            <button onclick="simulateSuccess()" class="btn-success">
+                <i class="fas fa-check"></i>
+                Simuler Paiement Réussi
+            </button>
+            <button onclick="simulateFailure()" class="btn-failure">
+                <i class="fas fa-times"></i>
+                Simuler Échec Paiement
+            </button>
+            <a href="{% url 'transaction_detail' transaction_id %}" class="btn-cancel">
+                <i class="fas fa-arrow-left"></i>{% trans "Retour" %}</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .main-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .payment-simulation-container {
+        padding: 2rem;
+        border-radius: 20px;
+        border: 1px solid var(--primary-color);
+    }
+    
+    .payment-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .payment-title {
+        color: var(--primary-color);
+        font-family: 'RussoOne', sans-serif;
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        text-shadow: 0 0 15px var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .simulation-notice {
+        background: rgba(255, 193, 7, 0.1);
+        border: 1px solid #ffc107;
+        border-radius: 10px;
+        padding: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #ffc107;
+        margin-bottom: 2rem;
+    }
+    
+    .simulation-notice i {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+    
+    .transaction-summary {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .transaction-summary h3 {
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+    
+    .label {
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: bold;
+    }
+    
+    .value {
+        color: white;
+    }
+    
+    .value.price {
+        color: var(--primary-color);
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    
+    .payment-methods {
+        margin-bottom: 2rem;
+    }
+    
+    .payment-methods h3 {
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .payment-options {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+    
+    .payment-option {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .payment-option:hover {
+        border-color: var(--primary-color);
+        background: rgba(108, 92, 231, 0.1);
+        transform: translateY(-3px);
+    }
+    
+    .payment-option i {
+        font-size: 2rem;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .payment-option span {
+        color: white;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .payment-option small {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.9rem;
+    }
+    
+    .simulation-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-success, .btn-failure, .btn-cancel {
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+    }
+    
+    .btn-success {
+        background: #2ecc71;
+        color: white;
+    }
+    
+    .btn-failure {
+        background: #e74c3c;
+        color: white;
+    }
+    
+    .btn-cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+    }
+    
+    .btn-success:hover, .btn-failure:hover, .btn-cancel:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+    
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+    
+    @media (max-width: 768px) {
+        .simulation-actions {
+            flex-direction: column;
+        }
+        
+        .payment-options {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<script>
+function simulatePayment(method) {
+    showInfoAlert(`Simulation: Paiement via ${method} sélectionné`, 'Simulation de Paiement');
+}
+
+function simulateSuccess() {
+    if (confirm('Simuler un paiement réussi ?')) {
+        // Rediriger vers la page de succès
+        window.location.href = "{% url 'cinetpay_payment_success' transaction_id %}";
+    }
+}
+
+function simulateFailure() {
+    if (confirm('Simuler un échec de paiement ?')) {
+        // Rediriger vers la page d'échec
+        window.location.href = "{% url 'cinetpay_payment_failed' transaction_id %}";
+    }
+}
+</script>
+{% endblock %}

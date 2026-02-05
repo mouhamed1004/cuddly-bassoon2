@@ -1,0 +1,18 @@
+# Generated manually for reset_code field
+
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('blizzgame', '0046_passwordreset'),
+    ]
+
+    operations = [
+        migrations.AddField(
+            model_name='passwordreset',
+            name='reset_code',
+            field=models.CharField(blank=True, max_length=6, null=True, unique=True),
+        ),
+    ]

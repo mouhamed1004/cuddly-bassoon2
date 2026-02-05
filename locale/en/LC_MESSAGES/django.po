@@ -1,0 +1,583 @@
+# BLIZZ Gaming Translation - EN
+# NOTE: Les noms de jeux (Free Fire, PUBG, etc.) ne sont JAMAIS traduits
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: en\n"
+
+msgid "Accueil"
+msgstr "Home"
+
+msgid "Acheter"
+msgstr "Buy"
+
+msgid "Acheteur"
+msgstr "Buyer"
+
+msgid "Achetez"
+msgstr "Buy"
+
+msgid "Actif"
+msgstr "Active"
+
+msgid "Adresse"
+msgstr "Address"
+
+msgid "Afficher"
+msgstr "Display"
+
+msgid "Afrique"
+msgstr "Africa"
+
+msgid "Aide"
+msgstr "Help"
+
+msgid "Ajouter"
+msgstr "Add"
+
+msgid "Alerte"
+msgstr "Alert"
+
+msgid "Amérique latine"
+msgstr "Latin America"
+
+msgid "Ancien"
+msgstr "Old"
+
+msgid "Ancien mot de passe"
+msgstr "Old password"
+
+msgid "Annuler"
+msgstr "Cancel"
+
+msgid "Annulé"
+msgstr "Cancelled"
+
+msgid "Asie"
+msgstr "Asia"
+
+msgid "Attention"
+msgstr "Warning"
+
+msgid "Aucun"
+msgstr "None"
+
+msgid "Aucun message"
+msgstr "No messages"
+
+msgid "Aucun résultat"
+msgstr "No results"
+
+msgid "Aujourd'hui"
+msgstr "Today"
+
+msgid "Avec"
+msgstr "With"
+
+msgid "Bienvenue"
+msgstr "Welcome"
+
+msgid "Bonjour"
+msgstr "Hello"
+
+msgid "Boutique Comptes Gaming"
+msgstr "Gaming Accounts Shop"
+
+msgid "Carte Bancaire"
+msgstr "Bank Card"
+
+msgid "Catégorie"
+msgstr "Category"
+
+msgid "Chargement"
+msgstr "Loading"
+
+msgid "Charger plus"
+msgstr "Load more"
+
+msgid "Chat"
+msgstr "Chat"
+
+msgid "Classement"
+msgstr "Ranking"
+
+msgid "Code postal"
+msgstr "Postal code"
+
+msgid "Coins"
+msgstr "Coins"
+
+msgid "Commande"
+msgstr "Order"
+
+msgid "Commencer à vendre"
+msgstr "Start selling"
+
+msgid "Compte"
+msgstr "Account"
+
+msgid "Compte de jeu"
+msgstr "Game account"
+
+msgid "Conditions"
+msgstr "Terms"
+
+msgid "Confidentialité"
+msgstr "Privacy"
+
+msgid "Confirmer"
+msgstr "Confirm"
+
+msgid "Confirmer le mot de passe"
+msgstr "Confirm password"
+
+msgid "Confirmé"
+msgstr "Confirmed"
+
+msgid "Connexion"
+msgstr "Login"
+
+msgid "Contact"
+msgstr "Contact"
+
+msgid "Conversation"
+msgstr "Conversation"
+
+msgid "Créer"
+msgstr "Create"
+
+msgid "Créer un compte"
+msgstr "Create an account"
+
+msgid "Créer une annonce"
+msgstr "Create listing"
+
+msgid "De"
+msgstr "From"
+
+msgid "Demain"
+msgstr "Tomorrow"
+
+msgid "Description"
+msgstr "Description"
+
+msgid "Diamants"
+msgstr "Diamonds"
+
+msgid "Disponible"
+msgstr "Available"
+
+msgid "Déconnexion"
+msgstr "Logout"
+
+msgid "Détails"
+msgstr "Details"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "En attente"
+msgstr "Pending"
+
+msgid "En cours"
+msgstr "In progress"
+
+msgid "En ligne"
+msgstr "Online"
+
+msgid "En vente"
+msgstr "For sale"
+
+msgid "Envoyer"
+msgstr "Send"
+
+msgid "Envoyer un message"
+msgstr "Send a message"
+
+msgid "Erreur"
+msgstr "Error"
+
+msgid "Erreur de chargement"
+msgstr "Loading error"
+
+msgid "Et"
+msgstr "And"
+
+msgid "FAQ"
+msgstr "FAQ"
+
+msgid "Fermer"
+msgstr "Close"
+
+msgid "Filtrer"
+msgstr "Filter"
+
+msgid "Frais"
+msgstr "Fees"
+
+msgid "Hier"
+msgstr "Yesterday"
+
+msgid "Hors ligne"
+msgstr "Offline"
+
+msgid "Il y a"
+msgstr "ago"
+
+msgid "Inactif"
+msgstr "Inactive"
+
+msgid "Indisponible"
+msgstr "Unavailable"
+
+msgid "Information"
+msgstr "Information"
+
+msgid "Inscription"
+msgstr "Sign Up"
+
+msgid "Jeu"
+msgstr "Game"
+
+msgid "Jeux"
+msgstr "Games"
+
+msgid "Joueur"
+msgstr "Player"
+
+msgid "Langue"
+msgstr "Language"
+
+msgid "Livraison"
+msgstr "Delivery"
+
+msgid "Masquer"
+msgstr "Hide"
+
+msgid "Meilleur"
+msgstr "Best"
+
+msgid "Merci"
+msgstr "Thank you"
+
+msgid "Mes transactions"
+msgstr "My transactions"
+
+msgid "Message envoyé"
+msgstr "Message sent"
+
+msgid "Messages"
+msgstr "Messages"
+
+msgid "Mis à jour le"
+msgstr "Updated on"
+
+msgid "Mobile Money"
+msgstr "Mobile Money"
+
+msgid "Modifier"
+msgstr "Edit"
+
+msgid "Moins"
+msgstr "Less"
+
+msgid "Mon Compte"
+msgstr "My Account"
+
+msgid "Mon Profil"
+msgstr "My Profile"
+
+msgid "Mon compte"
+msgstr "My account"
+
+msgid "Mot de passe"
+msgstr "Password"
+
+msgid "Mot de passe oublié"
+msgstr "Forgot password"
+
+msgid "Navigation"
+msgstr "Navigation"
+
+msgid "Niveau"
+msgstr "Level"
+
+msgid "Nom"
+msgstr "Name"
+
+msgid "Nom de famille"
+msgstr "Last name"
+
+msgid "Non"
+msgstr "No"
+
+msgid "Non vérifié"
+msgstr "Not verified"
+
+msgid "Notification"
+msgstr "Notification"
+
+msgid "Notifications"
+msgstr "Notifications"
+
+msgid "Nouveau"
+msgstr "New"
+
+msgid "Nouveau message"
+msgstr "New message"
+
+msgid "Nouveau mot de passe"
+msgstr "New password"
+
+msgid "Ou"
+msgstr "Or"
+
+msgid "Oui"
+msgstr "Yes"
+
+msgid "Ouvrir"
+msgstr "Open"
+
+msgid "Paiement"
+msgstr "Payment"
+
+msgid "Paiement disponible en Afrique, Amérique latine et Asie"
+msgstr "Payment available in Africa, Latin America and Asia"
+
+msgid "Panier"
+msgstr "Cart"
+
+msgid "Par"
+msgstr "By"
+
+msgid "Paramètres"
+msgstr "Settings"
+
+msgid "Partager"
+msgstr "Share"
+
+msgid "Partout dans le monde"
+msgstr "Anywhere in the world"
+
+msgid "Pays"
+msgstr "Country"
+
+msgid "Peut-être"
+msgstr "Maybe"
+
+msgid "Plateforme"
+msgstr "Platform"
+
+msgid "Plus"
+msgstr "More"
+
+msgid "Plus d'informations"
+msgstr "More information"
+
+msgid "Points"
+msgstr "Points"
+
+msgid "Populaire"
+msgstr "Popular"
+
+msgid "Pour"
+msgstr "For"
+
+msgid "Prix"
+msgstr "Price"
+
+msgid "Produit"
+msgstr "Product"
+
+msgid "Produits"
+msgstr "Products"
+
+msgid "Profil"
+msgstr "Profile"
+
+msgid "Précédent"
+msgstr "Previous"
+
+msgid "Prénom"
+msgstr "First name"
+
+msgid "Publier"
+msgstr "Publish"
+
+msgid "Publié le"
+msgstr "Published on"
+
+msgid "Rang"
+msgstr "Rank"
+
+msgid "Rechercher"
+msgstr "Search"
+
+msgid "Recommandé"
+msgstr "Recommended"
+
+msgid "Remise"
+msgstr "Discount"
+
+msgid "Retour"
+msgstr "Back"
+
+msgid "Récent"
+msgstr "Recent"
+
+msgid "Région"
+msgstr "Region"
+
+msgid "Répondre"
+msgstr "Reply"
+
+msgid "Résultats"
+msgstr "Results"
+
+msgid "Réussi"
+msgstr "Successful"
+
+msgid "Sans"
+msgstr "Without"
+
+msgid "Sauvegarder"
+msgstr "Save"
+
+msgid "Se souvenir de moi"
+msgstr "Remember me"
+
+msgid "Serveur"
+msgstr "Server"
+
+msgid "Signaler"
+msgstr "Report"
+
+msgid "Sous-total"
+msgstr "Subtotal"
+
+msgid "Statut"
+msgstr "Status"
+
+msgid "Succès"
+msgstr "Success"
+
+msgid "Suivant"
+msgstr "Next"
+
+msgid "Support"
+msgstr "Support"
+
+msgid "Supprimer"
+msgstr "Delete"
+
+msgid "Tableau de bord"
+msgstr "Dashboard"
+
+msgid "Terminé"
+msgstr "Completed"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "Tous droits réservés"
+msgstr "All rights reserved"
+
+msgid "Tout"
+msgstr "All"
+
+msgid "Transaction"
+msgstr "Transaction"
+
+msgid "Trier par"
+msgstr "Sort by"
+
+msgid "Télécharger"
+msgstr "Download"
+
+msgid "Téléphone"
+msgstr "Phone"
+
+msgid "Valider"
+msgstr "Validate"
+
+msgid "Vendeur"
+msgstr "Seller"
+
+msgid "Vendez"
+msgstr "Sell"
+
+msgid "Vendre"
+msgstr "Sell"
+
+msgid "Vendu"
+msgstr "Sold"
+
+msgid "Ville"
+msgstr "City"
+
+msgid "Virement Bancaire"
+msgstr "Bank Transfer"
+
+msgid "Voir plus"
+msgstr "See more"
+
+msgid "Vous devez être connecté pour accéder à cette page."
+msgstr "You must be logged in to access this page."
+
+msgid "Vous devez être connecté pour vendre des comptes."
+msgstr "You must be logged in to sell accounts."
+
+msgid "Vérifié"
+msgstr "Verified"
+
+msgid "des comptes"
+msgstr "accounts"
+
+msgid "et en toute sécurité"
+msgstr "and securely"
+
+msgid "et revendez des comptes"
+msgstr "and resell accounts"
+
+msgid "heure"
+msgstr "hour"
+
+msgid "heures"
+msgstr "hours"
+
+msgid "jour"
+msgstr "day"
+
+msgid "jours"
+msgstr "days"
+
+msgid "minute"
+msgstr "minute"
+
+msgid "minutes"
+msgstr "minutes"
+
+msgid "seconde"
+msgstr "second"
+
+msgid "secondes"
+msgstr "seconds"
+
+msgid "À"
+msgstr "To"
+
+msgid "À propos"
+msgstr "About"
+
+msgid "Échangez"
+msgstr "Trade"
+
+msgid "Échec"
+msgstr "Failed"
+
+msgid "Écrire un message"
+msgstr "Write a message"
+
+msgid "évoluez"
+msgstr "evolve"
+

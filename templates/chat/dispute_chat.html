@@ -1,0 +1,704 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Chat de Litige - {{ dispute.id }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background: linear-gradient(135deg, #0f1729 0%, #1e293b 100%);
+        min-height: 100vh;
+    }
+
+    .chat-header {
+        background: rgba(15, 23, 41, 0.95);
+        border: 1px solid #dc3545;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 0 30px rgba(220, 53, 69, 0.2);
+    }
+
+    .dispute-info {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 15px;
+    }
+
+    .dispute-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #dc3545, #ff6b6b);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        color: white;
+    }
+
+    .dispute-details h3 {
+        color: #dc3545;
+        margin: 0 0 10px 0;
+        font-size: 1.5rem;
+    }
+
+    .dispute-meta {
+        color: #94a3b8;
+        font-size: 0.9rem;
+    }
+
+    .dispute-status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .status-pending {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid #ffc107;
+    }
+
+    .status-investigating {
+        background: rgba(13, 202, 240, 0.2);
+        color: #0dcaf0;
+        border: 1px solid #0dcaf0;
+    }
+
+    .status-resolved-buyer {
+        background: rgba(25, 135, 84, 0.2);
+        color: #198754;
+        border: 1px solid #198754;
+    }
+
+    .status-resolved-seller {
+        background: rgba(25, 135, 84, 0.2);
+        color: #198754;
+        border: 1px solid #198754;
+    }
+
+    .status-closed {
+        background: rgba(108, 117, 125, 0.2);
+        color: #6c757d;
+        border: 1px solid #6c757d;
+    }
+
+    .admin-badge {
+        background: rgba(108, 92, 231, 0.2);
+        color: #6c5ce7;
+        border: 1px solid #6c5ce7;
+    }
+
+    .chat-messages {
+        background: rgba(15, 23, 41, 0.95);
+        border: 1px solid #dc3545;
+        border-radius: 15px;
+        height: 500px;
+        overflow-y: auto;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 0 30px rgba(220, 53, 69, 0.2);
+    }
+
+    .message {
+        margin-bottom: 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .message.sent {
+        flex-direction: row-reverse;
+    }
+
+    .message.admin {
+        border-left: 4px solid #6c5ce7;
+        background: rgba(108, 92, 231, 0.1);
+    }
+
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+    }
+
+    .avatar-buyer {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+    }
+
+    .avatar-seller {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    }
+
+    .avatar-admin {
+        background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    }
+
+    .message-content {
+        max-width: 70%;
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 15px;
+        padding: 15px;
+        position: relative;
+    }
+
+    .message.sent .message-content {
+        background: linear-gradient(135deg, #dc3545, #ff6b6b);
+        color: white;
+    }
+
+    .message.admin .message-content {
+        background: rgba(108, 92, 231, 0.2);
+        border-color: #6c5ce7;
+    }
+
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .message-sender {
+        font-weight: 600;
+        color: #dc3545;
+    }
+
+    .message.sent .message-sender {
+        color: white;
+    }
+
+    .message.admin .message-sender {
+        color: #6c5ce7;
+    }
+
+    .message-time {
+        font-size: 0.8rem;
+        color: #94a3b8;
+    }
+
+    .message.sent .message-time {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .message-text {
+        line-height: 1.5;
+        word-wrap: break-word;
+    }
+
+    .message-image {
+        max-width: 100%;
+        border-radius: 10px;
+        margin-top: 10px;
+    }
+
+    .message-type-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-left: 10px;
+    }
+
+    .type-text {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+    }
+
+    .type-image {
+        background: rgba(34, 197, 94, 0.2);
+        color: #22c55e;
+    }
+
+    .type-file {
+        background: rgba(251, 146, 60, 0.2);
+        color: #fb923c;
+    }
+
+    .chat-input-container {
+        background: rgba(15, 23, 41, 0.95);
+        border: 1px solid #dc3545;
+        border-radius: 15px;
+        padding: 20px;
+        box-shadow: 0 0 30px rgba(220, 53, 69, 0.2);
+    }
+
+    .chat-input-form {
+        display: flex;
+        gap: 15px;
+        align-items: flex-end;
+    }
+
+    .chat-input-wrapper {
+        flex: 1;
+        position: relative;
+    }
+
+    .chat-input {
+        width: 100%;
+        min-height: 50px;
+        max-height: 120px;
+        background: rgba(30, 41, 59, 0.8);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 25px;
+        padding: 15px 20px;
+        color: white;
+        font-size: 1rem;
+        resize: none;
+        outline: none;
+        transition: all 0.3s ease;
+    }
+
+    .chat-input:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 20px rgba(220, 53, 69, 0.3);
+    }
+
+    .chat-input::placeholder {
+        color: #94a3b8;
+    }
+
+    .chat-actions {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .chat-action-btn {
+        width: 50px;
+        height: 50px;
+        border: none;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #dc3545, #ff6b6b);
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: all 0.3s ease;
+    }
+
+    .chat-action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+    }
+
+    .chat-action-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .typing-indicator {
+        display: none;
+        padding: 10px 20px;
+        color: #94a3b8;
+        font-style: italic;
+        font-size: 0.9rem;
+    }
+
+    .typing-indicator.show {
+        display: block;
+    }
+
+    .connection-status {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        z-index: 1000;
+        transition: all 0.3s ease;
+    }
+
+    .status-connected {
+        background: rgba(25, 135, 84, 0.2);
+        color: #198754;
+        border: 1px solid #198754;
+    }
+
+    .status-disconnected {
+        background: rgba(220, 53, 69, 0.2);
+        color: #dc3545;
+        border: 1px solid #dc3545;
+    }
+
+    .status-connecting {
+        background: rgba(255, 193, 7, 0.2);
+        color: #ffc107;
+        border: 1px solid #ffc107;
+    }
+
+    @media (max-width: 768px) {
+        .chat-container {
+            padding: 10px;
+        }
+
+        .dispute-info {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .message-content {
+            max-width: 85%;
+        }
+
+        .chat-input-form {
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .chat-actions {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-container">
+    <!-- En-tête du litige -->
+    <div class="chat-header">
+        <div class="dispute-info">
+            <div class="dispute-icon">
+                ⚖️
+            </div>
+            <div class="dispute-details">
+                <h3>Litige #{{ dispute.id|slice:":8" }}</h3>
+                <div class="dispute-meta">
+                    <p><strong>Transaction:</strong> {{ dispute.transaction.post.title }}</p>
+                    <p><strong>Montant:</strong> {{ dispute.disputed_amount }} EUR</p>
+                    <p><strong>Ouvert par:</strong> {{ dispute.opened_by.username }}</p>
+                    <p><strong>Raison:</strong> {{ dispute.get_reason_display }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dispute-status">
+            <span class="status-badge status-{{ dispute.status }}">
+                {{ dispute.get_status_display }}
+
+            {% if is_admin %}
+                <span class="status-badge admin-badge">
+                    👑 Admin
+
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Messages du chat -->
+    <div class="chat-messages" id="chat-messages">
+        {% for message in chat_messages %}
+        <div class="message {% if message.sender == request.user %}sent{% endif %} {% if message.sender.is_staff %}admin{% endif %}">
+            <div class="message-avatar {% if message.sender == dispute.transaction.buyer %}avatar-buyer{% elif message.sender == dispute.transaction.seller %}avatar-seller{% elif message.sender.is_staff %}avatar-admin{% endif %}">
+                {% if message.sender.is_staff %}
+                    👑
+                {% elif message.sender == dispute.transaction.buyer %}
+                    👤
+                {% else %}
+                    🛒
+                {% endif %}
+            </div>
+            <div class="message-content">
+                <div class="message-header">
+                    <span class="message-sender">
+                        {{ message.sender.username }}
+                        {% if message.sender.is_staff %}
+                            <span class="status-badge admin-badge" style="font-size: 0.7rem; padding: 2px 6px;">Admin</span>
+                        {% endif %}
+
+                    <span class="message-time">{{ message.created_at|date:"H:i" }}</span>
+                </div>
+                <div class="message-text">
+                    {{ message.content }}
+                    <span class="message-type-badge type-{{ message.message_type }}">
+                        {{ message.get_message_type_display }}
+
+                </div>
+                {% if message.image %}
+                <img src="{{ message.image.url }}" alt="Image" class="message-image">
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Indicateur de frappe -->
+    <div class="typing-indicator" id="typing-indicator">
+        <span id="typing-text"></span>
+    </div>
+
+    <!-- Zone de saisie -->
+    <div class="chat-input-container">
+        <form class="chat-input-form" id="chat-form">
+            {% csrf_token %}
+            <div class="chat-input-wrapper">
+                <textarea 
+                    id="chat-input" 
+                    class="chat-input" 
+                    placeholder="Tapez votre message..."
+                ></textarea>
+            </div>
+            <div class="chat-actions">
+                <input type="file" id="image-input" class="file-input" accept="image/*">
+                <button type="button" id="image-btn" class="chat-action-btn" title="Envoyer une image">
+                    📷
+                </button>
+                <button type="submit" id="send-btn" class="chat-action-btn" title="Envoyer le message">
+                    ➤
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Indicateur de statut de connexion -->
+<div class="connection-status" id="connection-status">
+    <span id="status-text">Connexion...</span>
+</div>
+
+<script>
+    // Configuration WebSocket
+    const chatSocket = new WebSocket('{{ websocket_url }}');
+    const chatMessages = document.getElementById('chat-messages');
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const imageBtn = document.getElementById('image-btn');
+    const imageInput = document.getElementById('image-input');
+    const typingIndicator = document.getElementById('typing-indicator');
+    const statusText = document.getElementById('status-text');
+    const connectionStatus = document.getElementById('connection-status');
+
+    let typingTimer;
+    let isTyping = false;
+
+    // Gestion de la connexion WebSocket
+    chatSocket.onopen = function(e) {
+        console.log('WebSocket connecté');
+        updateConnectionStatus('connected', 'Connecté');
+    };
+
+    chatSocket.onclose = function(e) {
+        console.log('WebSocket fermé');
+        updateConnectionStatus('disconnected', 'Déconnecté');
+    };
+
+    chatSocket.onerror = function(e) {
+        console.error('Erreur WebSocket:', e);
+        updateConnectionStatus('disconnected', 'Erreur de connexion');
+    };
+
+    // Réception des messages
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        
+        if (data.type === 'chat_message') {
+            addMessage(data.message);
+        } else if (data.type === 'typing') {
+            showTypingIndicator(data.username);
+        } else if (data.type === 'stop_typing') {
+            hideTypingIndicator();
+        }
+    };
+
+    // Mise à jour du statut de connexion
+    function updateConnectionStatus(status, text) {
+        connectionStatus.className = `connection-status status-${status}`;
+        statusText.textContent = text;
+    }
+
+    // Ajout d'un message à l'interface
+    function addMessage(message) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${message.sender_id === {{ request.user.id }} ? 'sent' : ''}`;
+        
+        const time = new Date(message.created_at).toLocaleTimeString('fr-FR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Déterminer le type d'avatar
+        let avatarClass = 'avatar-buyer';
+        let avatarIcon = '👤';
+        
+        if (message.sender_id === {{ dispute.transaction.seller.id }}) {
+            avatarClass = 'avatar-seller';
+            avatarIcon = '🛒';
+        } else if (message.is_admin) {
+            avatarClass = 'avatar-admin';
+            avatarIcon = '👑';
+        }
+
+        messageDiv.innerHTML = `
+            <div class="message-avatar ${avatarClass}">
+                ${avatarIcon}
+            </div>
+            <div class="message-content">
+                <div class="message-header">
+                    <span class="message-sender">
+                        ${message.sender}
+                        ${message.is_admin ? '<span class="status-badge admin-badge" style="font-size: 0.7rem; padding: 2px 6px;">Admin</span>' : ''}
+
+                    <span class="message-time">${time}</span>
+                </div>
+                <div class="message-text">
+                    ${message.content}
+                    <span class="message-type-badge type-${message.message_type}">
+                        ${getMessageTypeDisplay(message.message_type)}
+
+                </div>
+                ${message.image_url ? `<img src="${message.image_url}" alt="Image" class="message-image">` : ''}
+            </div>
+        `;
+
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Obtenir l'affichage du type de message
+    function getMessageTypeDisplay(type) {
+        const types = {
+            'text': 'Message texte',
+            'image': 'Image',
+            'file': 'Fichier'
+        };
+        return types[type] || type;
+    }
+
+    // Envoi de message
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const message = chatInput.value.trim();
+        
+        if (message) {
+            sendMessage(message, 'text');
+            chatInput.value = '';
+        }
+    });
+
+    // Envoi de message via WebSocket
+    function sendMessage(content, type) {
+        const message = {
+            'type': 'send_message',
+            'content': content,
+            'message_type': type
+        };
+        chatSocket.send(JSON.stringify(message));
+    }
+
+    // Gestion de la frappe
+    chatInput.addEventListener('input', function() {
+        if (!isTyping) {
+            isTyping = true;
+            chatSocket.send(JSON.stringify({
+                'type': 'typing'
+            }));
+        }
+
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            isTyping = false;
+            chatSocket.send(JSON.stringify({
+                'type': 'stop_typing'
+            }));
+        }, 1000);
+    });
+
+    // Gestion de l'upload d'image
+    imageBtn.addEventListener('click', function() {
+        imageInput.click();
+    });
+
+    imageInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            uploadImage(file);
+        }
+    });
+
+    // Upload d'image
+    function uploadImage(file) {
+        const formData = new FormData();
+        formData.append('image', file);
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+        fetch('{% url "upload_chat_image" chat.id %}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                addMessage({
+                    sender: '{{ request.user.username }}',
+                    sender_id: {{ request.user.id }},
+                    content: data.image_url ? `Image: ${file.name}` : 'Image envoyée',
+                    message_type: 'image',
+                    created_at: data.created_at,
+                    image_url: data.image_url,
+                    is_admin: {{ request.user.is_staff|yesno:"true,false" }}
+                });
+            } else {
+                alert('Erreur lors de l\'envoi de l\'image: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur lors de l\'envoi de l\'image');
+        });
+    }
+
+    // Indicateur de frappe
+    function showTypingIndicator(username) {
+        const typingText = document.getElementById('typing-text');
+        typingText.textContent = `${username} est en train d'écrire...`;
+        typingIndicator.classList.add('show');
+    }
+
+    function hideTypingIndicator() {
+        typingIndicator.classList.remove('show');
+    }
+
+    // Auto-scroll vers le bas
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+
+    // Gestion de la touche Entrée
+    chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            chatForm.dispatchEvent(new Event('submit'));
+        }
+    });
+</script>
+{% endblock %}
+

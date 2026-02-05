@@ -1,0 +1,26 @@
+# Variables d'environnement pour Render
+# Copiez ce fichier vers .env et remplissez les valeurs
+
+# Configuration de base
+DEBUG=False
+SECRET_KEY=your-secret-key-here
+ALLOWED_HOSTS=.onrender.com
+
+# Base de données (configurée automatiquement par Render)
+# DATABASE_URL sera fournie par Render
+
+# Cache Redis (configuré automatiquement par Render)
+# REDIS_URL sera fournie par Render
+
+# Configuration CinetPay
+CINETPAY_API_KEY=your-cinetpay-api-key
+CINETPAY_SITE_ID=your-cinetpay-site-id
+CINETPAY_SECRET_KEY=your-cinetpay-secret-key
+
+# Configuration Email
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+
+# Configuration de base
+BASE_URL=https://your-app.onrender.com
+ENVIRONMENT=production

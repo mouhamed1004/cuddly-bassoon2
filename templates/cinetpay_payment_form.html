@@ -1,0 +1,834 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+{% load i18n %}
+
+{% block content %}
+<div class="main-container">
+    <div class="payment-form-container">
+        <div class="payment-header">
+            <h1 class="payment-title">
+                <i class="fas fa-credit-card"></i>
+                Paiement Sécurisé <span class="notranslate">CinetPay</span>
+            </h1>
+            <div class="transaction-summary glass-effect">
+                <h3>Résumé de la transaction</h3>
+                <div class="summary-item">
+                    <span class="label">Compte:</span>
+                    <span class="value">{{ transaction.post.title }}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">Prix:</span>
+                    <span class="value price">{% display_price transaction.amount "EUR" request.user %}</span>
+                </div>
+                <div class="summary-item">
+                    <span class="label">Vendeur:</span>
+                    <span class="value">{{ transaction.seller.username }}</span>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" class="payment-form glass-effect" id="cinetpay-form">
+            {% csrf_token %}
+            
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-user"></i>
+                    Informations personnelles
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customer_name">Prénom *</label>
+                        <input type="text" id="customer_name" name="customer_name" required 
+                               value="{{ user_profile.user.first_name|default:'' }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer_surname">Nom *</label>
+                        <input type="text" id="customer_surname" name="customer_surname" required 
+                               value="{{ user_profile.user.last_name|default:'' }}">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customer_email">Email *</label>
+                        <input type="email" id="customer_email" name="customer_email" required 
+                               value="{{ user_profile.user.email }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer_phone_number">Téléphone *</label>
+                        {% include 'components/phone_input.html' with select_name='customer_phone_country_code' select_id='customer_phone_country_code' input_name='customer_phone_number' input_id='customer_phone_number' input_value='' %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-map-marker-alt"></i>
+                    Adresse de facturation
+                </h3>
+                
+                <div class="form-group">
+                    <label for="customer_address">Adresse *</label>
+                    <input type="text" id="customer_address" name="customer_address" required 
+                           placeholder="123 Rue de la Paix">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customer_city">Ville *</label>
+                        <input type="text" id="customer_city" name="customer_city" required 
+                               placeholder="Votre ville">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer_zip_code">Code postal *</label>
+                        <input type="text" id="customer_zip_code" name="customer_zip_code" required 
+                               placeholder="00000">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="customer_country">Pays *</label>
+                        <select id="customer_country" name="customer_country" required>
+                            <option value="">Sélectionnez un pays</option>
+                            
+                            <!-- Afrique de l'Ouest -->
+                            <optgroup label="Afrique de l'Ouest">
+                            <option value="CI">Côte d'Ivoire</option>
+                            <option value="SN">Sénégal</option>
+                            <option value="BF">Burkina Faso</option>
+                            <option value="ML">Mali</option>
+                            <option value="NE">Niger</option>
+                            <option value="TG">Togo</option>
+                            <option value="BJ">Bénin</option>
+                            <option value="GN">Guinée</option>
+                                <option value="LR">Libéria</option>
+                                <option value="SL">Sierra Leone</option>
+                                <option value="GH">Ghana</option>
+                                <option value="NG">Nigeria</option>
+                            </optgroup>
+                            
+                            <!-- Afrique Centrale -->
+                            <optgroup label="Afrique Centrale">
+                            <option value="CM">Cameroun</option>
+                                <option value="TD">Tchad</option>
+                                <option value="CF">République centrafricaine</option>
+                                <option value="CD">République démocratique du Congo</option>
+                                <option value="CG">République du Congo</option>
+                                <option value="GA">Gabon</option>
+                                <option value="GQ">Guinée équatoriale</option>
+                                <option value="ST">São Tomé-et-Príncipe</option>
+                            </optgroup>
+                            
+                            <!-- Afrique de l'Est -->
+                            <optgroup label="Afrique de l'Est">
+                                <option value="KE">Kenya</option>
+                                <option value="UG">Ouganda</option>
+                                <option value="TZ">Tanzanie</option>
+                                <option value="RW">Rwanda</option>
+                                <option value="BI">Burundi</option>
+                                <option value="ET">Éthiopie</option>
+                                <option value="ER">Érythrée</option>
+                                <option value="DJ">Djibouti</option>
+                                <option value="SO">Somalie</option>
+                                <option value="SS">Soudan du Sud</option>
+                                <option value="SD">Soudan</option>
+                            </optgroup>
+                            
+                            <!-- Afrique Australe -->
+                            <optgroup label="Afrique Australe">
+                                <option value="ZA">Afrique du Sud</option>
+                                <option value="BW">Botswana</option>
+                                <option value="NA">Namibie</option>
+                                <option value="ZW">Zimbabwe</option>
+                                <option value="ZM">Zambie</option>
+                                <option value="MW">Malawi</option>
+                                <option value="MZ">Mozambique</option>
+                                <option value="MG">Madagascar</option>
+                                <option value="MU">Maurice</option>
+                                <option value="SC">Seychelles</option>
+                                <option value="KM">Comores</option>
+                                <option value="LS">Lesotho</option>
+                                <option value="SZ">Eswatini</option>
+                            </optgroup>
+                            
+                            <!-- Europe -->
+                            <optgroup label="Europe">
+                                <option value="FR">France</option>
+                                <option value="DE">Allemagne</option>
+                                <option value="IT">Italie</option>
+                                <option value="ES">Espagne</option>
+                                <option value="GB">Royaume-Uni</option>
+                                <option value="NL">Pays-Bas</option>
+                                <option value="BE">Belgique</option>
+                                <option value="CH">Suisse</option>
+                                <option value="AT">Autriche</option>
+                                <option value="PT">Portugal</option>
+                                <option value="IE">Irlande</option>
+                                <option value="DK">Danemark</option>
+                                <option value="SE">Suède</option>
+                                <option value="NO">Norvège</option>
+                                <option value="FI">Finlande</option>
+                                <option value="PL">Pologne</option>
+                                <option value="CZ">République tchèque</option>
+                                <option value="HU">Hongrie</option>
+                                <option value="RO">Roumanie</option>
+                                <option value="BG">Bulgarie</option>
+                                <option value="HR">Croatie</option>
+                                <option value="SI">Slovénie</option>
+                                <option value="SK">Slovaquie</option>
+                                <option value="LT">Lituanie</option>
+                                <option value="LV">Lettonie</option>
+                                <option value="EE">Estonie</option>
+                                <option value="GR">Grèce</option>
+                                <option value="CY">Chypre</option>
+                                <option value="MT">Malte</option>
+                                <option value="LU">Luxembourg</option>
+                            </optgroup>
+                            
+                            <!-- Amérique du Nord -->
+                            <optgroup label="Amérique du Nord">
+                                <option value="US">États-Unis</option>
+                                <option value="CA">Canada</option>
+                                <option value="MX">Mexique</option>
+                            </optgroup>
+                            
+                            <!-- Amérique du Sud -->
+                            <optgroup label="Amérique du Sud">
+                                <option value="BR">Brésil</option>
+                                <option value="AR">Argentine</option>
+                                <option value="CL">Chili</option>
+                                <option value="CO">Colombie</option>
+                                <option value="PE">Pérou</option>
+                                <option value="VE">Venezuela</option>
+                                <option value="EC">Équateur</option>
+                                <option value="BO">Bolivie</option>
+                                <option value="PY">Paraguay</option>
+                                <option value="UY">Uruguay</option>
+                                <option value="GY">Guyana</option>
+                                <option value="SR">Suriname</option>
+                                <option value="GF">Guyane française</option>
+                            </optgroup>
+                            
+                            <!-- Asie -->
+                            <optgroup label="Asie">
+                                <option value="CN">Chine</option>
+                                <option value="JP">Japon</option>
+                                <option value="KR">Corée du Sud</option>
+                                <option value="IN">Inde</option>
+                                <option value="TH">Thaïlande</option>
+                                <option value="VN">Vietnam</option>
+                                <option value="ID">Indonésie</option>
+                                <option value="MY">Malaisie</option>
+                                <option value="SG">Singapour</option>
+                                <option value="PH">Philippines</option>
+                                <option value="BD">Bangladesh</option>
+                                <option value="PK">Pakistan</option>
+                                <option value="LK">Sri Lanka</option>
+                                <option value="MM">Myanmar</option>
+                                <option value="KH">Cambodge</option>
+                                <option value="LA">Laos</option>
+                                <option value="BN">Brunei</option>
+                                <option value="TL">Timor oriental</option>
+                            </optgroup>
+                            
+                            <!-- Moyen-Orient -->
+                            <optgroup label="Moyen-Orient">
+                                <option value="AE">Émirats arabes unis</option>
+                                <option value="SA">Arabie saoudite</option>
+                                <option value="QA">Qatar</option>
+                                <option value="KW">Koweït</option>
+                                <option value="BH">Bahreïn</option>
+                                <option value="OM">Oman</option>
+                                <option value="JO">Jordanie</option>
+                                <option value="LB">Liban</option>
+                                <option value="SY">Syrie</option>
+                                <option value="IQ">Irak</option>
+                                <option value="IR">Iran</option>
+                                <option value="IL">Israël</option>
+                                <option value="PS">Palestine</option>
+                                <option value="TR">Turquie</option>
+                            </optgroup>
+                            
+                            <!-- Océanie -->
+                            <optgroup label="Océanie">
+                                <option value="AU">Australie</option>
+                                <option value="NZ">Nouvelle-Zélande</option>
+                                <option value="FJ">Fidji</option>
+                                <option value="PG">Papouasie-Nouvelle-Guinée</option>
+                                <option value="NC">Nouvelle-Calédonie</option>
+                                <option value="VU">Vanuatu</option>
+                                <option value="SB">Salomon</option>
+                                <option value="TO">Tonga</option>
+                                <option value="WS">Samoa</option>
+                                <option value="KI">Kiribati</option>
+                                <option value="TV">Tuvalu</option>
+                                <option value="NR">Nauru</option>
+                                <option value="PW">Palaos</option>
+                                <option value="FM">Micronésie</option>
+                                <option value="MH">Marshall</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="customer_state">État/Région *</label>
+                        <input type="text" id="customer_state" name="customer_state" required 
+                               placeholder="Votre état/région">
+                    </div>
+                </div>
+            </div>
+
+            <div class="payment-methods">
+                <h3 class="section-title">
+                    <i class="fas fa-mobile-alt"></i>
+                    Moyens de paiement acceptés
+                </h3>
+                
+                <!-- Moyens de paiement pour l'Afrique -->
+                <div class="payment-icons" id="african-payment-methods">
+                    <div class="payment-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                        <span>Mobile Money</span>
+                    </div>
+                    <div class="payment-icon">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Cartes bancaires</span>
+                    </div>
+                    <div class="payment-icon">
+                        <i class="fas fa-university"></i>
+                        <span>Virements</span>
+                    </div>
+                </div>
+                
+                <!-- Moyens de paiement pour l'international -->
+                <div class="payment-icons" id="international-payment-methods" style="display: none;">
+                    <div class="payment-icon">
+                        <i class="fas fa-credit-card"></i>
+                        <span>Cartes bancaires</span>
+                    </div>
+                    <div class="payment-icon">
+                        <i class="fas fa-university"></i>
+                        <span>Virements</span>
+                    </div>
+                </div>
+                
+                <div class="payment-info-notice" id="payment-info-notice">
+                    <i class="fas fa-info-circle"></i>
+                    <div class="notice-content">
+                        <h4>Paiement international disponible</h4>
+                        <ul>
+                            <li><strong>Afrique :</strong> Mobile Money (Orange, MTN, Moov, etc.)</li>
+                            <li><strong>International :</strong> Cartes bancaires Visa/Mastercard</li>
+                            <li><strong>Régions :</strong> Europe, Amériques, Asie, Océanie, Moyen-Orient</li>
+                            <li><strong>Conversion :</strong> Montants automatiquement convertis vers votre devise locale</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-pay" id="submit-btn">
+                    <i class="fas fa-lock"></i>
+                    <span class="btn-text">Payer {% display_price transaction.amount "EUR" request.user %}</span>
+                    <span class="btn-loading" style="display: none;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        Traitement en cours...
+
+                </button>
+                <a href="{% url 'transaction_detail' transaction.id %}" class="btn-cancel">
+                    <i class="fas fa-times"></i>{% trans "Annuler" %}</a>
+            </div>
+        </form>
+        
+        <!-- Messages d'erreur -->
+        <div id="error-message" class="error-message" style="display: none;"></div>
+    </div>
+</div>
+
+<style>
+    .main-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    .payment-form-container {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+    
+    .payment-header {
+        text-align: center;
+    }
+    
+    .payment-title {
+        color: var(--primary-color);
+        font-family: 'RussoOne', sans-serif;
+        font-size: 2.5rem;
+        margin-bottom: 2rem;
+        text-shadow: 0 0 15px var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .transaction-summary {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid var(--primary-color);
+    }
+    
+    .transaction-summary h3 {
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .summary-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .summary-item:last-child {
+        border-bottom: none;
+    }
+    
+    .label {
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: bold;
+    }
+    
+    .value {
+        color: white;
+    }
+    
+    .value.price {
+        color: var(--primary-color);
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+    
+    .payment-form {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 2rem;
+        border: 1px solid var(--primary-color);
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+    }
+    
+    .section-title {
+        color: var(--primary-color);
+        font-size: 1.3rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-bottom: 1px solid var(--primary-color);
+        padding-bottom: 0.5rem;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: bold;
+    }
+    
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 10px rgba(108, 92, 231, 0.3);
+    }
+    
+    .form-group input::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .payment-methods {
+        margin-bottom: 2rem;
+    }
+    
+    .payment-icons {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+    
+    .payment-icon {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+    }
+    
+    .payment-icon i {
+        font-size: 2rem;
+        color: var(--primary-color);
+    }
+    
+    .payment-info-notice {
+        background: linear-gradient(135deg, rgba(108, 92, 231, 0.1), rgba(59, 130, 246, 0.1));
+        border: 1px solid rgba(108, 92, 231, 0.3);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .payment-info-notice i {
+        color: var(--primary-color);
+        font-size: 1.2rem;
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+    }
+    
+    .notice-content h4 {
+        color: white;
+        margin: 0 0 0.8rem 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .notice-content ul {
+        margin: 0;
+        padding-left: 1.2rem;
+        color: #e0e0e0;
+    }
+    
+    .notice-content li {
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .notice-content strong {
+        color: var(--primary-color);
+    }
+    
+    /* Animation pour le changement de moyens de paiement */
+    .payment-icons {
+        transition: all 0.3s ease;
+    }
+    
+    .payment-icons.hidden {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    
+    .payment-icons.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+    
+    .btn-pay, .btn-cancel {
+        padding: 1rem 2rem;
+        border-radius: 10px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .btn-pay {
+        background: var(--primary-color);
+        color: white;
+        flex: 2;
+        justify-content: center;
+    }
+    
+    .btn-cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .btn-pay:hover {
+        background: white;
+        color: var(--primary-color);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(108, 92, 231, 0.3);
+    }
+    
+    .btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-3px);
+    }
+    
+    .btn-pay:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+    
+    .error-message {
+        background: rgba(255, 0, 0, 0.1);
+        border: 1px solid #ff4444;
+        color: #ff4444;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+        text-align: center;
+    }
+    
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+    
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+        }
+        
+        .payment-icons {
+            gap: 1rem;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('cinetpay-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const btnText = submitBtn.querySelector('.btn-text');
+    const btnLoading = submitBtn.querySelector('.btn-loading');
+    const errorMessage = document.getElementById('error-message');
+    
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Afficher l'état de chargement
+        submitBtn.disabled = true;
+        btnText.style.display = 'none';
+        btnLoading.style.display = 'inline-flex';
+        errorMessage.style.display = 'none';
+        
+        // Récupérer les données du formulaire
+        const formData = new FormData(form);
+        
+        // Envoyer la requête AJAX
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Redirection vers <span class="notranslate">CinetPay</span>:', data.redirect_url);
+                
+                // Vérifier si c'est une redirection vers <span class="notranslate">CinetPay</span>
+                if (data.payment_url && data.payment_url.includes('cinetpay')) {
+                    // Redirection vers <span class="notranslate">CinetPay</span>
+                    console.log('Redirection vers la page de paiement <span class="notranslate">CinetPay</span>...');
+                    window.location.href = data.payment_url;
+                } else {
+                    // Redirection vers la page de succès
+                    console.log('Redirection vers la page de succès...');
+                    window.location.href = data.redirect_url;
+                }
+            } else {
+                // Afficher l'erreur
+                errorMessage.textContent = data.error || 'Une erreur est survenue';
+                errorMessage.style.display = 'block';
+                
+                // Réactiver le bouton
+                submitBtn.disabled = false;
+                btnText.style.display = 'inline';
+                btnLoading.style.display = 'none';
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            errorMessage.textContent = 'Erreur de connexion. Veuillez réessayer.';
+            errorMessage.style.display = 'block';
+            
+            // Réactiver le bouton
+            submitBtn.disabled = false;
+            btnText.style.display = 'inline';
+            btnLoading.style.display = 'none';
+        });
+    });
+    
+    // Gestion des moyens de paiement dynamiques
+    const countrySelect = document.getElementById('customer_country');
+    const africanMethods = document.getElementById('african-payment-methods');
+    const internationalMethods = document.getElementById('international-payment-methods');
+    const paymentInfoNotice = document.getElementById('payment-info-notice');
+    
+    // Pays africains supportés par <span class="notranslate">CinetPay</span>
+    const africanCountries = [
+        'CI', 'SN', 'BF', 'ML', 'NE', 'TG', 'BJ', 'GN', 'CM', 'CD', 'CDUSD'
+    ];
+    
+    function updatePaymentMethods() {
+        const selectedCountry = countrySelect.value;
+        
+        if (africanCountries.includes(selectedCountry)) {
+            // Pays africain - afficher tous les moyens de paiement
+            africanMethods.style.display = 'flex';
+            internationalMethods.style.display = 'none';
+            
+            // Mettre à jour le message d'information
+            paymentInfoNotice.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                <div class="notice-content">
+                    <h4>Moyens de paiement disponibles</h4>
+                    <ul>
+                        <li><strong>Mobile Money :</strong> Orange Money, MTN Money, Moov Money</li>
+                        <li><strong>Cartes bancaires :</strong> Visa, Mastercard</li>
+                        <li><strong>Virements :</strong> Virements bancaires</li>
+                        <li><strong>Conversion :</strong> Montants automatiquement convertis en FCFA</li>
+                    </ul>
+                </div>
+            `;
+        } else if (selectedCountry) {
+            // Pays international - afficher tous les moyens de paiement (redirection backend vers SN)
+            africanMethods.style.display = 'flex';
+            internationalMethods.style.display = 'none';
+            
+            // Mettre à jour le message d'information
+            paymentInfoNotice.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                <div class="notice-content">
+                    <h4>Moyens de paiement disponibles</h4>
+                    <ul>
+                        <li><strong>Mobile Money :</strong> Orange Money, MTN Money, Moov Money</li>
+                        <li><strong>Cartes bancaires :</strong> Visa, Mastercard</li>
+                        <li><strong>Virements :</strong> Virements bancaires</li>
+                        <li><strong>Conversion :</strong> Montants automatiquement convertis vers votre devise locale</li>
+                        <li><strong>Note :</strong> Tous les moyens de paiement sont disponibles via <span class="notranslate">CinetPay</span></li>
+                    </ul>
+                </div>
+            `;
+        } else {
+            // Aucun pays sélectionné - afficher par défaut
+            africanMethods.style.display = 'flex';
+            internationalMethods.style.display = 'none';
+            
+            // Message par défaut
+            paymentInfoNotice.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                <div class="notice-content">
+                    <h4>Paiement international disponible</h4>
+                    <ul>
+                        <li><strong>Afrique :</strong> Mobile Money (Orange, MTN, Moov, etc.)</li>
+                        <li><strong>International :</strong> Cartes bancaires Visa/Mastercard</li>
+                        <li><strong>Régions :</strong> Europe, Amériques, Asie, Océanie, Moyen-Orient</li>
+                        <li><strong>Conversion :</strong> Montants automatiquement convertis vers votre devise locale</li>
+                    </ul>
+                </div>
+            `;
+        }
+    }
+    
+    // Fonction pour gérer la sélection de pays
+    function handleCountrySelection() {
+        const selectedCountry = countrySelect.value;
+        
+        if (selectedCountry && !africanCountries.includes(selectedCountry)) {
+            // Pays non-africain sélectionné - garder l'affichage mais utiliser SN en arrière-plan
+            console.log(`Pays ${selectedCountry} - tous les moyens de paiement disponibles via <span class="notranslate">CinetPay</span>`);
+            
+            // Ne pas changer la valeur du select - garder le pays sélectionné visible
+            // Le backend se chargera de la redirection vers SN
+            
+            // Mettre à jour l'affichage pour montrer tous les moyens de paiement
+            updatePaymentMethods();
+            
+            // Afficher une notification discrète
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(108, 92, 231, 0.9);
+                color: white;
+                padding: 10px 15px;
+                border-radius: 8px;
+                font-size: 0.9rem;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            notification.innerHTML = `
+                <i class="fas fa-info-circle"></i>
+                Tous les moyens de paiement sont disponibles via <span class="notranslate">CinetPay</span>
+            `;
+            document.body.appendChild(notification);
+            
+            // Supprimer la notification après 3 secondes
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 3000);
+        } else {
+            updatePaymentMethods();
+        }
+    }
+    
+    // Écouter les changements de pays
+    countrySelect.addEventListener('change', handleCountrySelection);
+    
+    // Initialiser l'affichage
+    updatePaymentMethods();
+});
+</script>
+{% endblock %} 

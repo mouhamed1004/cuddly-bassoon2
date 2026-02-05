@@ -1,0 +1,111 @@
+# BLIZZ Gaming Translation
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: pt\n"
+
+msgid "Accueil"
+msgstr "Início"
+
+msgid "Profil"
+msgstr "Perfil"
+
+msgid "Messages"
+msgstr "Mensagens"
+
+msgid "Notifications"
+msgstr "Notificações"
+
+msgid "Déconnexion"
+msgstr "Sair"
+
+msgid "Connexion"
+msgstr "Entrar"
+
+msgid "Inscription"
+msgstr "Cadastrar"
+
+msgid "Paramètres"
+msgstr "Configurações"
+
+msgid "Acheter"
+msgstr "Comprar"
+
+msgid "Vendre"
+msgstr "Vender"
+
+msgid "Rechercher"
+msgstr "Pesquisar"
+
+msgid "Créer"
+msgstr "Criar"
+
+msgid "Supprimer"
+msgstr "Excluir"
+
+msgid "Modifier"
+msgstr "Editar"
+
+msgid "Envoyer"
+msgstr "Enviar"
+
+msgid "Annuler"
+msgstr "Cancelar"
+
+msgid "Confirmer"
+msgstr "Confirmar"
+
+msgid "Voir plus"
+msgstr "Ver mais"
+
+msgid "Prix"
+msgstr "Preço"
+
+msgid "Description"
+msgstr "Descrição"
+
+msgid "Catégorie"
+msgstr "Categoria"
+
+msgid "Statut"
+msgstr "Status"
+
+msgid "Transaction"
+msgstr "Transação"
+
+msgid "Paiement"
+msgstr "Pagamento"
+
+msgid "Vendeur"
+msgstr "Vendedor"
+
+msgid "Acheteur"
+msgstr "Comprador"
+
+msgid "Compte"
+msgstr "Conta"
+
+msgid "Niveau"
+msgstr "Nível"
+
+msgid "Jeu"
+msgstr "Jogo"
+
+msgid "Disponible"
+msgstr "Disponível"
+
+msgid "Vendu"
+msgstr "Vendido"
+
+msgid "En attente"
+msgstr "Pendente"
+
+msgid "Bienvenue"
+msgstr "Bem-vindo"
+
+msgid "Bonjour"
+msgstr "Olá"
+
+msgid "Merci"
+msgstr "Obrigado"
+

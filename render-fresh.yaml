@@ -1,0 +1,76 @@
+# Configuration Render FRAÎCHE - Sans conflit de migrations
+services:
+  - type: web
+    name: blizzgame-web-v2
+    env: python
+    plan: professional
+    buildCommand: |
+      pip install -r requirements.txt &&
+      python manage.py collectstatic --noinput &&
+      echo "🔧 Gestion intelligente des migrations..." &&
+      python -c "
+      import os, django
+      os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'socialgame.settings')
+      django.setup()
+      from django.core.management import call_command
+      from django.db import connection
+      
+      # Vérifier si les tables existent
+      with connection.cursor() as cursor:
+          cursor.execute(\"SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'blizzgame_userwarning')\")
+          tables_exist = cursor.fetchone()[0]
+      
+      if tables_exist:
+          print('⚠️ Tables détectées - Marquage fake...')
+          # Vider django_migrations et refaire fake
+          with connection.cursor() as cursor:
+              cursor.execute('DELETE FROM django_migrations;')
+          call_command('migrate', '--fake')
+          print('✅ Migrations synchronisées')
+      else:
+          print('✨ Nouvelle base - Migration normale...')
+          call_command('migrate')
+          print('✅ Migrations appliquées')
+      "
+    startCommand: gunicorn socialgame.wsgi:application --bind 0.0.0.0:$PORT --timeout 120
+    envVars:
+      - key: DEBUG
+        value: False
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: blizzgame-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: blizzgame-redis
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: CINETPAY_API_KEY
+        sync: false
+      - key: CINETPAY_SITE_ID
+        sync: false
+      - key: CINETPAY_SECRET_KEY
+        sync: false
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: USE_CLOUDINARY
+        value: true
+      - key: CLOUDINARY_URL
+        sync: false
+
+  - type: redis
+    name: blizzgame-redis
+    plan: starter
+    region: oregon
+
+  - type: pserv
+    name: blizzgame-db
+    env: postgresql
+    plan: starter
+    region: oregon

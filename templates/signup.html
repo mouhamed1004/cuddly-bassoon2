@@ -1,0 +1,408 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>{% trans "Inscription" %}</h2>
+        {% for message in messages %}
+            <div class="error-message">{{message}}</div>
+        {% endfor %}
+        
+        <form method="POST" class="auth-form">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">
+                    <i class="fas fa-user"></i>
+                    Nom d'utilisateur
+                </label>
+                <input type="text" id="username" name="username" required minlength="3" maxlength="30">
+                <div class="validation-message" id="usernameValidation" style="font-size: 0.8rem; color: #ff4757; margin-top: 0.25rem; display: none;">
+                    Le nom d'utilisateur doit contenir au moins 3 caractères
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">
+                    <i class="fas fa-envelope"></i>{% trans "Email" %}</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">
+                    <i class="fas fa-lock"></i>{% trans "Mot de passe" %}</label>
+                <input type="password" id="password" name="password" required minlength="8">
+                
+                <!-- Indicateur de force du mot de passe -->
+                <div class="password-strength" id="passwordStrength">
+                    <div class="strength-bar">
+                        <div class="strength-fill" id="strengthFill"></div>
+                    </div>
+                    <div class="strength-text" id="strengthText">Force du mot de passe</div>
+                </div>
+                
+                <!-- Règles de validation -->
+                <div class="password-rules">
+                    <div class="rule" id="lengthRule">
+                        <i class="fas fa-circle"></i> Au moins 8 caractères
+                    </div>
+                    <div class="rule" id="uppercaseRule">
+                        <i class="fas fa-circle"></i> Une majuscule
+                    </div>
+                    <div class="rule" id="lowercaseRule">
+                        <i class="fas fa-circle"></i> Une minuscule
+                    </div>
+                    <div class="rule" id="numberRule">
+                        <i class="fas fa-circle"></i> Un chiffre
+                    </div>
+                    <div class="rule" id="specialRule">
+                        <i class="fas fa-circle"></i> Un caractère spécial
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="confirm-password">
+                    <i class="fas fa-lock"></i>
+                    Confirmer le mot de passe
+                </label>
+                <input type="password" id="confirm-password" name="password2" required>
+            </div>
+            
+            <div class="form-group terms-group">
+                <div class="terms-toggle">
+                    <input type="checkbox" id="terms" name="terms" required>
+                    <label for="terms" class="toggle-label">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span class="terms-text">J'accepte les <a href="{% url 'condition_utilisation' %}" class="inline-link" target="_blank">Conditions</a> et <a href="{% url 'politique_confidentialite' %}" class="inline-link" target="_blank">Politique</a></span>
+                </div>
+            </div>
+            
+            <button type="submit" class="auth-button" id="signupBtn">
+                <i class="fas fa-user-plus"></i>
+                S'inscrire
+            </button>
+        </form>
+        
+        <!-- Message d'information sur l'email de vérification -->
+        <div class="email-info" style="margin-top: 1rem; padding: 1rem; background: rgba(108, 92, 231, 0.1); border-radius: 8px; border-left: 4px solid #6c5ce7;">
+            <p style="margin: 0; color: var(--text-color); font-size: 0.9rem;">
+                <i class="fas fa-info-circle" style="color: #6c5ce7; margin-right: 0.5rem;"></i>
+                <strong>Après l'inscription :</strong> Un email de vérification sera envoyé à votre adresse email. 
+                Si vous ne le recevez pas, vérifiez votre dossier spam/courrier indésirable.
+            </p>
+        </div>
+        
+        <div class="auth-links">
+            <a href="{% url 'signin' %}" class="auth-link">
+                <i class="fas fa-sign-in-alt"></i>
+                Déjà un compte ? Se connecter
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Script de validation en temps réel -->
+<script src="{% static 'js/auth-validation.js' %}"></script>
+
+<script>
+// Validation du nom d'utilisateur en temps réel
+document.addEventListener('DOMContentLoaded', function() {
+    const usernameInput = document.getElementById('username');
+    const usernameValidation = document.getElementById('usernameValidation');
+    
+    if (usernameInput && usernameValidation) {
+        usernameInput.addEventListener('input', function() {
+            const username = this.value.trim();
+            
+            if (username.length > 0 && username.length < 3) {
+                usernameValidation.style.display = 'block';
+                this.classList.add('error');
+            } else {
+                usernameValidation.style.display = 'none';
+                this.classList.remove('error');
+            }
+        });
+        
+        // Validation au submit
+        const form = document.querySelector('.auth-form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const username = usernameInput.value.trim();
+                
+                if (username.length < 3) {
+                    e.preventDefault();
+                    usernameValidation.style.display = 'block';
+                    usernameInput.classList.add('error');
+                    usernameInput.focus();
+                    return false;
+                }
+            });
+        }
+    }
+});
+</script>
+
+<style>
+.auth-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.auth-card {
+    background: rgba(15, 23, 41, 0.95);
+    border-radius: 15px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 400px;
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 30px rgba(108, 92, 231, 0.2);
+}
+
+.auth-card h2 {
+    text-align: center;
+    color: var(--primary-color);
+    font-family: 'RussoOne', sans-serif;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    text-shadow: 0 0 15px var(--primary-color);
+}
+
+.error-message {
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid #ff0000;
+    color: #ff0000;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-group input:not([type="checkbox"]) {
+    width: 100%;
+    padding: 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    box-shadow: 0 0 15px var(--primary-color);
+}
+
+.terms-group {
+    margin: 0.3rem 0;
+}
+
+.terms-toggle {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.terms-toggle input[type="checkbox"] {
+    display: none;
+}
+
+.toggle-label {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    height: 20px;
+    background: #333;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    background: #666;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.terms-toggle input[type="checkbox"]:checked + .toggle-label {
+    background: var(--primary-color);
+}
+
+.terms-toggle input[type="checkbox"]:checked + .toggle-label .toggle-slider {
+    transform: translateX(20px);
+    background: white;
+}
+
+.terms-text {
+    font-size: 0.75rem;
+    color: var(--text-color);
+    white-space: nowrap;
+}
+
+.inline-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.inline-link:hover {
+    text-shadow: 0 0 10px var(--primary-color);
+    text-decoration: underline;
+}
+
+.auth-button {
+    width: 100%;
+    padding: 1rem;
+    background: var(--primary-color);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.auth-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px var(--primary-color);
+}
+
+.auth-links {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+}
+
+.auth-link {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.auth-link:hover {
+    color: var(--primary-color);
+    transform: translateX(5px);
+}
+
+/* Indicateur de force du mot de passe */
+.password-strength {
+    margin-top: 0.5rem;
+}
+
+.strength-bar {
+    width: 100%;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.strength-fill {
+    height: 100%;
+    width: 0%;
+    transition: all 0.3s ease;
+}
+
+.strength-fill.weak {
+    background: #ff4757;
+}
+
+.strength-fill.medium {
+    background: #ffa502;
+}
+
+.strength-fill.strong {
+    background: #2ed573;
+}
+
+.strength-text {
+    font-size: 0.8rem;
+    color: var(--text-color);
+    margin-top: 0.25rem;
+    text-align: center;
+    opacity: 0.7;
+}
+
+/* Règles de validation */
+.password-rules {
+    margin-top: 1rem;
+    font-size: 0.8rem;
+}
+
+.rule {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+    color: var(--text-color);
+    transition: all 0.3s ease;
+    opacity: 0.7;
+}
+
+.rule.valid {
+    color: #2ed573;
+    opacity: 1;
+}
+
+.rule i {
+    font-size: 0.6rem;
+    transition: all 0.3s ease;
+}
+
+.rule.valid i {
+    color: #2ed573;
+}
+
+/* États d'erreur */
+.form-group input.error {
+    border-color: #ff4757;
+    box-shadow: 0 0 15px rgba(255, 71, 87, 0.3);
+}
+
+/* Animation de validation */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.form-group input.error {
+    animation: shake 0.3s ease-in-out;
+}
+</style>
+{% endblock %}

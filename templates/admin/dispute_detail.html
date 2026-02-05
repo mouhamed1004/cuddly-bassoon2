@@ -1,0 +1,593 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Litige {{ dispute.id|slice:":8" }} - <span class="notranslate">BLIZZ</span> Admin{% endblock %}
+
+{% block extrahead %}
+<style>
+    .dispute-header {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+    }
+    
+    .dispute-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .info-card {
+        background: #fff;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+    }
+    
+    .info-label {
+        font-weight: bold;
+        color: #495057;
+        margin-bottom: 5px;
+    }
+    
+    .info-value {
+        color: #666;
+    }
+    
+    .messages-section {
+        background: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .section-header {
+        background: #f8f9fa;
+        padding: 15px 20px;
+        border-bottom: 1px solid #ddd;
+        font-weight: bold;
+    }
+    
+    .message-item {
+        padding: 15px 20px;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .message-item:last-child {
+        border-bottom: none;
+    }
+    
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+    
+    .message-sender {
+        font-weight: bold;
+        color: #417690;
+    }
+    
+    .message-date {
+        color: #666;
+        font-size: 0.9em;
+    }
+    
+    .message-content {
+        line-height: 1.5;
+    }
+    
+    .internal-message {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .add-message-form {
+        background: #f8f9fa;
+        padding: 20px;
+        border-top: 1px solid #ddd;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 10px;
+    }
+    
+    .btn-primary {
+        background: #417690;
+        color: white;
+    }
+    
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+    
+    .btn-danger {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .btn-secondary {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .resolution-actions {
+        background: #fff;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .status-badge {
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.8em;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .status-pending {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .status-investigating {
+        background: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-resolved {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .dispute-description {
+        max-height: 200px;
+        overflow-y: auto;
+        padding: 10px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        line-height: 1.6;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+    }
+    
+    .dispute-description::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .dispute-description::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    .dispute-description::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+    
+    .dispute-description::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    /* Styles responsive */
+    @media (max-width: 1200px) {
+        .dispute-info {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .dispute-header {
+            padding: 15px;
+        }
+        
+        .dispute-info {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .info-card {
+            padding: 12px;
+        }
+        
+        .dispute-description {
+            max-height: 150px;
+        }
+        
+        .action-buttons {
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .btn {
+            width: 100%;
+            text-align: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .dispute-header {
+            padding: 10px;
+        }
+        
+        .dispute-info {
+            gap: 10px;
+        }
+        
+        .info-card {
+            padding: 10px;
+        }
+        
+        .dispute-description {
+            max-height: 120px;
+            padding: 8px;
+        }
+        
+        .section-header {
+            padding: 10px 15px;
+        }
+        
+        .message-item {
+            padding: 10px 15px;
+        }
+        
+        .add-message-form {
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<h1>Détail du Litige</h1>
+
+<div class="dispute-header">
+    <h2>{{ dispute.transaction.post.title }}</h2>
+    <p><strong>Statut:</strong> <span class="status-badge status-{{ dispute.status }}">{{ dispute.get_status_display }}</span></p>
+    <p><strong>Priorité:</strong> {{ dispute.get_priority_display }}</p>
+</div>
+
+<div class="dispute-info">
+    <div class="info-card">
+        <div class="info-label">{% trans "Transaction" %}</div>
+        <div class="info-value">
+            ID: {{ dispute.transaction.id|slice:":8" }}<br>
+            Montant: {{ dispute.transaction.amount }}€<br>
+            Créée le: {{ dispute.transaction.created_at|date:"d/m/Y H:i" }}
+        </div>
+    </div>
+    
+    <div class="info-card">
+        <div class="info-label">{% trans "Acheteur" %}</div>
+        <div class="info-value">
+            {{ dispute.transaction.buyer.username }}<br>
+            {{ dispute.transaction.buyer.email }}
+        </div>
+    </div>
+    
+    <div class="info-card">
+        <div class="info-label">{% trans "Vendeur" %}</div>
+        <div class="info-value">
+            {{ dispute.transaction.seller.username }}<br>
+            {{ dispute.transaction.seller.email }}
+        </div>
+    </div>
+    
+    <div class="info-card">
+        <div class="info-label">Litige</div>
+        <div class="info-value">
+            Raison: {{ dispute.get_reason_display }}<br>
+            Montant disputé: {{ dispute.disputed_amount }}€<br>
+            Créé le: {{ dispute.created_at|date:"d/m/Y H:i" }}<br>
+            {% if dispute.assigned_admin %}
+                Assigné à: {{ dispute.assigned_admin.username }}
+            {% else %}
+                Non assigné
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="info-card" style="grid-column: 1 / -1;">
+        <div class="info-label">Description du Problème</div>
+        <div class="info-value dispute-description">
+            {{ dispute.description|linebreaks }}
+        </div>
+    </div>
+</div>
+
+{% if dispute.status == 'pending' or dispute.status == 'investigating' %}
+<div class="resolution-actions">
+    <h3>Actions de Résolution</h3>
+    <p>Choisissez comment résoudre ce litige :</p>
+    
+    <a href="{% url 'admin_dispute_resolve_refund' dispute.id %}" class="btn btn-danger">
+        Résoudre en faveur de l'acheteur (Remboursement)
+    </a>
+    
+    <a href="{% url 'admin_dispute_resolve_payout' dispute.id %}" class="btn btn-success">
+        Résoudre en faveur du vendeur (Payout)
+    </a>
+</div>
+
+<div class="moderation-actions" style="margin-top: 20px; padding: 20px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px;">
+    <h3>Actions de Modération</h3>
+    <p>Actions disciplinaires pour les utilisateurs impliqués :</p>
+    
+    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+        <button onclick="openBanModal('{{ dispute.transaction.buyer.id }}', '{{ dispute.transaction.buyer.username }}')" class="btn btn-warning">
+            Bannir l'acheteur ({{ dispute.transaction.buyer.username }})
+        </button>
+        
+        <button onclick="openBanModal('{{ dispute.transaction.seller.id }}', '{{ dispute.transaction.seller.username }}')" class="btn btn-warning">
+            Bannir le vendeur ({{ dispute.transaction.seller.username }})
+        </button>
+        
+        <button onclick="openWarningModal('{{ dispute.transaction.buyer.id }}', '{{ dispute.transaction.buyer.username }}')" class="btn btn-info">
+            Avertir l'acheteur
+        </button>
+        
+        <button onclick="openWarningModal('{{ dispute.transaction.seller.id }}', '{{ dispute.transaction.seller.username }}')" class="btn btn-info">
+            Avertir le vendeur
+        </button>
+    </div>
+</div>
+{% endif %}
+
+<div class="messages-section">
+    <div class="section-header">
+        Messages du Litige
+    </div>
+    
+    {% if dispute_messages %}
+        {% for message in dispute_messages %}
+        <div class="message-item {% if message.is_internal %}internal-message{% endif %}">
+            <div class="message-header">
+                <span class="message-sender">
+                    {{ message.sender.username }}
+                    {% if message.is_internal %} (Note interne){% endif %}
+
+                <span class="message-date">{{ message.created_at|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div class="message-content">
+                {{ message.message|linebreaks }}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="message-item">
+            <em>Aucun message pour ce litige</em>
+        </div>
+    {% endif %}
+    
+    <div class="add-message-form">
+        <h4>Ajouter un message</h4>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <textarea name="message" class="form-control" rows="4" placeholder="Votre message..." required></textarea>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" name="is_internal"> Note interne (visible uniquement par les admins)
+                </label>
+            </div>
+            <button type="submit" class="btn btn-primary">Ajouter le message</button>
+        </form>
+    </div>
+</div>
+
+<div class="action-buttons">
+    <a href="{% url 'admin_dispute_dashboard' %}" class="btn btn-secondary">
+        Retour au Dashboard
+    </a>
+    <a href="{% url 'admin:blizzgame_dispute_change' dispute.id %}" class="btn btn-secondary">
+        Modifier dans l'Admin
+    </a>
+</div>
+
+<!-- Modal pour bannir un utilisateur -->
+<div id="banModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 500px; border-radius: 8px;">
+        <span class="close" onclick="closeBanModal()" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h3>Bannir l'utilisateur</h3>
+        <form id="banForm">
+            {% csrf_token %}
+            <input type="hidden" id="banUserId" name="user_id">
+            <div class="form-group">
+                <label>Utilisateur :</label>
+                <span id="banUsername" style="font-weight: bold;"></span>
+            </div>
+            <div class="form-group">
+                <label for="banReason">Raison du bannissement :</label>
+                <select id="banReason" name="reason" class="form-control" required>
+                    <option value="">Sélectionnez une raison</option>
+                    <option value="fraud">Fraude</option>
+                    <option value="scam">Arnaque</option>
+                    <option value="abuse">Comportement abusif</option>
+                    <option value="spam">Spam</option>
+                    <option value="fake_account">Faux compte</option>
+                    <option value="repeated_violations">Violations répétées</option>
+                    <option value="other">Autre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="banDuration">Durée :</label>
+                <select id="banDuration" name="duration" class="form-control" required>
+                    <option value="">Sélectionnez la durée</option>
+                    <option value="1">1 jour</option>
+                    <option value="3">3 jours</option>
+                    <option value="7">7 jours</option>
+                    <option value="14">14 jours</option>
+                    <option value="30">30 jours</option>
+                    <option value="permanent">Permanent</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="banNotes">Notes (optionnel) :</label>
+                <textarea id="banNotes" name="notes" class="form-control" rows="3" placeholder="Détails supplémentaires..."></textarea>
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button type="button" onclick="closeBanModal()" class="btn btn-secondary">{% trans "Annuler" %}</button>
+                <button type="submit" class="btn btn-danger">Bannir l'utilisateur</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal pour avertir un utilisateur -->
+<div id="warningModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888; width: 500px; border-radius: 8px;">
+        <span class="close" onclick="closeWarningModal()" style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h3>Envoyer un avertissement</h3>
+        <form id="warningForm">
+            {% csrf_token %}
+            <input type="hidden" id="warningUserId" name="user_id">
+            <div class="form-group">
+                <label>Utilisateur :</label>
+                <span id="warningUsername" style="font-weight: bold;"></span>
+            </div>
+            <div class="form-group">
+                <label for="warningReason">Raison de l'avertissement :</label>
+                <select id="warningReason" name="reason" class="form-control" required>
+                    <option value="">Sélectionnez une raison</option>
+                    <option value="inappropriate_behavior">Comportement inapproprié</option>
+                    <option value="policy_violation">Violation des règles</option>
+                    <option value="communication_issue">Problème de communication</option>
+                    <option value="transaction_dispute">Litige de transaction</option>
+                    <option value="other">Autre</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="warningMessage">Message d'avertissement :</label>
+                <textarea id="warningMessage" name="message" class="form-control" rows="4" placeholder="Message à envoyer à l'utilisateur..." required></textarea>
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button type="button" onclick="closeWarningModal()" class="btn btn-secondary">{% trans "Annuler" %}</button>
+                <button type="submit" class="btn btn-warning">Envoyer l'avertissement</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openBanModal(userId, username) {
+    document.getElementById('banUserId').value = userId;
+    document.getElementById('banUsername').textContent = username;
+    document.getElementById('banModal').style.display = 'block';
+}
+
+function closeBanModal() {
+    document.getElementById('banModal').style.display = 'none';
+    document.getElementById('banForm').reset();
+}
+
+function openWarningModal(userId, username) {
+    document.getElementById('warningUserId').value = userId;
+    document.getElementById('warningUsername').textContent = username;
+    document.getElementById('warningModal').style.display = 'block';
+}
+
+function closeWarningModal() {
+    document.getElementById('warningModal').style.display = 'none';
+    document.getElementById('warningForm').reset();
+}
+
+// Gestion de la soumission du formulaire de bannissement
+document.getElementById('banForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{% url "admin_ban_user" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessAlert('Utilisateur banni avec succès', 'Succès');
+            closeBanModal();
+            location.reload();
+        } else {
+            showErrorAlert('Erreur: ' + data.message, 'Erreur');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showErrorAlert('Une erreur est survenue', 'Erreur');
+    });
+});
+
+// Gestion de la soumission du formulaire d'avertissement
+document.getElementById('warningForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    
+    fetch('{% url "admin_send_warning" %}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessAlert('Avertissement envoyé avec succès', 'Succès');
+            closeWarningModal();
+            location.reload();
+        } else {
+            showErrorAlert('Erreur: ' + data.message, 'Erreur');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showErrorAlert('Une erreur est survenue', 'Erreur');
+    });
+});
+
+// Fermer les modals en cliquant à l'extérieur
+window.onclick = function(event) {
+    const banModal = document.getElementById('banModal');
+    const warningModal = document.getElementById('warningModal');
+    
+    if (event.target == banModal) {
+        closeBanModal();
+    }
+    if (event.target == warningModal) {
+        closeWarningModal();
+    }
+}
+</script>
+
+{% endblock %}

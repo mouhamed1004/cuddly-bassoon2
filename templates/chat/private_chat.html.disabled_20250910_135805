@@ -1,0 +1,1342 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Chat avec {{ other_user.username }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Reset pour le chat */
+    .chat-page {
+        margin: 0;
+        padding: 0;
+        background-color: var(--dark-blue);
+    }
+    
+    .chat-wrapper {
+        max-width: 900px;
+        margin: 20px auto;
+        background: linear-gradient(145deg, rgba(15, 23, 41, 0.95), rgba(108, 92, 231, 0.1));
+        border: 1px solid var(--primary-color);
+        border-radius: 20px;
+        box-shadow: 0 0 30px rgba(108, 92, 231, 0.3);
+        height: 85vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .chat-header {
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        color: var(--text-color);
+        padding: 15px 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        border-bottom: 1px solid var(--primary-color);
+        flex-shrink: 0;
+    }
+
+    .btn-back {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        border: 1px solid var(--primary-color);
+        padding: 8px 12px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+        font-size: 14px;
+    }
+
+    .btn-back:hover {
+        background: rgba(255,255,255,0.3);
+        color: white;
+        text-decoration: none;
+    }
+
+    .chat-user-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid white;
+    }
+
+    .user-avatar.default {
+        background: rgba(255,255,255,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 16px;
+    }
+
+    .user-profile-link {
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    
+    .user-profile-link:hover .user-avatar {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(108, 92, 231, 0.5);
+    }
+    
+    .user-name-link {
+        text-decoration: none;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .user-name-link:hover {
+        color: var(--secondary-color);
+        text-decoration: none;
+    }
+    
+    .user-details h3 {
+        margin: 0;
+        color: white;
+        font-weight: 600;
+        font-size: 18px;
+        transition: all 0.3s ease;
+    }
+
+    .user-status {
+        color: rgba(255,255,255,0.8);
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .messages-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background: rgba(15, 23, 42, 0.4);
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 1;
+    }
+    
+    .message-wrapper {
+        max-width: 75%;
+        word-wrap: break-word;
+        animation: messageSlideIn 0.3s ease-out;
+        position: relative;
+        margin-bottom: 6px;
+    }
+    
+    .message-bubble {
+        position: relative;
+        padding: 2px 16px;
+        border-radius: 18px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 3px;
+        min-width: 20px;
+    }
+    
+    @keyframes messageSlideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .message-wrapper.own {
+        align-self: flex-end;
+    }
+    
+    .message-wrapper.other {
+        align-self: flex-start;
+    }
+    
+    .message-wrapper.own .message-bubble {
+        background: linear-gradient(135deg, rgba(108, 92, 231, 0.9), rgba(147, 51, 234, 0.9));
+        color: white;
+        border-radius: 18px 18px 4px 18px;
+        border: 1px solid rgba(108, 92, 231, 0.3);
+        box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+    }
+    
+    .message-wrapper.other .message-bubble {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-color);
+        border-radius: 18px 18px 18px 4px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .message-content {
+        line-height: 1.5;
+        font-size: 14px;
+        font-weight: 400;
+        margin-bottom: 4px;
+        text-align: right;
+    }
+
+    .message-time {
+        font-size: 10px;
+        opacity: 0.7;
+        text-align: right;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    .message-wrapper.other .message-time {
+        text-align: left;
+        color: rgba(255, 255, 255, 0.6);
+        opacity: 0.7;
+    }
+    
+    .message-wrapper.other .message-content {
+        text-align: left;
+    }
+    
+    .unread-separator {
+        display: flex;
+        align-items: center;
+        margin: 15px 0;
+        gap: 10px;
+    }
+    
+    .unread-line {
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.4);
+    }
+    
+    .unread-text {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 500;
+        padding: 0 8px;
+        white-space: nowrap;
+    }
+
+    .message-input-area {
+        background: linear-gradient(45deg, var(--dark-blue), rgba(108, 92, 231, 0.1));
+        border: 1px solid var(--primary-color);
+        padding: 15px 20px;
+        border-top: 1px solid var(--primary-color);
+        flex-shrink: 0;
+    }
+
+    .reply-preview {
+        background: rgba(108, 92, 231, 0.1);
+        border: 1px solid var(--primary-color);
+        border-radius: 8px;
+        padding: 10px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .reply-content {
+        flex: 1;
+    }
+
+    .reply-to {
+        font-size: 12px;
+        color: var(--secondary-color);
+        display: block;
+        margin-bottom: 4px;
+    }
+
+    .reply-content p {
+        margin: 0;
+        font-size: 14px;
+        color: var(--text-color);
+        opacity: 0.8;
+    }
+
+    .cancel-reply {
+        background: none;
+        border: none;
+        color: var(--text-color);
+        font-size: 18px;
+        cursor: pointer;
+        padding: 5px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .cancel-reply:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .input-controls {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+    }
+
+    .file-button {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--primary-color);
+        color: var(--text-color);
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .file-button:hover {
+        background: rgba(108, 92, 231, 0.2);
+        border-color: var(--secondary-color);
+    }
+
+    .file-preview {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .file-item {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--primary-color);
+        border-radius: 8px;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        position: relative;
+    }
+
+    .file-item img {
+        width: 40px;
+        height: 40px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .file-item .file-info {
+        flex: 1;
+    }
+
+    .file-item .file-name {
+        font-size: 12px;
+        color: var(--text-color);
+        margin: 0;
+    }
+
+    .file-item .file-size {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.6);
+        margin: 0;
+    }
+
+    .remove-file {
+        background: rgba(255, 0, 0, 0.7);
+        border: none;
+        color: white;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .message-actions {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        display: flex;
+        gap: 5px;
+    }
+
+    .message-wrapper:hover .message-actions {
+        opacity: 1;
+    }
+
+    .action-btn {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: var(--text-color);
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .action-btn:hover {
+        background: rgba(108, 92, 231, 0.3);
+    }
+
+    .reply-indicator {
+        background: rgba(108, 92, 231, 0.2);
+        border-left: 3px solid var(--primary-color);
+        padding: 8px 12px;
+        margin-bottom: 5px;
+        border-radius: 8px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .reply-indicator i {
+        margin-right: 5px;
+        color: var(--primary-color);
+    }
+
+    .message-image img {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-bottom: 8px;
+        transition: transform 0.3s ease;
+    }
+
+    .message-image img:hover {
+        transform: scale(1.05);
+    }
+
+    .message-file {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid var(--primary-color);
+        border-radius: 8px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .message-file i {
+        color: var(--primary-color);
+    }
+
+    .message-file a {
+        color: var(--text-color);
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .message-file a:hover {
+        text-decoration: underline;
+    }
+
+    /* Modal pour les images */
+    .image-modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.9);
+        cursor: pointer;
+    }
+
+    .image-modal img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 8px;
+    }
+
+    .message-input {
+        flex: 1;
+        border: 1px solid var(--primary-color);
+        border-radius: 20px;
+        padding: 12px 18px;
+        font-size: 14px;
+        resize: none;
+        outline: none;
+        background: var(--dark-blue);
+        color: var(--text-color);
+        font-family: inherit;
+        line-height: 1.4;
+        min-height: 44px;
+        max-height: 120px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .message-input:focus {
+        border-color: var(--secondary-color);
+        box-shadow: 0 0 10px var(--primary-color);
+    }
+
+    .send-button {
+        background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 16px;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
+
+    .send-button:hover:not(:disabled) {
+        background: #5a67d8;
+    }
+
+    .send-button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+    }
+
+    .emoji-picker {
+        background: none;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .emoji-picker:hover {
+        background: rgba(102, 126, 234, 0.1);
+    }
+
+    .typing-indicator {
+        display: none;
+        align-self: flex-start;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 12px 16px;
+        border-radius: 18px;
+        border-bottom-left-radius: 5px;
+        max-width: 70%;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .typing-dots {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+    }
+
+    .typing-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #666;
+        animation: typingBounce 1.4s infinite ease-in-out;
+    }
+
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes typingBounce {
+        0%, 80%, 100% {
+            transform: scale(0);
+            opacity: 0.5;
+        }
+        40% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    .empty-chat {
+        text-align: center;
+        padding: 60px 20px;
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .empty-chat i {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+
+    .empty-chat h3 {
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    /* Scrollbar personnalisée */
+    .messages-container::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .messages-container::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 3px;
+    }
+
+    .messages-container::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.5);
+    }
+
+    @media (max-width: 768px) {
+        .message {
+            max-width: 85%;
+        }
+        
+        .chat-header {
+            padding: 12px 15px;
+        }
+        
+        .messages-container {
+            padding: 15px;
+        }
+        
+        .message-input-container {
+            padding: 12px 15px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<script>document.body.classList.add('chat-page');</script>
+
+<div class="chat-wrapper">
+    <!-- En-tête -->
+    <div class="chat-header">
+        <a href="{% url 'chat_home' %}" class="btn-back">
+            <i class="fas fa-arrow-left"></i> Retour
+        </a>
+        
+        <div class="chat-user-info">
+            {% if other_user.username %}
+                <a href="{% url 'profile' other_user.username %}" class="user-profile-link">
+                    {% if other_user_profile.profileimg %}
+                        <img src="{{ other_user_profile.profileimg.url }}" alt="{{ other_user.username }}" class="user-avatar">
+                    {% else %}
+                        <div class="user-avatar default">
+                            {{ other_user.username|first|upper }}
+                        </div>
+                    {% endif %}
+                </a>
+                
+                <div class="user-details">
+                    <a href="{% url 'profile' other_user.username %}" class="user-name-link">
+                        <h3>{{ other_user.username }}</h3>
+                    </a>
+                    <p class="user-status" id="userStatus">
+                        {% if other_user.last_login %}
+                            {% now "U" as current_time %}
+                            {% if other_user.last_login|timesince|slice:":1" == "0" %}
+                                <span style="color: #FFFFFF;">🟢 En ligne</span>
+                            {% elif other_user.last_login|timesince|slice:":2" == "1 " %}
+                                <span style="color: #FFFFFF;">🟡 Il y a {{ other_user.last_login|timesince|slice:":10" }}</span>
+                            {% else %}
+                                <span style="color: #FFFFFF;">⚫ Vu {{ other_user.last_login|timesince }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: #FFFFFF;">⚫ Hors ligne</span>
+                        {% endif %}
+                    </p>
+                </div>
+            {% else %}
+                {% if other_user_profile.profileimg %}
+                    <img src="{{ other_user_profile.profileimg.url }}" alt="Utilisateur" class="user-avatar">
+                {% else %}
+                    <div class="user-avatar default">
+                        ?
+                    </div>
+                {% endif %}
+                
+                <div class="user-details">
+                    <h3>Utilisateur</h3>
+                    <p class="user-status">En ligne</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="messages-area" id="messagesArea">
+        {% for message in messages %}
+            {% if first_unread_message and message.id == first_unread_message.id %}
+                <div class="unread-separator">
+                    <div class="unread-line"></div>
+                    <span class="unread-text">Messages non lus</span>
+                    <div class="unread-line"></div>
+                </div>
+            {% endif %}
+            <div class="message-wrapper {% if message.sender == request.user %}own{% else %}other{% endif %}" data-message-id="{{ message.id }}">
+                {% if message.reply_to %}
+                    <div class="reply-indicator">
+                        <i class="fas fa-reply"></i>
+                        <span>{{ message.reply_to.sender.username }}: {{ message.reply_to.content|truncatechars:30 }}</span>
+                    </div>
+                {% endif %}
+                <div class="message-bubble">
+                    {% if message.image %}
+                        <div class="message-image">
+                            <img src="{{ message.image.url }}" alt="Image" onclick="openImageModal('{{ message.image.url }}')">
+                        </div>
+                    {% endif %}
+                    {% if message.file %}
+                        <div class="message-file">
+                            <i class="fas fa-file"></i>
+                            <a href="{{ message.file.url }}" target="_blank">{{ message.file.name|default:"Fichier" }}</a>
+                        </div>
+                    {% endif %}
+                    {% if message.content %}
+                        <div class="message-content">{{ message.content }}</div>
+                    {% endif %}
+                    <div class="message-time" data-timestamp="{{ message.created_at|date:'c' }}"></div>
+                </div>
+                <div class="message-actions">
+                    <button class="action-btn reply-btn" onclick="replyToMessage('{{ message.id }}', '{{ message.sender.username }}', '{{ message.content|escapejs }}')">
+                        <i class="fas fa-reply"></i>
+                    </button>
+                    {% if message.sender != user %}
+                    <button class="action-btn report-btn" onclick="reportMessage('{{ message.id }}', '{{ message.sender.id }}', '{{ message.sender.username }}')">
+                        <i class="fas fa-flag"></i>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Zone de saisie -->
+    <div class="message-input-area">
+        <div id="replyPreview" class="reply-preview" style="display: none;">
+            <div class="reply-content">
+                <span class="reply-to">Répondre à <strong id="replyToUser"></strong></span>
+                <p id="replyToContent"></p>
+            </div>
+            <button type="button" id="cancelReply" class="cancel-reply">×</button>
+        </div>
+        
+        <div class="input-controls">
+            <input type="file" id="fileInput" accept="image/*,*" style="display: none;" multiple>
+            <button type="button" id="fileBtn" class="file-button">
+                <i class="fas fa-paperclip"></i>
+            </button>
+            
+            {% csrf_token %}
+            <textarea 
+                id="messageInput" 
+                class="message-input" 
+                placeholder="Tapez votre message..."
+                rows="1"
+                style="flex: 1;"></textarea>
+            <button type="button" id="emojiBtn" class="emoji-trigger" style="background: linear-gradient(145deg, rgba(108, 92, 231, 0.8), rgba(120, 119, 198, 0.6)); border: none; font-size: 18px; cursor: pointer; padding: 8px; margin: 0 5px; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(108, 92, 231, 0.3);">
+                😀
+            </button>
+            <button type="submit" id="sendBtn" class="send-button">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+        
+        <div id="filePreview" class="file-preview" style="display: none;"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/floating-chat.js' %}"></script>
+<script src="{% static 'js/emoji-picker.js' %}"></script>
+<script>
+// Variables globales
+const conversationId = '{{ conversation.id }}';
+const messagesArea = document.getElementById('messagesArea');
+const messageInput = document.getElementById('messageInput');
+const sendBtn = document.getElementById('sendBtn');
+const fileInput = document.getElementById('fileInput');
+const fileBtn = document.getElementById('fileBtn');
+const filePreview = document.getElementById('filePreview');
+const replyPreview = document.getElementById('replyPreview');
+
+// Variables pour la réponse
+let replyToMessageId = null;
+let selectedFiles = [];
+    
+// Auto-resize textarea
+messageInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    updateSendButton();
+});
+
+// Initialiser le sélecteur d'emojis
+document.addEventListener('DOMContentLoaded', function() {
+    const emojiBtn = document.getElementById('emojiBtn');
+    const messageInput = document.getElementById('messageInput');
+    
+    if (emojiBtn && messageInput) {
+        emojiBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const picker = window.emojiPickerInstance || EmojiPicker.init();
+            if (picker.isVisible && picker.currentInput === messageInput) {
+                picker.hide();
+            } else {
+                picker.show(messageInput, emojiBtn);
+            }
+        });
+    }
+});
+
+// Fonction pour mettre à jour l'état du bouton d'envoi
+function updateSendButton() {
+    const hasText = messageInput.value.trim().length > 0;
+    const hasFiles = selectedFiles.length > 0;
+    sendBtn.disabled = !hasText && !hasFiles;
+}
+
+// Envoi avec Enter
+messageInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+    }
+});
+
+// Soumission avec le bouton
+document.getElementById('sendBtn').addEventListener('click', function(e) {
+    e.preventDefault();
+    sendMessage();
+});
+    
+// Gestion des fichiers
+fileBtn.addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    selectedFiles = [...selectedFiles, ...files];
+    updateFilePreview();
+    updateSendButton();
+});
+
+function updateFilePreview() {
+    if (selectedFiles.length === 0) {
+        filePreview.style.display = 'none';
+        return;
+    }
+    
+    filePreview.style.display = 'block';
+    filePreview.innerHTML = '';
+    
+    selectedFiles.forEach((file, index) => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        
+        if (file.type.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            fileItem.appendChild(img);
+        }
+        
+        const fileInfo = document.createElement('div');
+        fileInfo.className = 'file-info';
+        fileInfo.innerHTML = `
+            <p class="file-name">${file.name}</p>
+            <p class="file-size">${(file.size / 1024).toFixed(1)} KB</p>
+        `;
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-file';
+        removeBtn.innerHTML = '×';
+        removeBtn.onclick = () => removeFile(index);
+        
+        fileItem.appendChild(fileInfo);
+        fileItem.appendChild(removeBtn);
+        filePreview.appendChild(fileItem);
+    });
+}
+
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    updateFilePreview();
+    updateSendButton();
+}
+
+// Fonction de réponse à un message
+function replyToMessage(messageId, username, content) {
+    replyToMessageId = messageId;
+    document.getElementById('replyToUser').textContent = username;
+    document.getElementById('replyToContent').textContent = content.length > 50 ? content.substring(0, 50) + '...' : content;
+    replyPreview.style.display = 'block';
+    messageInput.focus();
+}
+
+// Annuler la réponse
+document.getElementById('cancelReply').addEventListener('click', function() {
+    replyToMessageId = null;
+    replyPreview.style.display = 'none';
+});
+
+// Fonction d'envoi de message avec support des fichiers et réponses
+function sendMessage() {
+    const content = messageInput.value.trim();
+    
+    // Vérifier qu'il y a du contenu ou des fichiers
+    if (!content && selectedFiles.length === 0) return;
+    
+    // Désactiver temporairement
+    sendBtn.disabled = true;
+    messageInput.disabled = true;
+    
+    // Préparer les données
+    const formData = new FormData();
+    if (content) formData.append('content', content);
+    if (replyToMessageId) formData.append('reply_to', replyToMessageId);
+    
+    // Ajouter les fichiers (un seul de chaque type pour simplicité)
+    if (selectedFiles.length > 0) {
+        const file = selectedFiles[0];
+        if (file.type.startsWith('image/')) {
+            formData.append('image', file);
+        } else {
+            formData.append('file', file);
+        }
+    }
+    
+    formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+    
+    // Envoyer
+    fetch(`/chat/private/${conversationId}/send/`, {
+        method: 'POST',
+        body: formData,
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Ajouter le message immédiatement côté expéditeur
+            addMessage(data.message);
+            
+            // Vider les champs
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            selectedFiles = [];
+            updateFilePreview();
+            replyToMessageId = null;
+            replyPreview.style.display = 'none';
+            updateSendButton();
+        } else {
+            alert('Erreur: ' + (data.error || 'Envoi échoué'));
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur de connexion');
+    })
+    .finally(() => {
+        // Réactiver
+        sendBtn.disabled = false;
+        messageInput.disabled = false;
+        messageInput.focus();
+    });
+}
+    
+// Fonction pour ajouter un message à l'interface
+function addMessage(messageData) {
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = `message-wrapper ${messageData.sender_id == '{{ request.user.id }}' ? 'own' : 'other'}`;
+    messageWrapper.setAttribute('data-message-id', messageData.id);
+    
+    let messageHTML = '';
+    
+    // Indicateur de réponse
+    if (messageData.reply_to) {
+        messageHTML += `
+            <div class="reply-indicator">
+                <i class="fas fa-reply"></i>
+                <span>${messageData.reply_to.sender}: ${messageData.reply_to.content.substring(0, 30)}${messageData.reply_to.content.length > 30 ? '...' : ''}</span>
+            </div>
+        `;
+    }
+    
+    messageHTML += '<div class="message-bubble">';
+    
+    // Image
+    if (messageData.image) {
+        messageHTML += `
+            <div class="message-image">
+                <img src="${messageData.image}" alt="Image" onclick="openImageModal('${messageData.image}')">
+            </div>
+        `;
+    }
+    
+    // Fichier
+    if (messageData.file) {
+        messageHTML += `
+            <div class="message-file">
+                <i class="fas fa-file"></i>
+                <a href="${messageData.file}" target="_blank">${messageData.file_name || 'Fichier'}</a>
+            </div>
+        `;
+    }
+    
+    // Contenu texte
+    if (messageData.content) {
+        messageHTML += `<div class="message-content">${messageData.content}</div>`;
+    }
+    
+    messageHTML += `<div class="message-time" data-timestamp="${messageData.created_at}" style="font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px;">${formatTimestamp(messageData.created_at)}</div>`;
+    messageHTML += '</div>';
+    
+    // Actions
+    messageHTML += `
+        <div class="message-actions">
+            <button class="action-btn reply-btn" onclick="replyToMessage('${messageData.id}', '${messageData.sender}', '${messageData.content || ''}')">
+                <i class="fas fa-reply"></i>
+            </button>
+            ${messageData.sender !== '{{ user.username }}' ? `
+            <button class="action-btn report-btn" onclick="reportMessage('${messageData.id}', '${messageData.sender_id}', '${messageData.sender}')">
+                <i class="fas fa-flag"></i>
+            </button>
+            ` : ''}
+        </div>
+    `;
+    
+    messageWrapper.innerHTML = messageHTML;
+    messagesArea.appendChild(messageWrapper);
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+    
+    // Mettre à jour le timestamp
+    updateTimestamps();
+}
+
+// Modal pour les images
+function openImageModal(imageSrc) {
+    const modal = document.createElement('div');
+    modal.className = 'image-modal';
+    modal.innerHTML = `<img src="${imageSrc}" alt="Image">`;
+    modal.onclick = () => document.body.removeChild(modal);
+    document.body.appendChild(modal);
+    modal.style.display = 'block';
+}
+
+// Échapper le HTML
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+    
+// Fonction pour formater les timestamps avec heure précise
+function formatTimestamp(timestamp) {
+    const now = new Date();
+    const messageTime = new Date(timestamp);
+    const diffMs = now - messageTime;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    // Toujours afficher l'heure
+    const timeString = messageTime.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    if (diffMins < 1) return `À l'instant (${timeString})`;
+    if (diffMins < 60) return `Il y a ${diffMins}min (${timeString})`;
+    if (diffHours < 24) return `Il y a ${diffHours}h (${timeString})`;
+    if (diffDays < 7) return `Il y a ${diffDays}j (${timeString})`;
+    
+    return messageTime.toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: '2-digit'
+    }) + ` ${timeString}`;
+}
+
+// Fonction pour mettre à jour tous les timestamps
+function updateTimestamps() {
+    const timeElements = document.querySelectorAll('.message-time[data-timestamp]');
+    timeElements.forEach(timeElement => {
+        const timestamp = timeElement.getAttribute('data-timestamp');
+        if (timestamp) {
+            const formattedTime = formatTimestamp(timestamp);
+            timeElement.textContent = formattedTime;
+        }
+    });
+}
+
+// Fonction pour signaler un message
+function reportMessage(messageId, senderId, senderUsername) {
+    if (confirm(`Êtes-vous sûr de vouloir signaler ce message de ${senderUsername} ?`)) {
+        const formData = new FormData();
+        formData.append('report_type', 'chat_message');
+        formData.append('content_id', messageId);
+        formData.append('reported_user_id', senderId);
+        formData.append('reason', 'inappropriate_content');
+        formData.append('description', 'Message signalé depuis le chat privé');
+        
+        fetch('{% url "submit_report" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Message signalé avec succès. Notre équipe va examiner le contenu.');
+            } else {
+                alert('Erreur: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Une erreur est survenue lors du signalement.');
+        });
+    }
+}
+
+// Initialiser les timestamps au chargement
+document.addEventListener('DOMContentLoaded', function() {
+    updateTimestamps();
+    setInterval(updateTimestamps, 60000); // Mettre à jour chaque minute
+});
+
+// WebSocket pour chat temps réel
+let chatSocket = null;
+
+function initWebSocket() {
+    const conversationId = '{{ conversation.id }}';
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws/chat/private/${conversationId}/`;
+    
+    chatSocket = new WebSocket(wsUrl);
+    
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.type === 'new_message') {
+            // Ajouter le message reçu uniquement s'il n'est pas de nous
+            if (data.message.sender_id != '{{ request.user.id }}') {
+                addMessage(data.message);
+            }
+        }
+    };
+    
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket fermé de manière inattendue');
+        // Tentative de reconnexion après 3 secondes
+        setTimeout(function() {
+            initWebSocket();
+        }, 3000);
+    };
+    
+    chatSocket.onerror = function(e) {
+        console.error('Erreur WebSocket:', e);
+    };
+}
+
+// Initialisation
+updateSendButton();
+messageInput.focus();
+initWebSocket();
+
+// Mettre à jour les timestamps immédiatement
+updateTimestamps();
+
+// Fonction de récupération des messages (utilisée uniquement pour le chargement initial)
+let lastMessageCount = 0;
+function fetchMessages() {
+    fetch(`/chat/private/${conversationId}/messages/`, { headers: { 'X-Requested-With': 'XMLHttpRequest' }})
+        .then(r => r.json())
+        .then(data => {
+            if (data.success && data.messages.length !== lastMessageCount) {
+                lastMessageCount = data.messages.length;
+                const messagesArea = document.getElementById('messagesArea');
+                messagesArea.innerHTML = '';
+                data.messages.forEach(message => addMessage(message));
+                updateTimestamps();
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des messages:', error);
+        });
+}
+
+// Fonction pour ajouter un message avec support des médias
+function addSimpleMessage(content, isOwn, timestamp, messageData = null) {
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = `message-wrapper ${isOwn ? 'own' : 'other'}`;
+    
+    let messageHTML = '<div class="message-bubble">';
+    
+    // Si on a des données complètes du message
+    if (messageData) {
+        // Image
+        if (messageData.image) {
+            messageHTML += `
+                <div class="message-image">
+                    <img src="${messageData.image}" alt="Image" onclick="openImageModal('${messageData.image}')" style="max-width: 200px; max-height: 200px; border-radius: 8px; cursor: pointer;">
+                </div>
+            `;
+        }
+        
+        // Fichier
+        if (messageData.file) {
+            messageHTML += `
+                <div class="message-file" style="background: rgba(255,255,255,0.1); border: 1px solid var(--primary-color); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-file" style="color: var(--primary-color);"></i>
+                    <a href="${messageData.file}" target="_blank" style="color: var(--text-color); text-decoration: none;">${messageData.file_name || 'Fichier'}</a>
+                </div>
+            `;
+        }
+    }
+    
+    // Contenu texte
+    if (content) {
+        messageHTML += `<div class="message-content">${content}</div>`;
+    }
+    
+    messageHTML += `<div class="message-time" data-timestamp="${timestamp}"></div>`;
+    messageHTML += '</div>';
+    
+    messageWrapper.innerHTML = messageHTML;
+    messagesArea.appendChild(messageWrapper);
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+}
+
+// Fonction complète pour ajouter un message avec support des réponses
+function addMessageWithReply(messageData) {
+    const messageWrapper = document.createElement('div');
+    messageWrapper.className = `message-wrapper ${messageData.is_own ? 'own' : 'other'}`;
+    messageWrapper.setAttribute('data-message-id', messageData.id);
+    
+    let messageHTML = '';
+    
+    // Indicateur de réponse
+    if (messageData.reply_to) {
+        messageHTML += `
+            <div class="reply-indicator" style="background: rgba(108, 92, 231, 0.2); border-left: 3px solid var(--primary-color); padding: 8px 12px; margin-bottom: 5px; border-radius: 8px; font-size: 12px; color: rgba(255, 255, 255, 0.8);">
+                <i class="fas fa-reply" style="margin-right: 5px; color: var(--primary-color);"></i>
+                <span>${messageData.reply_to.sender}: ${messageData.reply_to.content}</span>
+            </div>
+        `;
+    }
+    
+    messageHTML += '<div class="message-bubble">';
+    
+    // Image
+    if (messageData.image) {
+        messageHTML += `
+            <div class="message-image">
+                <img src="${messageData.image}" alt="Image" onclick="openImageModal('${messageData.image}')" style="max-width: 200px; max-height: 200px; border-radius: 8px; cursor: pointer; margin-bottom: 8px; transition: transform 0.3s ease;">
+            </div>
+        `;
+    }
+    
+    // Fichier
+    if (messageData.file) {
+        messageHTML += `
+            <div class="message-file" style="background: rgba(255,255,255,0.1); border: 1px solid var(--primary-color); border-radius: 8px; padding: 8px 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-file" style="color: var(--primary-color);"></i>
+                <a href="${messageData.file}" target="_blank" style="color: var(--text-color); text-decoration: none;">${messageData.file_name || 'Fichier'}</a>
+            </div>
+        `;
+    }
+    
+    // Contenu texte
+    if (messageData.content) {
+        messageHTML += `<div class="message-content">${messageData.content}</div>`;
+    }
+    
+    messageHTML += `<div class="message-time" data-timestamp="${messageData.created_at}" style="font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 4px;">${formatTimestamp(messageData.created_at)}</div>`;
+    messageHTML += '</div>';
+    
+    // Actions (bouton réponse)
+    messageHTML += `
+        <div class="message-actions" style="opacity: 0; transition: opacity 0.3s ease;">
+            <button class="action-btn reply-btn" onclick="replyToMessage('${messageData.id}', '${messageData.sender}', '${(messageData.content || '').replace(/'/g, '\\\'')}')" style="background: rgba(108, 92, 231, 0.2); border: none; border-radius: 50%; width: 30px; height: 30px; color: var(--primary-color); cursor: pointer; display: flex; align-items: center; justify-content: center; margin-right: 5px;">
+                <i class="fas fa-reply"></i>
+            </button>
+            ${messageData.sender !== '{{ user.username }}' ? `
+            <button class="action-btn report-btn" onclick="reportMessage('${messageData.id}', '${messageData.sender_id}', '${messageData.sender}')" style="background: rgba(220, 53, 69, 0.2); border: none; border-radius: 50%; width: 30px; height: 30px; color: #dc3545; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-flag"></i>
+            </button>
+            ` : ''}
+        </div>
+    `;
+    
+    messageWrapper.innerHTML = messageHTML;
+    
+    // Afficher les actions au survol
+    messageWrapper.addEventListener('mouseenter', function() {
+        const actions = this.querySelector('.message-actions');
+        if (actions) actions.style.opacity = '1';
+    });
+    
+    messageWrapper.addEventListener('mouseleave', function() {
+        const actions = this.querySelector('.message-actions');
+        if (actions) actions.style.opacity = '0';
+    });
+    
+    messagesArea.appendChild(messageWrapper);
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+}
+
+// Modal pour les images
+function openImageModal(imageSrc) {
+    const modal = document.createElement('div');
+    modal.className = 'image-modal';
+    modal.style.cssText = 'display: block; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); cursor: pointer;';
+    modal.innerHTML = `<img src="${imageSrc}" alt="Image" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); max-width: 90%; max-height: 90%; border-radius: 8px;">`;
+    modal.onclick = () => document.body.removeChild(modal);
+    document.body.appendChild(modal);
+}
+
+// Polling désactivé - remplacé par WebSocket
+// setInterval(fetchMessages, 10000);
+// fetchMessages();
+
+// Scroll initial vers le bas ou vers le premier message non lu
+window.addEventListener('load', function() {
+    const unreadSeparator = document.querySelector('.unread-separator');
+    if (unreadSeparator) {
+        // S'il y a des messages non lus, scroller vers le séparateur
+        unreadSeparator.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+        // Sinon, scroller vers le bas
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+});
+</script>
+{% endblock %}

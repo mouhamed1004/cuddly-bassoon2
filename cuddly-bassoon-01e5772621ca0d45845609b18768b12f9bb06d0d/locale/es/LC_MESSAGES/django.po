@@ -1,0 +1,583 @@
+# BLIZZ Gaming Translation - ES
+# NOTE: Les noms de jeux (Free Fire, PUBG, etc.) ne sont JAMAIS traduits
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: es\n"
+
+msgid "Accueil"
+msgstr "Inicio"
+
+msgid "Acheter"
+msgstr "Comprar"
+
+msgid "Acheteur"
+msgstr "Comprador"
+
+msgid "Achetez"
+msgstr "Compra"
+
+msgid "Actif"
+msgstr "Activo"
+
+msgid "Adresse"
+msgstr "Dirección"
+
+msgid "Afficher"
+msgstr "Mostrar"
+
+msgid "Afrique"
+msgstr "África"
+
+msgid "Aide"
+msgstr "Ayuda"
+
+msgid "Ajouter"
+msgstr "Añadir"
+
+msgid "Alerte"
+msgstr "Alerta"
+
+msgid "Amérique latine"
+msgstr "América Latina"
+
+msgid "Ancien"
+msgstr "Antiguo"
+
+msgid "Ancien mot de passe"
+msgstr "Contraseña antigua"
+
+msgid "Annuler"
+msgstr "Cancelar"
+
+msgid "Annulé"
+msgstr "Cancelado"
+
+msgid "Asie"
+msgstr "Asia"
+
+msgid "Attention"
+msgstr "Advertencia"
+
+msgid "Aucun"
+msgstr "Ninguno"
+
+msgid "Aucun message"
+msgstr "Sin mensajes"
+
+msgid "Aucun résultat"
+msgstr "Sin resultados"
+
+msgid "Aujourd'hui"
+msgstr "Hoy"
+
+msgid "Avec"
+msgstr "Con"
+
+msgid "Bienvenue"
+msgstr "Bienvenido"
+
+msgid "Bonjour"
+msgstr "Hola"
+
+msgid "Boutique Comptes Gaming"
+msgstr "Tienda de Cuentas Gaming"
+
+msgid "Carte Bancaire"
+msgstr "Tarjeta Bancaria"
+
+msgid "Catégorie"
+msgstr "Categoría"
+
+msgid "Chargement"
+msgstr "Cargando"
+
+msgid "Charger plus"
+msgstr "Cargar más"
+
+msgid "Chat"
+msgstr "Chat"
+
+msgid "Classement"
+msgstr "Clasificación"
+
+msgid "Code postal"
+msgstr "Código postal"
+
+msgid "Coins"
+msgstr "Monedas"
+
+msgid "Commande"
+msgstr "Pedido"
+
+msgid "Commencer à vendre"
+msgstr "Empezar a vender"
+
+msgid "Compte"
+msgstr "Cuenta"
+
+msgid "Compte de jeu"
+msgstr "Cuenta de juego"
+
+msgid "Conditions"
+msgstr "Términos"
+
+msgid "Confidentialité"
+msgstr "Privacidad"
+
+msgid "Confirmer"
+msgstr "Confirmar"
+
+msgid "Confirmer le mot de passe"
+msgstr "Confirmar contraseña"
+
+msgid "Confirmé"
+msgstr "Confirmado"
+
+msgid "Connexion"
+msgstr "Iniciar sesión"
+
+msgid "Contact"
+msgstr "Contacto"
+
+msgid "Conversation"
+msgstr "Conversación"
+
+msgid "Créer"
+msgstr "Crear"
+
+msgid "Créer un compte"
+msgstr "Crear una cuenta"
+
+msgid "Créer une annonce"
+msgstr "Crear anuncio"
+
+msgid "De"
+msgstr "De"
+
+msgid "Demain"
+msgstr "Mañana"
+
+msgid "Description"
+msgstr "Descripción"
+
+msgid "Diamants"
+msgstr "Diamantes"
+
+msgid "Disponible"
+msgstr "Disponible"
+
+msgid "Déconnexion"
+msgstr "Cerrar sesión"
+
+msgid "Détails"
+msgstr "Detalles"
+
+msgid "Email"
+msgstr "Correo"
+
+msgid "En attente"
+msgstr "Pendiente"
+
+msgid "En cours"
+msgstr "En progreso"
+
+msgid "En ligne"
+msgstr "En línea"
+
+msgid "En vente"
+msgstr "En venta"
+
+msgid "Envoyer"
+msgstr "Enviar"
+
+msgid "Envoyer un message"
+msgstr "Enviar un mensaje"
+
+msgid "Erreur"
+msgstr "Error"
+
+msgid "Erreur de chargement"
+msgstr "Error de carga"
+
+msgid "Et"
+msgstr "Y"
+
+msgid "FAQ"
+msgstr "Preguntas frecuentes"
+
+msgid "Fermer"
+msgstr "Cerrar"
+
+msgid "Filtrer"
+msgstr "Filtrar"
+
+msgid "Frais"
+msgstr "Tarifas"
+
+msgid "Hier"
+msgstr "Ayer"
+
+msgid "Hors ligne"
+msgstr "Desconectado"
+
+msgid "Il y a"
+msgstr "hace"
+
+msgid "Inactif"
+msgstr "Inactivo"
+
+msgid "Indisponible"
+msgstr "No disponible"
+
+msgid "Information"
+msgstr "Información"
+
+msgid "Inscription"
+msgstr "Registrarse"
+
+msgid "Jeu"
+msgstr "Juego"
+
+msgid "Jeux"
+msgstr "Juegos"
+
+msgid "Joueur"
+msgstr "Jugador"
+
+msgid "Langue"
+msgstr "Idioma"
+
+msgid "Livraison"
+msgstr "Entrega"
+
+msgid "Masquer"
+msgstr "Ocultar"
+
+msgid "Meilleur"
+msgstr "Mejor"
+
+msgid "Merci"
+msgstr "Gracias"
+
+msgid "Mes transactions"
+msgstr "Mis transacciones"
+
+msgid "Message envoyé"
+msgstr "Mensaje enviado"
+
+msgid "Messages"
+msgstr "Mensajes"
+
+msgid "Mis à jour le"
+msgstr "Actualizado el"
+
+msgid "Mobile Money"
+msgstr "Mobile Money"
+
+msgid "Modifier"
+msgstr "Editar"
+
+msgid "Moins"
+msgstr "Menos"
+
+msgid "Mon Compte"
+msgstr "Mi Cuenta"
+
+msgid "Mon Profil"
+msgstr "Mi Perfil"
+
+msgid "Mon compte"
+msgstr "Mi cuenta"
+
+msgid "Mot de passe"
+msgstr "Contraseña"
+
+msgid "Mot de passe oublié"
+msgstr "Contraseña olvidada"
+
+msgid "Navigation"
+msgstr "Navegación"
+
+msgid "Niveau"
+msgstr "Nivel"
+
+msgid "Nom"
+msgstr "Nombre"
+
+msgid "Nom de famille"
+msgstr "Apellido"
+
+msgid "Non"
+msgstr "No"
+
+msgid "Non vérifié"
+msgstr "No verificado"
+
+msgid "Notification"
+msgstr "Notificación"
+
+msgid "Notifications"
+msgstr "Notificaciones"
+
+msgid "Nouveau"
+msgstr "Nuevo"
+
+msgid "Nouveau message"
+msgstr "Nuevo mensaje"
+
+msgid "Nouveau mot de passe"
+msgstr "Nueva contraseña"
+
+msgid "Ou"
+msgstr "O"
+
+msgid "Oui"
+msgstr "Sí"
+
+msgid "Ouvrir"
+msgstr "Abrir"
+
+msgid "Paiement"
+msgstr "Pago"
+
+msgid "Paiement disponible en Afrique, Amérique latine et Asie"
+msgstr "Pago disponible en África, América Latina y Asia"
+
+msgid "Panier"
+msgstr "Carrito"
+
+msgid "Par"
+msgstr "Por"
+
+msgid "Paramètres"
+msgstr "Configuración"
+
+msgid "Partager"
+msgstr "Compartir"
+
+msgid "Partout dans le monde"
+msgstr "En todo el mundo"
+
+msgid "Pays"
+msgstr "País"
+
+msgid "Peut-être"
+msgstr "Quizás"
+
+msgid "Plateforme"
+msgstr "Plataforma"
+
+msgid "Plus"
+msgstr "Más"
+
+msgid "Plus d'informations"
+msgstr "Más información"
+
+msgid "Points"
+msgstr "Puntos"
+
+msgid "Populaire"
+msgstr "Popular"
+
+msgid "Pour"
+msgstr "Para"
+
+msgid "Prix"
+msgstr "Precio"
+
+msgid "Produit"
+msgstr "Producto"
+
+msgid "Produits"
+msgstr "Productos"
+
+msgid "Profil"
+msgstr "Perfil"
+
+msgid "Précédent"
+msgstr "Anterior"
+
+msgid "Prénom"
+msgstr "Nombre de pila"
+
+msgid "Publier"
+msgstr "Publicar"
+
+msgid "Publié le"
+msgstr "Publicado el"
+
+msgid "Rang"
+msgstr "Rango"
+
+msgid "Rechercher"
+msgstr "Buscar"
+
+msgid "Recommandé"
+msgstr "Recomendado"
+
+msgid "Remise"
+msgstr "Descuento"
+
+msgid "Retour"
+msgstr "Volver"
+
+msgid "Récent"
+msgstr "Reciente"
+
+msgid "Région"
+msgstr "Región"
+
+msgid "Répondre"
+msgstr "Responder"
+
+msgid "Résultats"
+msgstr "Resultados"
+
+msgid "Réussi"
+msgstr "Exitoso"
+
+msgid "Sans"
+msgstr "Sin"
+
+msgid "Sauvegarder"
+msgstr "Guardar"
+
+msgid "Se souvenir de moi"
+msgstr "Recuérdame"
+
+msgid "Serveur"
+msgstr "Servidor"
+
+msgid "Signaler"
+msgstr "Reportar"
+
+msgid "Sous-total"
+msgstr "Subtotal"
+
+msgid "Statut"
+msgstr "Estado"
+
+msgid "Succès"
+msgstr "Éxito"
+
+msgid "Suivant"
+msgstr "Siguiente"
+
+msgid "Support"
+msgstr "Soporte"
+
+msgid "Supprimer"
+msgstr "Eliminar"
+
+msgid "Tableau de bord"
+msgstr "Panel de control"
+
+msgid "Terminé"
+msgstr "Completado"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "Tous droits réservés"
+msgstr "Todos los derechos reservados"
+
+msgid "Tout"
+msgstr "Todo"
+
+msgid "Transaction"
+msgstr "Transacción"
+
+msgid "Trier par"
+msgstr "Ordenar por"
+
+msgid "Télécharger"
+msgstr "Descargar"
+
+msgid "Téléphone"
+msgstr "Teléfono"
+
+msgid "Valider"
+msgstr "Validar"
+
+msgid "Vendeur"
+msgstr "Vendedor"
+
+msgid "Vendez"
+msgstr "Vende"
+
+msgid "Vendre"
+msgstr "Vender"
+
+msgid "Vendu"
+msgstr "Vendido"
+
+msgid "Ville"
+msgstr "Ciudad"
+
+msgid "Virement Bancaire"
+msgstr "Transferencia Bancaria"
+
+msgid "Voir plus"
+msgstr "Ver más"
+
+msgid "Vous devez être connecté pour accéder à cette page."
+msgstr "Debe iniciar sesión para acceder a esta página."
+
+msgid "Vous devez être connecté pour vendre des comptes."
+msgstr "Debe iniciar sesión para vender cuentas."
+
+msgid "Vérifié"
+msgstr "Verificado"
+
+msgid "des comptes"
+msgstr "cuentas"
+
+msgid "et en toute sécurité"
+msgstr "y de forma segura"
+
+msgid "et revendez des comptes"
+msgstr "y revende cuentas"
+
+msgid "heure"
+msgstr "hora"
+
+msgid "heures"
+msgstr "horas"
+
+msgid "jour"
+msgstr "día"
+
+msgid "jours"
+msgstr "días"
+
+msgid "minute"
+msgstr "minuto"
+
+msgid "minutes"
+msgstr "minutos"
+
+msgid "seconde"
+msgstr "segundo"
+
+msgid "secondes"
+msgstr "segundos"
+
+msgid "À"
+msgstr "A"
+
+msgid "À propos"
+msgstr "Acerca de"
+
+msgid "Échangez"
+msgstr "Intercambia"
+
+msgid "Échec"
+msgstr "Fallido"
+
+msgid "Écrire un message"
+msgstr "Escribir un mensaje"
+
+msgid "évoluez"
+msgstr "evoluciona"
+

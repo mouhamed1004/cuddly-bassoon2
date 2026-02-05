@@ -1,0 +1,1167 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_tags %}
+{% load badge_tags %}
+{% load image_filters %}
+{% load i18n %}
+
+{% block extra_head %}
+<!-- Open Graph Meta Tags pour le partage social -->
+<meta property="og:title" content="{{ post.title }} - {{ post.get_game_display_name }}">
+<meta property="og:description" content="{{ post.caption|truncatewords:30 }}">
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ post|post_media_or_static:'banner' }}">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:type" content="product">
+<meta property="og:site_name" content="Blizz Gaming">
+<meta property="product:price:amount" content="{{ post.price }}">
+<meta property="product:price:currency" content="XOF">
+
+<!-- Twitter Card Meta Tags -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ post.title }} - {{ post.get_game_display_name }}">
+<meta name="twitter:description" content="{{ post.caption|truncatewords:30 }}">
+<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{{ post|post_media_or_static:'banner' }}">
+
+<!-- WhatsApp Meta Tags -->
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{ post.title }}">
+<meta property="og:image:type" content="image/jpeg">
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/badge-animations.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="product-page">
+    <div class="product-container">
+        <!-- Carousel Section -->
+        <div class="carousel-section">
+            <div class="carousel-container">
+                <div class="carousel-track" id="carousel-track">
+                    <!-- Bannière principale en premier -->
+                    {% if post.has_banner %}
+                    <div class="carousel-slide">
+                        {% load image_filters %}
+                        <img src="{{ post|post_media_or_static:'banner' }}" alt="Bannière du produit" class="carousel-media" onclick="openModal(this.src)">
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Vidéo en second -->
+                    {% if video %}
+                    <div class="carousel-slide">
+                        <video controls class="carousel-media">
+                            <source src="{{ video.video.url }}" type="video/mp4">
+                            Votre navigateur ne supporte pas la lecture de vidéos.
+                        </video>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Images supplémentaires -->
+                    {% if images %}
+                    {% for image in images %}
+                    <div class="carousel-slide">
+                        <img src="{{ image|post_media_or_static:'image' }}" alt="Image du produit" class="carousel-media" onclick="openModal(this.src)">
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    
+                    <!-- Fallback si aucun média -->
+                    {% if not post.has_banner and not video and not images %}
+                    <div class="carousel-slide">
+                        <div class="no-media-placeholder">
+                            <i class="fas fa-image"></i>
+                            <p>Aucune image disponible</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <button class="carousel-button prev" onclick="changeSlide(-1)">&#10094;</button>
+                <button class="carousel-button next" onclick="changeSlide(1)">&#10095;</button>
+                
+                <div class="carousel-dots" id="carousel-dots">
+                    <!-- Les points seront générés dynamiquement par JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Info Section -->
+        <div class="product-info-section">
+            <div class="product-header">
+                <div class="game-type-badge-detail">
+                    <i class="fas fa-gamepad"></i>
+                    {{ post.get_game_display_name }}
+                </div>
+                <div class="product-stats-detail">
+                    <div class="stat-detail-item">
+                        <i class="fas fa-coins"></i>
+                        <span class="stat-label">Pièces/Coins:</span>
+                        <span class="stat-value">{{ post.coins }}</span>
+                    </div>
+                    <div class="stat-detail-item">
+                        <i class="fas fa-trophy"></i>
+                        <span class="stat-label">Niveau:</span>
+                        <span class="stat-value">{{ post.level }}</span>
+                    </div>
+                </div>
+                <div class="product-title-price">
+                    <h1 class="product-title">{{ post.title }}</h1>
+                    <div class="product-price">{% display_price post.price "EUR" request.user %}</div>
+                </div>
+            </div>
+            
+            <div class="product-description">
+                <h3>{% trans "Description" %}</h3>
+                <p>{{ post.caption }}</p>
+            </div>
+            
+            <div class="seller-info">
+                <a href="{% url 'profile' post.author.username %}" class="profile-link">
+                    {% if post.author.profile and post.author.profile.profileimg %}
+                        <img src="{{ post.author.profile|cloudinary_or_static:'profileimg' }}" alt="Photo de profil" class="seller-profile-img">
+                    {% else %}
+                        <img src="{% static 'images/default-avatar.png' %}" alt="Photo de profil" class="seller-profile-img">
+                    {% endif %}
+                </a>
+                <div class="seller-details">
+                    <a href="{% url 'profile' post.author.username %}" class="seller-name">@{{ post.author.username }}</a>
+                    {% get_user_badge post.author as seller_badge %}
+                    {% if seller_badge %}
+                    <span class="reputation-badge-name-detail">{{ seller_badge.name }}</span>
+                    {% endif %}
+                    <span class="post-date">Publié le {{ post.created_at|date:"d/m/Y" }}</span>
+                </div>
+                {% if seller_badge %}
+                <img src="{% static '' %}{{ seller_badge.icon }}" 
+                     alt="{{ seller_badge.name }}" 
+                     class="seller-badge-icon-detail-large animated-badge"
+                     style="user-select: none !important; pointer-events: none !important; -webkit-user-drag: none; -webkit-touch-callout: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;"
+                     oncontextmenu="return false;" ondragstart="return false;"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                <span class="badge-fallback" style="display:none; font-size: 1.5rem;">{{ seller_badge.icon_symbol }}</span>
+                {% endif %}
+            </div>
+            
+            {% if user != post.author %}
+            <div class="product-actions">
+                {% if existing_transaction %}
+                    <a href="{% url 'transaction_detail' existing_transaction.id %}" class="btn-continue">
+                        <i class="fas fa-arrow-right"></i>
+                        Continuer la transaction
+                    </a>
+                {% else %}
+                    <form method="POST" action="{% url 'initiate_transaction' post.id %}" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-buy">
+                            <i class="fas fa-shopping-cart"></i>{% trans "Acheter" %}</button>
+                    </form>
+                {% endif %}
+                <button class="btn-share" onclick="openShareModal()">
+                    <i class="fas fa-share-alt"></i>
+                    Partager
+                </button>
+                <button class="btn-report" onclick="openReportModal()">
+                    <i class="fas fa-flag"></i>
+                    Signaler
+                </button>
+            </div>
+            {% else %}
+            <div class="product-actions">
+                <button class="btn-share" onclick="openShareModal()">
+                    <i class="fas fa-share-alt"></i>
+                    Partager
+                </button>
+                <form method="POST" action="{% url 'delete_post' post.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-report" onclick="showCustomDeleteAlert('⚠️ Supprimer le produit', 'Êtes-vous sûr de vouloir supprimer ce produit ? Cette action est irréversible.', function() { this.closest('form').submit(); }.bind(this)); return false;">
+                        <i class="fas fa-trash"></i>{% trans "Supprimer" %}</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour les images -->
+<div id="imageModal" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="modalImg">
+</div>
+
+<!-- Modal pour partager le produit -->
+<div id="shareModal" class="modal" style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);">
+    <div class="modal-content" style="background: linear-gradient(145deg, rgba(15, 23, 41, 0.95), rgba(108, 92, 231, 0.1)); margin: 10% auto; padding: 30px; border: 1px solid #8a2be2; max-width: 500px; width: 90%; border-radius: 15px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);">
+        <span class="close" onclick="closeShareModal()" style="color: #fff; float: right; font-size: 28px; font-weight: bold; cursor: pointer; transition: color 0.3s ease;">&times;</span>
+        <h3 style="color: #fff; margin-bottom: 25px; font-size: 1.5rem; text-align: center;">📤 <span id="shareTitle">Partager cette annonce</span></h3>
+        
+        <div class="share-networks" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+            <button onclick="shareOn('whatsapp')" class="share-btn" style="background: linear-gradient(135deg, #25D366, #128C7E); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; font-weight: 600; transition: all 0.3s ease;">
+                <i class="fab fa-whatsapp" style="font-size: 1.5rem;"></i>
+                <span>WhatsApp</span>
+            </button>
+            
+            <button onclick="shareOn('facebook')" class="share-btn" style="background: linear-gradient(135deg, #1877F2, #0C63D4); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; font-weight: 600; transition: all 0.3s ease;">
+                <i class="fab fa-facebook-f" style="font-size: 1.5rem;"></i>
+                <span>Facebook</span>
+            </button>
+            
+            <button onclick="shareOn('twitter')" class="share-btn" style="background: linear-gradient(135deg, #1DA1F2, #0C85D0); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; font-weight: 600; transition: all 0.3s ease;">
+                <i class="fab fa-twitter" style="font-size: 1.5rem;"></i>
+                <span>Twitter</span>
+            </button>
+            
+            <button onclick="shareOn('telegram')" class="share-btn" style="background: linear-gradient(135deg, #0088cc, #006699); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; font-weight: 600; transition: all 0.3s ease;">
+                <i class="fab fa-telegram-plane" style="font-size: 1.5rem;"></i>
+                <span>Telegram</span>
+            </button>
+            
+            <button onclick="shareOn('linkedin')" class="share-btn" style="background: linear-gradient(135deg, #0077B5, #005885); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; font-weight: 600; transition: all 0.3s ease;">
+                <i class="fab fa-linkedin-in" style="font-size: 1.5rem;"></i>
+                <span>LinkedIn</span>
+            </button>
+            
+            <button onclick="shareOn('copy')" class="share-btn" style="background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 1rem; font-weight: 600; transition: all 0.3s ease;">
+                <i class="fas fa-copy" style="font-size: 1.5rem;"></i>
+                <span id="copyBtnText">Copier</span>
+            </button>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1);">
+            <p style="color: #aaa; font-size: 0.85rem; margin: 0; text-align: center;" id="sharePreview">
+                <span id="sharePreviewText"></span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour signaler le produit -->
+<div id="reportModal" class="modal" style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px);">
+    <div class="modal-content" style="background: linear-gradient(145deg, rgba(15, 23, 41, 0.95), rgba(108, 92, 231, 0.1)); margin: 10% auto; padding: 30px; border: 1px solid #8a2be2; max-width: 500px; width: 90%; border-radius: 15px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);">
+        <span class="close" onclick="closeReportModal()" style="color: #fff; float: right; font-size: 28px; font-weight: bold; cursor: pointer; transition: color 0.3s ease;">&times;</span>
+        <h3 style="color: #fff; margin-bottom: 25px; font-size: 1.5rem; text-align: center;">🚩 Signaler ce produit</h3>
+        <form id="reportForm">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom: 20px;">
+                <label for="reportReason" style="color: #fff; display: block; margin-bottom: 8px; font-weight: 500;">Raison du signalement :</label>
+                <select id="reportReason" name="reason" style="width: 100%; padding: 12px; border: 1px solid #8a2be2; border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 14px;" required>
+                    <option value="" style="background: #1a1a2e; color: #fff;">Sélectionnez une raison</option>
+                    <option value="inappropriate_content" style="background: #1a1a2e; color: #fff;">Contenu inapproprié</option>
+                    <option value="spam" style="background: #1a1a2e; color: #fff;">Spam</option>
+                    <option value="scam" style="background: #1a1a2e; color: #fff;">Arnaque</option>
+                    <option value="fake_product" style="background: #1a1a2e; color: #fff;">Produit factice</option>
+                    <option value="overpriced" style="background: #1a1a2e; color: #fff;">Prix abusif</option>
+                    <option value="other" style="background: #1a1a2e; color: #fff;">Autre</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 25px;">
+                <label for="reportDescription" style="color: #fff; display: block; margin-bottom: 8px; font-weight: 500;">Description (optionnel) :</label>
+                <textarea id="reportDescription" name="description" style="width: 100%; padding: 12px; border: 1px solid #8a2be2; border-radius: 8px; background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 14px; resize: vertical;" rows="4" placeholder="Décrivez le problème en détail..."></textarea>
+            </div>
+            <div style="text-align: right; margin-top: 25px; display: flex; gap: 15px; justify-content: flex-end;">
+                <button type="button" onclick="closeReportModal()" style="padding: 12px 24px; background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">{% trans "Annuler" %}</button>
+                <button type="button" onclick="submitReport()" style="padding: 12px 24px; background: #8a2be2; color: white; border: none; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-weight: 500;">Signaler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.product-page {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+    padding: 2rem 0;
+}
+
+.product-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 2rem;
+}
+
+/* Carousel Section */
+.carousel-section {
+    margin-bottom: 2rem;
+}
+
+.carousel-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    overflow: hidden;
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    height: 100%;
+}
+
+.carousel-slide {
+    min-width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel-media {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.carousel-media:hover {
+    transform: scale(1.02);
+}
+
+.no-media-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+}
+
+.no-media-placeholder i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.no-media-placeholder p {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    padding: 1rem;
+    cursor: pointer;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.carousel-button:hover {
+    background: rgba(108, 92, 231, 0.8);
+    transform: translateY(-50%) scale(1.1);
+}
+
+.carousel-button.prev {
+    left: 1rem;
+}
+
+.carousel-button.next {
+    right: 1rem;
+}
+
+.carousel-dots {
+    position: absolute;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 0.5rem;
+    z-index: 10;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dot.active {
+    background: var(--primary-color);
+    transform: scale(1.2);
+}
+
+.dot:hover {
+    background: var(--primary-color);
+}
+
+/* Product Info Section */
+.product-info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.product-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.game-type-badge-detail {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 0.5rem;
+}
+
+.game-type-badge-detail i {
+    font-size: 1.1rem;
+}
+
+.product-stats-detail {
+    display: flex;
+    gap: 1.5rem;
+    margin: 1rem 0;
+    flex-wrap: wrap;
+}
+
+.stat-detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 1rem 1.5rem;
+    border-radius: 15px;
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    flex: 1;
+    min-width: 200px;
+    flex-direction: row;
+}
+
+.stat-detail-item i {
+    font-size: 1.3rem;
+    color: var(--secondary-color);
+    width: 20px;
+    text-align: center;
+}
+
+.stat-label {
+    color: #ccc;
+    font-size: 0.9rem;
+    margin-right: 0.5rem;
+}
+
+.stat-value {
+    color: white;
+    font-weight: 600;
+    font-size: 1rem;
+    /* Gestion des valeurs trop longues */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    max-width: 300px; /* Élargi de 200px à 300px */
+    /* Permettre l'affichage complet des valeurs longues */
+    white-space: normal;
+    line-height: 1.3;
+}
+
+.product-title-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+}
+
+.product-title {
+    font-size: 2rem;
+    margin: 0;
+    color: var(--primary-color);
+    flex: 1;
+    /* Gestion des titres trop longs */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    line-height: 1.2;
+    max-height: 2.4em; /* Limite à 2 lignes */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0; /* Permet au flex de se rétrécir */
+    max-width: 100%; /* Empêche le débordement */
+}
+
+.product-price {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(135deg, var(--primary-color), #8c7ae6);
+    padding: 0.8rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(108, 92, 231, 0.3);
+    white-space: nowrap;
+}
+
+.product-description {
+    padding: 1.5rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.product-description h3 {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.2rem;
+}
+
+.product-description p {
+    color: #ccc;
+    line-height: 1.6;
+    margin: 0;
+    /* Gestion des descriptions trop longues */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+    max-height: 12em; /* Limite à environ 8 lignes */
+    display: -webkit-box;
+    -webkit-line-clamp: 8;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.seller-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.seller-profile-img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--primary-color);
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.profile-link {
+    display: block;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+}
+
+.profile-link:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(108, 92, 231, 0.6);
+}
+
+.seller-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex-grow: 1;
+}
+
+.seller-name {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.seller-name:hover {
+    color: var(--primary-color);
+    text-shadow: 0 0 15px rgba(108, 92, 231, 0.6);
+}
+
+.seller-username {
+    color: #888;
+    font-size: 0.9rem;
+}
+
+.reputation-badge-name-detail {
+    color: #aaa;
+    font-size: 0.85rem;
+    font-style: italic;
+}
+
+.seller-badge-icon-detail-large {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Styles pour les badges vendeur sur la page de détail */
+.seller-reputation-badge-detail {
+    margin-top: 1rem;
+}
+
+.badge-with-image-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    background: linear-gradient(45deg, rgba(108, 92, 231, 0.15), rgba(162, 155, 254, 0.15));
+    border: 2px solid var(--primary-color);
+    border-radius: 12px;
+    padding: 0.8rem 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.2);
+}
+
+.badge-with-image-detail:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(108, 92, 231, 0.3);
+    background: linear-gradient(45deg, rgba(108, 92, 231, 0.2), rgba(162, 155, 254, 0.2));
+}
+
+.seller-badge-icon-detail {
+    width: 32px;
+    height: 32px;
+    object-fit: contain;
+    filter: drop-shadow(0 3px 6px rgba(108, 92, 231, 0.4));
+}
+
+.badge-fallback-detail {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    text-shadow: 0 0 8px var(--primary-color);
+}
+
+.badge-text-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.reputation-badge-name-detail {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-shadow: 0 0 5px var(--primary-color);
+    line-height: 1.2;
+}
+
+.post-date {
+    color: #666;
+    font-size: 0.8rem;
+}
+
+.product-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}
+
+.product-actions form {
+    margin: 0;
+}
+
+.btn-contact, .btn-buy, .btn-share, .btn-report {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    min-width: 120px;
+    background: none;
+    font-family: inherit;
+}
+
+.btn-contact {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-contact:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-buy {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-buy:hover {
+    background: #7c5ac2;
+}
+
+.btn-share {
+    background: linear-gradient(135deg, #00b894, #00cec9);
+    color: white;
+}
+
+.btn-share:hover {
+    background: linear-gradient(135deg, #00a383, #00b8b0);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
+}
+
+.btn-continue {
+    background: #28a745;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-block;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-continue:hover {
+    background: #218838;
+    color: white;
+    text-decoration: none;
+}
+
+.btn-report {
+    background: rgba(255, 59, 48, 0.8);
+    color: white;
+}
+
+.btn-report:hover {
+    background: rgba(255, 59, 48, 1);
+}
+
+.share-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Modal styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 90%;
+    margin-top: 5%;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #bbb;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .product-container {
+        margin: 1rem;
+        padding: 1rem;
+    }
+    
+    .product-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .product-title-price {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        width: 100%;
+    }
+    
+    .product-title {
+        font-size: 1.5rem;
+        /* Titres plus courts sur mobile */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.5em;
+        min-height: 1.5em; /* Hauteur minimale pour assurer la visibilité */
+        max-height: 3em; /* 2 lignes maximum */
+        width: 100%;
+        margin: 0;
+    }
+    
+    .product-price {
+        width: 100%;
+        text-align: center;
+        font-size: 1.5rem;
+        padding: 0.6rem 1rem;
+        white-space: normal;
+        word-wrap: break-word;
+        box-sizing: border-box;
+        max-width: 100%;
+    }
+    
+    .stat-value {
+        max-width: 250px; /* Élargi de 150px à 250px sur mobile */
+        font-size: 0.9rem;
+        white-space: normal; /* Permettre le retour à la ligne sur mobile */
+        line-height: 1.2;
+    }
+    
+    .product-stats-detail {
+        flex-direction: column;
+        gap: 1rem;
+        width: 100%;
+    }
+    
+    .stat-detail-item {
+        min-width: 0;
+        width: 100%;
+        flex: none;
+    }
+    
+    .carousel-container {
+        height: 300px;
+    }
+    
+    .product-actions {
+        flex-direction: column;
+    }
+    
+    .btn-contact, .btn-buy, .btn-share, .btn-continue, .btn-report {
+        width: 100%;
+    }
+    
+    .product-description p {
+        /* Descriptions plus courtes sur mobile */
+        max-height: 8em; /* Environ 5 lignes sur mobile */
+        -webkit-line-clamp: 5;
+    }
+}
+</style>
+
+<script>
+let currentSlide = 0;
+let slides = [];
+
+function initializeCarousel() {
+    slides = document.querySelectorAll('.carousel-slide');
+    const dotsContainer = document.getElementById('carousel-dots');
+    
+    // Créer les points de navigation
+    slides.forEach((_, index) => {
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        if (index === 0) dot.classList.add('active');
+        dot.onclick = () => goToSlide(index);
+        dotsContainer.appendChild(dot);
+    });
+    
+    updateCarousel();
+}
+
+function changeSlide(direction) {
+    currentSlide += direction;
+    if (currentSlide >= slides.length) currentSlide = 0;
+    if (currentSlide < 0) currentSlide = slides.length - 1;
+    updateCarousel();
+}
+
+function goToSlide(index) {
+    currentSlide = index;
+    updateCarousel();
+}
+
+function updateCarousel() {
+    const track = document.getElementById('carousel-track');
+    const dots = document.querySelectorAll('.dot');
+    
+    track.style.transform = `translateX(-${currentSlide * 100}%)`;
+    
+    // Mettre à jour les points actifs
+    dots.forEach((dot, index) => {
+        dot.classList.toggle('active', index === currentSlide);
+    });
+}
+
+function openModal(src) {
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImg');
+    modal.style.display = "block";
+    modalImg.src = src;
+}
+
+// Système de partage multilingue
+const shareTranslations = {
+    'fr': {
+        title: 'Partager cette annonce',
+        copy: 'Copier',
+        copied: 'Copié !',
+        text: (title, price, game) => String.fromCodePoint(0x1F3AE) + ' ' + title + ' - ' + game + '\n' + String.fromCodePoint(0x1F4B0) + ' ' + price + '\n' + String.fromCodePoint(0x1F517) + ' Voir l\'annonce:'
+    },
+    'en': {
+        title: 'Share this listing',
+        copy: 'Copy',
+        copied: 'Copied!',
+        text: (title, price, game) => String.fromCodePoint(0x1F3AE) + ' ' + title + ' - ' + game + '\n' + String.fromCodePoint(0x1F4B0) + ' ' + price + '\n' + String.fromCodePoint(0x1F517) + ' View listing:'
+    },
+    'es': {
+        title: 'Compartir este anuncio',
+        copy: 'Copiar',
+        copied: '¡Copiado!',
+        text: (title, price, game) => String.fromCodePoint(0x1F3AE) + ' ' + title + ' - ' + game + '\n' + String.fromCodePoint(0x1F4B0) + ' ' + price + '\n' + String.fromCodePoint(0x1F517) + ' Ver anuncio:'
+    },
+    'ar': {
+        title: 'مشاركة هذا الإعلان',
+        copy: 'نسخ',
+        copied: 'تم النسخ!',
+        text: (title, price, game) => String.fromCodePoint(0x1F3AE) + ' ' + title + ' - ' + game + '\n' + String.fromCodePoint(0x1F4B0) + ' ' + price + '\n' + String.fromCodePoint(0x1F517) + ' عرض الإعلان:'
+    },
+    'pt': {
+        title: 'Compartilhar este anúncio',
+        copy: 'Copiar',
+        copied: 'Copiado!',
+        text: (title, price, game) => String.fromCodePoint(0x1F3AE) + ' ' + title + ' - ' + game + '\n' + String.fromCodePoint(0x1F4B0) + ' ' + price + '\n' + String.fromCodePoint(0x1F517) + ' Ver anúncio:'
+    }
+};
+
+function getUserLanguage() {
+    const browserLang = navigator.language || navigator.userLanguage;
+    const langCode = browserLang.split('-')[0];
+    return shareTranslations[langCode] ? langCode : 'fr';
+}
+
+function getShareText() {
+    const lang = getUserLanguage();
+    const translations = shareTranslations[lang];
+    const title = "{{ post.title|escapejs }}";
+    const price = "{{ post.price }} XOF";
+    const game = "{{ post.get_game_display_name|escapejs }}";
+    const url = window.location.href;
+    
+    return translations.text(title, price, game) + ' ' + url;
+}
+
+function openShareModal() {
+    const modal = document.getElementById('shareModal');
+    const lang = getUserLanguage();
+    const translations = shareTranslations[lang];
+    
+    // Mettre à jour les textes selon la langue
+    document.getElementById('shareTitle').textContent = translations.title;
+    document.getElementById('copyBtnText').textContent = translations.copy;
+    
+    // Utiliser innerHTML au lieu de textContent pour afficher les emojis
+    const previewElement = document.getElementById('sharePreviewText');
+    const shareText = getShareText();
+    previewElement.innerHTML = shareText.replace(/\n/g, '<br>');
+    
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeShareModal() {
+    const modal = document.getElementById('shareModal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+function shareOn(platform) {
+    const shareText = getShareText();
+    const url = window.location.href;
+    
+    let shareUrl = '';
+    
+    switch(platform) {
+        case 'whatsapp':
+            // WhatsApp encode automatiquement, on passe le texte brut
+            shareUrl = 'https://wa.me/?text=' + encodeURIComponent(shareText);
+            break;
+        case 'facebook':
+            // Facebook utilise les meta tags Open Graph, on passe juste l'URL
+            shareUrl = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+            break;
+        case 'twitter':
+            shareUrl = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareText);
+            break;
+        case 'telegram':
+            shareUrl = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(shareText);
+            break;
+        case 'linkedin':
+            shareUrl = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url);
+            break;
+        case 'copy':
+            navigator.clipboard.writeText(shareText).then(() => {
+                const lang = getUserLanguage();
+                const translations = shareTranslations[lang];
+                const btn = document.getElementById('copyBtnText');
+                const originalText = btn.textContent;
+                btn.textContent = translations.copied;
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            });
+            return;
+    }
+    
+    if (shareUrl) {
+        window.open(shareUrl, '_blank', 'width=600,height=400');
+    }
+}
+
+function openReportModal() {
+    document.getElementById('reportModal').style.display = 'block';
+}
+
+function closeReportModal() {
+    document.getElementById('reportModal').style.display = 'none';
+    document.getElementById('reportForm').reset();
+}
+
+function submitReport() {
+    const form = document.getElementById('reportForm');
+    const reportData = {
+        reason: document.getElementById('reportReason').value,
+        description: document.getElementById('reportDescription').value,
+        report_type: 'gaming_post',
+        content_id: '{{ post.id }}',
+        reported_user_id: '{{ post.author.id }}'
+    };
+    
+    fetch('{% url "submit_report" %}', {
+        method: 'POST',
+        body: JSON.stringify(reportData),
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showCustomAlert('Signalement envoyé avec succès', 'success');
+            closeReportModal();
+        } else {
+            showCustomAlert(data.error || 'Erreur lors de l\'envoi du signalement', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showCustomAlert('Erreur lors de l\'envoi du signalement', 'error');
+    });
+}
+
+// Fonction d'alerte personnalisée
+function showCustomAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `custom-alert alert-${type}`;
+    alertDiv.innerHTML = `
+        <div class="alert-content">
+            <span class="alert-message">${message}</span>
+            <button class="alert-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+        </div>
+    `;
+    
+    const style = document.createElement('style');
+    style.textContent = `
+        .custom-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            min-width: 300px;
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+        .alert-success { background: linear-gradient(135deg, #00b894, #00cec9); }
+        .alert-error { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .alert-content { display: flex; justify-content: space-between; align-items: center; }
+        .alert-close { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    `;
+    
+    document.head.appendChild(style);
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => alertDiv.remove(), 5000);
+}
+
+// Fermer le modal
+document.querySelector('.close').onclick = function() {
+    document.getElementById('imageModal').style.display = "none";
+}
+
+// Fermer le modal en cliquant à l'extérieur
+window.onclick = function(event) {
+    const modal = document.getElementById('imageModal');
+    const reportModal = document.getElementById('reportModal');
+    const shareModal = document.getElementById('shareModal');
+    
+    if (event.target == modal) {
+        modal.style.display = "none";
+    }
+    if (event.target == reportModal) {
+        closeReportModal();
+    }
+    if (event.target == shareModal) {
+        closeShareModal();
+    }
+}
+
+// Initialiser le carousel au chargement
+document.addEventListener('DOMContentLoaded', initializeCarousel);
+</script>
+{% endblock %}

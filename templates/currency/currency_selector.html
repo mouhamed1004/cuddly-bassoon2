@@ -1,0 +1,333 @@
+{% load static %}
+{% load i18n %}
+
+<div class="currency-selector-wrapper">
+    <div class="currency-dropdown-container">
+        <button class="currency-btn" type="button" id="currencyDropdown" onclick="toggleCurrencyDropdown()">
+            <i class="fas fa-coins"></i>
+            <span class="current-currency">{{ current_currency }}</span>
+            <i class="fas fa-chevron-down"></i>
+        </button>
+        <div class="currency-dropdown" id="currencyDropdownMenu" style="display: none;">
+            <!-- Barre de recherche -->
+            <div class="currency-search-container">
+                <input type="text" id="currencySearch" placeholder="Rechercher une devise..." class="currency-search-input">
+                <i class="fas fa-search currency-search-icon"></i>
+            </div>
+            
+            <!-- Liste des devises -->
+            <div class="currency-list" id="currencyList">
+                {% for currency in currencies %}
+                <div class="currency-option {% if currency.code == current_currency %}active{% endif %}" 
+                     data-currency="{{ currency.code }}"
+                     data-name="{{ currency.name|lower }}"
+                     data-symbol="{{ currency.symbol|lower }}"
+                     onclick="changeCurrency('{{ currency.code }}')">
+                    <span class="currency-symbol">{{ currency.symbol }}</span>
+                    <span class="currency-name">{{ currency.name }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.currency-selector-wrapper {
+    position: relative;
+}
+
+.currency-dropdown-container {
+    position: relative;
+    display: inline-block;
+}
+
+.currency-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    color: #fff;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.currency-btn:hover {
+    background: rgba(138, 43, 226, 0.2);
+    border-color: rgba(138, 43, 226, 0.5);
+    color: #fff;
+}
+
+.currency-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: rgba(26, 26, 46, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    border-radius: 12px;
+    padding: 8px 0;
+    min-width: 200px;
+    max-width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    margin-top: 4px;
+}
+
+/* Style pour la barre de défilement */
+.currency-dropdown::-webkit-scrollbar {
+    width: 6px;
+}
+
+.currency-dropdown::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.currency-dropdown::-webkit-scrollbar-thumb {
+    background: rgba(138, 43, 226, 0.5);
+    border-radius: 3px;
+}
+
+.currency-dropdown::-webkit-scrollbar-thumb:hover {
+    background: rgba(138, 43, 226, 0.7);
+}
+
+/* Styles pour la barre de recherche */
+.currency-search-container {
+    position: relative;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+    margin-bottom: 4px;
+}
+
+.currency-search-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    border-radius: 6px;
+    padding: 8px 30px 8px 12px;
+    color: #fff;
+    font-size: 0.85rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.currency-search-input:focus {
+    border-color: rgba(138, 43, 226, 0.6);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.currency-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.currency-search-icon {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.8rem;
+}
+
+.currency-list {
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.currency-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.currency-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 2px;
+}
+
+.currency-list::-webkit-scrollbar-thumb {
+    background: rgba(138, 43, 226, 0.3);
+    border-radius: 2px;
+}
+
+.currency-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(138, 43, 226, 0.5);
+}
+
+.currency-option {
+    color: #fff;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.currency-option:hover {
+    background: rgba(138, 43, 226, 0.2);
+    color: #fff;
+}
+
+.currency-option.active {
+    background: rgba(138, 43, 226, 0.3);
+    color: #fff;
+}
+
+.currency-symbol {
+    font-weight: bold;
+    min-width: 40px;
+    color: #8a2be2;
+}
+
+.currency-name {
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.current-currency {
+    font-weight: 600;
+    color: #8a2be2;
+}
+</style>
+
+<script>
+function toggleCurrencyDropdown() {
+    const dropdown = document.getElementById('currencyDropdownMenu');
+    dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+}
+
+// Fermer le dropdown si on clique ailleurs
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('currencyDropdownMenu');
+    const button = document.getElementById('currencyDropdown');
+    if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+        dropdown.style.display = 'none';
+    }
+});
+
+// Fonctionnalité de recherche
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('currencySearch');
+    const currencyOptions = document.querySelectorAll('.currency-option');
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            currencyOptions.forEach(option => {
+                const currencyName = option.getAttribute('data-name');
+                const currencySymbol = option.getAttribute('data-symbol');
+                const currencyCode = option.getAttribute('data-currency');
+                
+                if (currencyName.includes(searchTerm) || 
+                    currencySymbol.includes(searchTerm) || 
+                    currencyCode.toLowerCase().includes(searchTerm)) {
+                    option.style.display = 'flex';
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+        });
+        
+        // Vider la recherche quand le dropdown se ferme
+        const dropdown = document.getElementById('currencyDropdownMenu');
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    if (dropdown.style.display === 'none') {
+                        searchInput.value = '';
+                        currencyOptions.forEach(option => {
+                            option.style.display = 'flex';
+                        });
+                    }
+                }
+            });
+        });
+        observer.observe(dropdown, { attributes: true, attributeFilter: ['style'] });
+    }
+});
+
+function changeCurrency(currencyCode) {
+    // Fermer le dropdown
+    document.getElementById('currencyDropdownMenu').style.display = 'none';
+    
+    // Afficher un indicateur de chargement
+    const btn = document.getElementById('currencyDropdown');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>Changement...</span>';
+    btn.disabled = true;
+    
+    // Envoyer la requête AJAX pour changer la devise
+    fetch('{% url "change_currency" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken'),
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+            'currency': currencyCode
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mettre à jour l'affichage du bouton
+            const currencySymbol = data.currency_symbol || currencyCode;
+            btn.innerHTML = `<i class="fas fa-coins"></i><span class="current-currency">${currencySymbol}</span><i class="fas fa-chevron-down"></i>`;
+            btn.disabled = false;
+            
+            // Émettre un événement personnalisé pour les autres composants
+            const event = new CustomEvent('currencyChanged', {
+                detail: {
+                    currency: currencyCode,
+                    symbol: currencySymbol
+                }
+            });
+            document.dispatchEvent(event);
+            
+            // Recharger la page seulement si on n'est pas sur la page de création
+            if (!window.location.pathname.includes('/create/')) {
+                window.location.reload();
+            }
+        } else {
+            showErrorAlert('Erreur lors du changement de devise : ' + data.message, 'Erreur de Devise');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showErrorAlert('Erreur de connexion', 'Erreur de Connexion');
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    });
+}
+
+// Fonction utilitaire pour récupérer le token CSRF
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>

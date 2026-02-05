@@ -1,0 +1,368 @@
+/* ===== SYSTÈME D'ALERTES STYLISÉES ===== */
+
+/* Styles de base pour les alertes */
+.custom-alert {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 500;
+    max-width: 400px;
+    animation: slideInRight 0.3s ease-out;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+}
+
+/* Types d'alertes */
+.custom-alert.success {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    color: white;
+}
+
+.custom-alert.error {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.custom-alert.warning {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+
+.custom-alert.info {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+/* Icônes */
+.custom-alert i {
+    font-size: 1.2rem;
+    color: #ffeb3b;
+}
+
+.custom-alert.success i {
+    color: #90EE90;
+}
+
+.custom-alert.error i {
+    color: #ffeb3b;
+}
+
+.custom-alert.warning i {
+    color: #fff3cd;
+}
+
+.custom-alert.info i {
+    color: #d1ecf1;
+}
+
+/* Contenu */
+.custom-alert .alert-content {
+    flex: 1;
+}
+
+.custom-alert .alert-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.custom-alert .alert-message {
+    font-size: 0.9rem;
+    opacity: 0.95;
+}
+
+/* Bouton de fermeture */
+.custom-alert .alert-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.custom-alert .alert-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Animations */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.custom-alert.hide {
+    animation: slideOutRight 0.3s ease-in forwards;
+}
+
+/* Responsive pour mobile */
+@media (max-width: 768px) {
+    .custom-alert {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        padding: 0.75rem 1rem;
+    }
+    
+    .custom-alert .alert-title {
+        font-size: 0.9rem;
+    }
+    
+    .custom-alert .alert-message {
+        font-size: 0.8rem;
+    }
+}
+
+/* Alertes multiples */
+.custom-alert + .custom-alert {
+    top: calc(20px + 80px);
+}
+
+.custom-alert + .custom-alert + .custom-alert {
+    top: calc(20px + 160px);
+}
+
+.custom-alert + .custom-alert + .custom-alert + .custom-alert {
+    top: calc(20px + 240px);
+}
+
+/* Styles pour les alertes de validation de formulaire */
+.form-alert {
+    position: relative;
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    animation: slideInDown 0.3s ease-out;
+}
+
+.form-alert i {
+    color: #ffeb3b;
+    font-size: 1rem;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Styles pour les alertes inline */
+.inline-alert {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin: 0.25rem 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.inline-alert i {
+    color: #ffeb3b;
+    font-size: 0.9rem;
+}
+
+/* Styles pour les modales de confirmation */
+.confirmation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(5px);
+    z-index: 20000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.confirmation-modal.hide {
+    animation: fadeOut 0.3s ease-in forwards;
+}
+
+.confirmation-content {
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    border-radius: 15px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+    animation: slideInScale 0.3s ease-out;
+}
+
+.confirmation-content.hide {
+    animation: slideOutScale 0.3s ease-in forwards;
+}
+
+.confirmation-icon {
+    font-size: 3rem;
+    color: #f39c12;
+    margin-bottom: 1rem;
+}
+
+.confirmation-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 1rem;
+}
+
+.confirmation-message {
+    font-size: 1rem;
+    color: #bdc3c7;
+    margin-bottom: 2rem;
+    line-height: 1.5;
+}
+
+.confirmation-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.confirmation-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+    min-width: 120px;
+}
+
+.confirmation-btn.confirm {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+}
+
+.confirmation-btn.confirm:hover {
+    background: linear-gradient(135deg, #c0392b, #a93226);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+}
+
+.confirmation-btn.cancel {
+    background: linear-gradient(135deg, #95a5a6, #7f8c8d);
+    color: white;
+}
+
+.confirmation-btn.cancel:hover {
+    background: linear-gradient(135deg, #7f8c8d, #6c7b7d);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(149, 165, 166, 0.4);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes slideInScale {
+    from {
+        transform: scale(0.8) translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutScale {
+    from {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+    to {
+        transform: scale(0.8) translateY(-20px);
+        opacity: 0;
+    }
+}
+
+/* Responsive pour mobile */
+@media (max-width: 768px) {
+    .confirmation-content {
+        padding: 1.5rem;
+        margin: 1rem;
+    }
+    
+    .confirmation-title {
+        font-size: 1.25rem;
+    }
+    
+    .confirmation-message {
+        font-size: 0.9rem;
+    }
+    
+    .confirmation-buttons {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .confirmation-btn {
+        width: 100%;
+    }
+}

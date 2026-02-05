@@ -1,0 +1,49 @@
+# Configuration Render pour Django + PostgreSQL + Redis
+services:
+  - type: web
+    name: blizzgame-web
+    env: python
+    plan: professional
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput && python manage.py migrate --fake-initial
+    startCommand: gunicorn socialgame.wsgi:application --bind 0.0.0.0:$PORT --timeout 120
+    envVars:
+      - key: DEBUG
+        value: False
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: blizzgame-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: blizzgame-redis
+          property: connectionString
+      - key: ALLOWED_HOSTS
+        value: .onrender.com
+      - key: CINETPAY_API_KEY
+        sync: false
+      - key: CINETPAY_SITE_ID
+        sync: false
+      - key: CINETPAY_SECRET_KEY
+        sync: false
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: USE_CLOUDINARY
+        value: true
+      - key: CLOUDINARY_URL
+        sync: false
+
+  - type: redis
+    name: blizzgame-redis
+    plan: starter
+    region: oregon
+
+  - type: pserv
+    name: blizzgame-db
+    env: postgresql
+    plan: starter
+    region: oregon

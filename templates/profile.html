@@ -1,0 +1,1499 @@
+{% extends 'base.html' %}
+{% load currency_tags %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/badge-animations.css' %}">
+<style>
+.score-card {
+    background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+    border: 2px solid #6c5ce7;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+}
+
+.score-value {
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.appreciation-card {
+    background: linear-gradient(135deg, #00b894, #00cec9);
+    border: 2px solid #00b894;
+    box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3);
+}
+
+.appreciation-value {
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    font-weight: bold;
+    font-size: 1.5rem;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.profile-header-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.report-profile-btn {
+    background: rgba(255, 59, 48, 0.8);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+}
+
+.report-profile-btn:hover {
+    background: rgba(255, 59, 48, 1);
+    transform: translateY(-2px);
+}
+
+/* Styles pour la vérification email */
+.profile-actions {
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.verify-email-btn {
+    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.verify-email-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+}
+
+.email-verified {
+    color: #00ff88;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.email-verification-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+}
+
+.user-email-display {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    color: #fff;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.user-email-display i {
+    color: #a29bfe;
+}
+
+.email-text {
+    font-family: 'Courier New', monospace;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+.cooldown-message {
+    background: rgba(255, 193, 7, 0.1);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    color: #ffc107;
+    padding: 0.8rem 1.2rem;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-weight: 500;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+.verify-email-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.verify-email-btn:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.code-input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    align-items: center;
+    width: 100%;
+}
+
+.code-label {
+    color: #fff;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.code-label i {
+    color: #a29bfe;
+}
+
+.code-input {
+    width: 200px;
+    padding: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    font-size: 1.2rem;
+    text-align: center;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+}
+
+.code-input:focus {
+    outline: none;
+    border-color: #6c5ce7;
+    box-shadow: 0 0 10px rgba(108, 92, 231, 0.3);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.code-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+    letter-spacing: normal;
+}
+
+.verify-code-btn {
+    background: linear-gradient(45deg, #00ff88, #00cc6a);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.verify-code-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+}
+
+.verify-code-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.verify-code-btn:disabled:hover {
+    transform: none !important;
+    box-shadow: none !important;
+}
+</style>
+{% endblock %}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil de {{ user_obj.username }} - <span class="notranslate">Blizz Gaming</span></title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/badge-animations.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}?v=1">
+    <link rel="icon" type="image/png" href="{% static 'icon.png' %}?v=1">
+    <link rel="shortcut icon" type="image/png" href="{% static 'icon.png' %}?v=1">
+    <link rel="apple-touch-icon" href="{% static 'icon.png' %}?v=1">
+</head>
+
+{% block content %}
+<div class="profile-container">
+    <!-- Banner et Photo de profil -->
+    <div class="profile-header">
+        <div class="profile-banner">
+            {% load image_filters %}
+{% load i18n %}
+            <img src="{{ user_profile|cloudinary_or_static:'banner' }}" alt="Banner">
+        </div>
+        <div class="profile-main-info">
+            <div class="profile-avatar">
+                {% if user_profile and user_profile.profileimg %}
+                    <img src="{{ user_profile|cloudinary_or_static:'profileimg' }}" alt="Profile Picture">
+                {% else %}
+                    <img src="{% static 'images/default-avatar.png' %}" alt="Profile Picture">
+                {% endif %}
+                {% if user.username == user_profile.user.username %}
+                <a href="{% url 'settings' %}" class="edit-profile-btn">
+                    <i class="fas fa-edit"></i>
+                </a>
+                {% endif %}
+            </div>
+            <div class="profile-details">
+                <div class="profile-header-actions">
+                    <h1>{{ user_profile.user.username }}</h1>
+                    {% if user.is_authenticated and user.username != user_profile.user.username %}
+                    <button class="report-profile-btn" onclick="openReportModal(); console.log('Button clicked');">
+                        <i class="fas fa-flag"></i> Signaler
+                    </button>
+                    {% endif %}
+                </div>
+                {% if user_profile.location %}
+                <p class="location"><i class="fas fa-map-marker-alt"></i> {{ user_profile.location }}</p>
+                {% endif %}
+                <p class="bio">{{ user_profile.bio|default:"Aucune bio" }}</p>
+                <!-- Badge vendeur uniquement -->
+                {% if reputation_summary and reputation_summary.seller %}
+                <div class="reputation-badge-container">
+                    <div class="seller-badge">
+                        <div class="badge-icon">
+                            <!-- Prêt pour vrais insignes générés par IA -->
+                            <img src="/static/{{ reputation_summary.seller.badge.icon }}" 
+                                 alt="{{ reputation_summary.seller.badge.name }}" 
+                                 class="badge-image animated-badge"
+                                 style="user-select: none; pointer-events: none; -webkit-user-drag: none; -webkit-touch-callout: none; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none;"
+                                 oncontextmenu="return false;" ondragstart="return false;"
+                                 onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                            <span class="badge-fallback" style="display:none;">{{ reputation_summary.seller.badge.icon_symbol }}</span>
+                        </div>
+                        <div class="badge-info">
+                            <span class="badge-name">{{ reputation_summary.seller.badge.name }}</span>
+                            <span class="badge-score">{{ reputation_summary.seller.score|floatformat:1 }}%</span>
+                        </div>
+                        
+                        <!-- Barre de progression vendeur -->
+                        <div class="seller-progress-container">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ reputation_summary.seller.progress_percentage|stringformat:'.1f' }}%;"></div>
+                            </div>
+                            <div class="progress-labels">
+                                <span class="progress-current">{{ reputation_summary.seller.score|floatformat:1 }}%</span>
+                                <span class="progress-next">
+                                    {% if reputation_summary.seller.next_badge %}
+                                        Vers {{ reputation_summary.seller.next_badge.name }}
+                                    {% else %}
+                                        Niveau maximum
+                                    {% endif %}
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Compteur d'achats échoués (simple métrique acheteur) -->
+                {% if reputation_summary.buyer.failed_purchases_count > 0 %}
+                <div class="failed-purchases-info">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>{{ reputation_summary.buyer.failed_purchases_count }} achat(s) échoué(s)</span>
+                </div>
+                {% endif %}
+                
+                <!-- Section de vérification email -->
+                {% if user == user_profile.user %}
+                <div class="profile-actions">
+                    <div class="email-verification-section">
+                        <!-- Affichage de l'email -->
+                        <div class="user-email-display">
+                            <i class="fas fa-envelope"></i>
+                            <span class="email-text">{{ user.email }}</span>
+                        </div>
+                        
+                        <!-- Statut de vérification et actions -->
+                        {% if not user.email_verification.is_verified %}
+                            <!-- Champ de saisie du code -->
+                            <div class="code-input-section">
+                                <label for="verificationCode" class="code-label">
+                                    <i class="fas fa-key"></i> Code de vérification
+                                </label>
+                                <input type="text" id="verificationCode" name="verification_code" 
+                                       placeholder="Entrez le code à 6 chiffres" maxlength="6" 
+                                       pattern="[0-9]{6}" class="code-input">
+                                <button id="verifyCodeBtn" onclick="verifyEmailCode()" class="verify-code-btn">
+                                    <i class="fas fa-check"></i> Vérifier
+                                </button>
+                            </div>
+                            
+                            <!-- Bouton pour renvoyer le code -->
+                            <button id="verifyEmailBtn" onclick="resendVerificationEmail()" class="verify-email-btn">
+                                <i class="fas fa-paper-plane"></i> Renvoyer le code
+                            </button>
+                            <div id="cooldownMessage" class="cooldown-message" style="display: none;">
+                                <i class="fas fa-clock"></i>
+                                <span id="cooldownText">Veuillez attendre avant de renvoyer un email...</span>
+                            </div>
+                        {% else %}
+                            <div class="email-verified">
+                                <i class="fas fa-check-circle"></i> Email Vérifié
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiques -->
+    <div class="profile-stats">
+        <div class="stat-card">
+            <div class="stat-value">{{ posts.count }}</div>
+            <div class="stat-label">Publications</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ total_sales }}</div>
+            <div class="stat-label">Ventes</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ rating|default:"0" }}</div>
+            <div class="stat-label">Note</div>
+        </div>
+        <!-- Statistiques Highlights temporairement désactivées pour le lancement
+        <div class="stat-card score-card">
+            <div class="stat-value score-value">{{ user_profile.score }}</div>
+            <div class="stat-label">Score Highlights</div>
+        </div>
+        <div class="stat-card appreciation-card">
+            <div class="stat-value appreciation-value">{{ user_profile.appreciation_percentage }}%</div>
+            <div class="stat-label">Appréciations Positives</div>
+        </div>
+        -->
+    </div>
+
+    <!-- Détail pourcentage par niveau - Temporairement désactivé pour le lancement
+    <div class="profile-stats" style="grid-template-columns: repeat(3, 1fr);">
+        <div class="stat-card">
+            <div class="stat-value" style="font-size:1.4rem;">{{ user_profile.appreciation_level_percentages.1 }}%</div>
+            <div class="stat-label">Extrêmement nul</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="font-size:1.4rem;">{{ user_profile.appreciation_level_percentages.2 }}%</div>
+            <div class="stat-label">Pas terrible</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="font-size:1.4rem;">{{ user_profile.appreciation_level_percentages.3 }}%</div>
+            <div class="stat-label">Moyen</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="font-size:1.4rem;">{{ user_profile.appreciation_level_percentages.4 }}%</div>
+            <div class="stat-label">Bien</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="font-size:1.4rem;">{{ user_profile.appreciation_level_percentages.5 }}%</div>
+            <div class="stat-label">Très bien</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" style="font-size:1.4rem;">{{ user_profile.appreciation_level_percentages.6 }}%</div>
+            <div class="stat-label">Extraordinaire</div>
+        </div>
+    </div>
+    -->
+
+    <!-- Section Abonnements/Amis - Temporairement désactivée pour le lancement
+    <div class="social-stats">
+        <div class="social-stat-item">
+            <span class="social-number">{{ user_profile.friends_count }}</span>
+            <span class="social-label">Amis</span>
+        </div>
+        <div class="social-stat-item">
+            <span class="social-number">{{ user_profile.subscribers_count }}</span>
+            <span class="social-label">Abonnés</span>
+        </div>
+        <div class="social-stat-item">
+            <span class="social-number">{{ user_profile.subscriptions_count }}</span>
+            <span class="social-label">Abonnements</span>
+        </div>
+    </div>
+    
+    <!-- Bouton d'abonnement pour les autres utilisateurs (temporairement désactivé)
+    {% if user.is_authenticated and user != user_profile.user %}
+    <div class="subscription-action">
+        <button class="subscribe-profile-btn" data-user-id="{{ user_profile.user.id }}">
+            <i class="fas fa-user-plus"></i>
+            S'abonner
+        </button>
+    </div>
+    {% endif %}
+    -->
+
+    <!-- Section Jeux Favoris -->
+    {% if user_profile.favorite_games %}
+    <div class="favorite-games-profile-section">
+        <div class="favorite-games-header">
+            <h2>
+                <i class="fas fa-gamepad"></i>
+                Jeux Favoris
+            </h2>
+            {% if user.username == user_profile.user.username %}
+            <a href="{% url 'settings' %}" class="edit-favorites-btn">
+                <i class="fas fa-edit"></i>{% trans "Modifier" %}</a>
+            {% endif %}
+        </div>
+        <div class="favorite-games-display">
+            {% for game_code in user_profile.favorite_games %}
+                <div class="favorite-game-badge" data-game="{{ game_code }}">
+                    <div class="game-icon">
+                        {% if game_code == 'FreeFire' %}
+                            <i class="fas fa-fire"></i>
+                        {% elif game_code == '<span class="notranslate">PUBG</span>' %}
+                            <i class="fas fa-crosshairs"></i>
+                        {% elif game_code == 'COD' %}
+                            <i class="fas fa-skull-crossbones"></i>
+                        {% elif game_code == 'efootball' %}
+                            <i class="fas fa-futbol"></i>
+                        {% elif game_code == 'fc25' %}
+                            <i class="fas fa-trophy"></i>
+                        {% elif game_code == 'bloodstrike' %}
+                            <i class="fas fa-bomb"></i>
+                        {% else %}
+                            <i class="fas fa-gamepad"></i>
+                        {% endif %}
+                    </div>
+                    <span class="game-name">
+                        {% for choice_code, choice_name in user_profile.GAME_CHOICES %}
+                            {% if choice_code == game_code %}{{ choice_name }}{% endif %}
+                        {% endfor %}
+
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Publications -->
+    <div class="posts-section">
+        <h2>Publications</h2>
+        <div class="posts-grid">
+            {% for post in posts %}
+            <div class="post-card">
+                <div class="post-media">
+                    {% load image_filters %}
+                    {% if post.video %}
+                    <video controls>
+                        <source src="{{ post|post_media_or_static:'video' }}" type="video/mp4">
+                    </video>
+                    {% else %}
+                    <img src="{{ post|post_media_or_static:'banner' }}" alt="{{ post.title }}" loading="lazy">
+                    {% endif %}
+                    <div class="price-tag">{% display_price post.price "EUR" request.user %}</div>
+                </div>
+                <div class="post-content">
+                    <h3><a href="{% url 'product_detail' post.id %}">{{ post.title }}</a></h3>
+                    <p>{{ post.description|truncatechars:100 }}</p>
+                    <div class="post-footer">
+                        <span class="post-date">
+                            <i class="fas fa-clock"></i>
+                            {{ post.created_at|date:"d/m/Y" }}
+
+                        <a href="{% url 'product_detail' post.id %}" class="view-more">{% trans "Voir plus" %}<i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="no-posts">
+                <i class="fas fa-box-open"></i>
+                <p>Aucune publication pour le moment</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.profile-header {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid var(--primary-color);
+    box-shadow: 0 0 20px rgba(108, 92, 231, 0.2);
+}
+
+.profile-banner {
+    height: 300px;
+    overflow: hidden;
+}
+
+.profile-banner img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-main-info {
+    position: relative;
+    padding: 0 2rem 2rem;
+    margin-top: -80px;
+}
+
+.profile-avatar {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-avatar img {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: 4px solid var(--dark-blue);
+    box-shadow: 0 0 20px var(--primary-color);
+}
+
+.edit-profile-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: var(--primary-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.edit-profile-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px var(--primary-color);
+}
+
+.profile-details {
+    margin-top: 1rem;
+}
+
+.profile-details h1 {
+    font-family: 'RussoOne', sans-serif;
+    color: var(--primary-color);
+    text-shadow: 0 0 10px var(--primary-color);
+}
+
+.location {
+    color: var(--secondary-color);
+    margin: 0.5rem 0;
+}
+
+.bio {
+    color: var(--text-color);
+    max-width: 600px;
+}
+
+/* Styles pour les badges vendeur uniquement */
+.reputation-badge-container {
+    margin: 1rem 0;
+}
+
+.seller-badge {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: linear-gradient(45deg, rgba(108, 92, 231, 0.1), rgba(162, 155, 254, 0.1));
+    border: 2px solid var(--primary-color);
+    border-radius: 15px;
+    padding: 1rem;
+    box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3);
+    transition: all 0.3s ease;
+}
+
+.seller-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(108, 92, 231, 0.4);
+}
+
+.badge-icon {
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    animation: badgeGlow 3s ease-in-out infinite;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.badge-icon:hover {
+    transform: scale(1.1);
+    animation: badgeGlowHover 1.5s ease-in-out infinite;
+}
+
+.badge-icon::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    background: radial-gradient(circle, rgba(108, 92, 231, 0.4), transparent 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.badge-icon::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    border-radius: 50%;
+    animation: shimmerRotate 3s linear infinite;
+    z-index: 1;
+    pointer-events: none;
+}
+
+@keyframes badgeGlow {
+    0%, 100% { filter: drop-shadow(0 0 5px rgba(108, 92, 231, 0.5)); }
+    50% { filter: drop-shadow(0 0 15px rgba(108, 92, 231, 0.8)) drop-shadow(0 0 25px rgba(108, 92, 231, 0.4)); }
+}
+
+@keyframes badgeGlowHover {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(108, 92, 231, 0.8)); }
+    50% { filter: drop-shadow(0 0 20px rgba(108, 92, 231, 1)) drop-shadow(0 0 35px rgba(108, 92, 231, 0.6)); }
+}
+
+@keyframes pulseGlow {
+    0%, 100% { opacity: 0.3; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.1); }
+}
+
+@keyframes shimmerRotate {
+    0% { transform: rotate(0deg); opacity: 0; }
+    25% { opacity: 0.5; }
+    50% { opacity: 0.8; }
+    75% { opacity: 0.5; }
+    100% { transform: rotate(360deg); opacity: 0; }
+}
+
+.badge-image {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}
+
+.badge-fallback {
+    color: white;
+    font-weight: 800;
+    font-size: 0.8rem;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.badge-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.badge-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    text-shadow: 0 0 5px var(--primary-color);
+}
+
+.badge-score {
+    font-size: 0.9rem;
+    color: #aaa;
+    font-weight: 600;
+    margin-top: 0.2rem;
+}
+
+/* Barre de progression vendeur */
+.seller-progress-container {
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 4px;
+    transition: width 0.8s ease;
+    position: relative;
+    box-shadow: 0 0 10px rgba(108, 92, 231, 0.5);
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3));
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-20px); }
+    100% { transform: translateX(20px); }
+}
+
+.progress-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.progress-current {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.progress-next {
+    color: #aaa;
+    font-style: italic;
+}
+
+/* Styles pour les statistiques sociales */
+.social-stats {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: linear-gradient(145deg, rgba(15, 23, 41, 0.9), rgba(108, 92, 231, 0.1));
+    border: 1px solid var(--primary-color);
+    border-radius: 15px;
+}
+
+.social-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.social-number {
+    font-family: 'RussoOne', sans-serif;
+    font-size: 1.8rem;
+    color: var(--secondary-color);
+    text-shadow: 0 0 10px var(--secondary-color);
+}
+
+.social-label {
+    color: white;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.subscription-action {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+.subscribe-profile-btn {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    font-family: 'RussoOne', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 auto;
+}
+
+.subscribe-profile-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px var(--primary-color);
+}
+
+.subscribe-profile-btn.subscribed {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.subscribe-profile-btn.subscribed:hover {
+    background: rgba(231, 76, 60, 0.8);
+}
+
+.subscribe-profile-btn.subscribed::before {
+    content: 'Se désabonner';
+}
+
+/* Styles pour le compteur d'achats échoués */
+.failed-purchases-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(45deg, rgba(255, 107, 107, 0.1), rgba(255, 159, 67, 0.1));
+    border: 1px solid #FF6B6B;
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    margin: 1rem 0;
+    color: #FF6B6B;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.failed-purchases-info i {
+    font-size: 1rem;
+    color: #FF9F43;
+}
+
+.profile-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin: 2rem 0;
+}
+
+.stat-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    border-radius: 10px;
+    text-align: center;
+    border: 1px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px var(--primary-color);
+}
+
+.stat-value {
+    font-size: 2rem;
+    color: var(--primary-color);
+    font-family: 'RussoOne', sans-serif;
+    text-shadow: 0 0 10px var(--primary-color);
+}
+
+.stat-label {
+    color: var(--text-color);
+    margin-top: 0.5rem;
+}
+
+/* Section Jeux Favoris Profil */
+.favorite-games-profile-section {
+    margin: 3rem 0;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 15px;
+    padding: 2rem;
+    border: 1px solid rgba(108, 92, 231, 0.3);
+}
+
+.favorite-games-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.favorite-games-profile-section h2 {
+    font-family: 'RussoOne', sans-serif;
+    color: var(--primary-color);
+    text-shadow: 0 0 10px var(--primary-color);
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.edit-favorites-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.2rem;
+    background: linear-gradient(135deg, var(--primary-color) 0%, rgba(108, 92, 231, 0.8) 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.edit-favorites-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.9) 0%, var(--primary-color) 100%);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+}
+
+.edit-favorites-btn i {
+    font-size: 0.8rem;
+}
+
+.favorite-games-display {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
+}
+
+.favorite-game-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.15) 0%, rgba(108, 92, 231, 0.05) 100%);
+    border: 2px solid rgba(108, 92, 231, 0.4);
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.favorite-game-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.favorite-game-badge:hover::before {
+    left: 100%;
+}
+
+.favorite-game-badge:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4);
+    border-color: var(--primary-color);
+}
+
+.favorite-game-badge .game-icon {
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.favorite-game-badge .game-name {
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+}
+
+.favorite-game-badge:hover .game-name {
+    color: var(--primary-color);
+}
+
+/* Couleurs spécifiques par jeu pour les badges */
+.favorite-game-badge[data-game="FreeFire"] .game-icon {
+    color: #ff6b35;
+}
+
+.favorite-game-badge[data-game="<span class="notranslate">PUBG</span>"] .game-icon {
+    color: #f7931e;
+}
+
+.favorite-game-badge[data-game="COD"] .game-icon {
+    color: #00d4aa;
+}
+
+.favorite-game-badge[data-game="efootball"] .game-icon {
+    color: #00a8ff;
+}
+
+.favorite-game-badge[data-game="fc25"] .game-icon {
+    color: #ffd700;
+}
+
+.favorite-game-badge[data-game="bloodstrike"] .game-icon {
+    color: #e74c3c;
+}
+
+.favorite-game-badge[data-game="other"] .game-icon {
+    color: var(--primary-color);
+}
+
+.posts-section {
+    margin-top: 3rem;
+}
+
+.posts-section h2 {
+    font-family: 'RussoOne', sans-serif;
+    color: var(--primary-color);
+    text-shadow: 0 0 10px var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.post-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.post-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px var(--primary-color);
+}
+
+.post-media {
+    position: relative;
+    height: 200px;
+}
+
+.post-media img,
+.post-media video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.price-tag {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: var(--primary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    color: white;
+    font-weight: bold;
+}
+
+.post-content {
+    padding: 1.5rem;
+}
+
+.post-content h3 {
+    margin: 0;
+    margin-bottom: 1rem;
+}
+
+.post-content h3 a {
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.post-content h3 a:hover {
+    color: var(--primary-color);
+}
+
+.post-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.post-date {
+    color: var(--secondary-color);
+}
+
+.view-more {
+    color: var(--primary-color);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.view-more:hover {
+    transform: translateX(5px);
+}
+
+.no-posts {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    border: 1px solid var(--primary-color);
+}
+
+.no-posts i {
+    font-size: 3rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .profile-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .social-stats {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .profile-main-info {
+        text-align: center;
+    }
+    
+    .bio {
+        margin: 1rem auto;
+    }
+}
+</style>
+
+<!-- Modal pour signaler le profil -->
+<div id="reportModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+    <div class="modal-content" style="background: linear-gradient(145deg, rgba(15, 23, 41, 0.95), rgba(108, 92, 231, 0.1)); margin: 15% auto; padding: 30px; border: 1px solid #8a2be2; width: 500px; border-radius: 15px; backdrop-filter: blur(10px);">
+        <span class="close" onclick="closeReportModal()" style="color: #fff; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+        <h3 style="color: #fff; margin-bottom: 20px;">Signaler ce profil</h3>
+        <form id="reportForm">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="reportReason" style="color: #fff; display: block; margin-bottom: 5px;">Raison du signalement :</label>
+                <select id="reportReason" name="reason" style="width: 100%; padding: 10px; border: 1px solid #8a2be2; border-radius: 8px; background: rgba(255,255,255,0.1); color: #fff;" required>
+                    <option value="">Sélectionnez une raison</option>
+                    <option value="inappropriate_content">Contenu inapproprié</option>
+                    <option value="spam">Spam</option>
+                    <option value="harassment">Harcèlement</option>
+                    <option value="fake_profile">Faux profil</option>
+                    <option value="scam">Arnaque</option>
+                    <option value="other">Autre</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom: 15px;">
+                <label for="reportDescription" style="color: #fff; display: block; margin-bottom: 5px;">Description (optionnel) :</label>
+                <textarea id="reportDescription" name="description" style="width: 100%; padding: 10px; border: 1px solid #8a2be2; border-radius: 8px; background: rgba(255,255,255,0.1); color: #fff;" rows="4" placeholder="Décrivez le problème en détail..."></textarea>
+            </div>
+            <div style="text-align: right; margin-top: 20px;">
+                <button type="button" onclick="closeReportModal()" style="margin-right: 10px; padding: 10px 20px; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; cursor: pointer;">{% trans "Annuler" %}</button>
+                <button type="button" onclick="submitReport()" style="padding: 10px 20px; background: #8a2be2; color: white; border: none; border-radius: 8px; cursor: pointer;">Signaler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openReportModal() {
+    console.log('openReportModal called');
+    const modal = document.getElementById('reportModal');
+    console.log('Modal element:', modal);
+    if (modal) {
+        modal.style.display = 'block';
+        console.log('Modal displayed');
+    } else {
+        console.error('Modal not found');
+    }
+}
+
+function closeReportModal() {
+    document.getElementById('reportModal').style.display = 'none';
+    document.getElementById('reportForm').reset();
+}
+
+function submitReport() {
+    const reportData = {
+        reason: document.getElementById('reportReason').value,
+        description: document.getElementById('reportDescription').value,
+        report_type: 'profile',
+        content_id: '{{ user_profile.user.id }}'
+    };
+    
+    fetch('{% url "submit_report" %}', {
+        method: 'POST',
+        body: JSON.stringify(reportData),
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showCustomAlert('Signalement envoyé avec succès', 'success');
+            closeReportModal();
+        } else {
+            showCustomAlert(data.error || 'Erreur lors de l\'envoi du signalement', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showCustomAlert('Erreur lors de l\'envoi du signalement', 'error');
+    });
+}
+
+// Fonction d'alerte personnalisée
+function showCustomAlert(message, type = 'info') {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `custom-alert alert-${type}`;
+    alertDiv.innerHTML = `
+        <div class="alert-content">
+            <span class="alert-message">${message}</span>
+            <button class="alert-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+        </div>
+    `;
+    
+    const style = document.createElement('style');
+    style.textContent = `
+        .custom-alert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            min-width: 300px;
+            padding: 15px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+        }
+        .alert-success { background: linear-gradient(135deg, #00b894, #00cec9); }
+        .alert-error { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .alert-content { display: flex; justify-content: space-between; align-items: center; }
+        .alert-close { background: none; border: none; color: white; font-size: 20px; cursor: pointer; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+    `;
+    
+    document.head.appendChild(style);
+    document.body.appendChild(alertDiv);
+    
+    setTimeout(() => alertDiv.remove(), 5000);
+}
+
+// Fermer le modal en cliquant à l'extérieur
+window.onclick = function(event) {
+    const reportModal = document.getElementById('reportModal');
+    if (event.target == reportModal) {
+        closeReportModal();
+    }
+}
+
+// Fonction pour renvoyer l'email de vérification
+function resendVerificationEmail() {
+    const btn = document.getElementById('verifyEmailBtn');
+    const cooldownMsg = document.getElementById('cooldownMessage');
+    const cooldownText = document.getElementById('cooldownText');
+    
+    // Désactiver le bouton temporairement
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+    
+    fetch('/resend-verification-email/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showCustomAlert('Email de vérification envoyé ! Vérifiez votre boîte de réception (et les spams).', 'success');
+            // Démarrer le cooldown de 5 minutes
+            startCooldown(300); // 5 minutes = 300 secondes
+        } else if (data.cooldown) {
+            // Démarrer le cooldown avec le temps restant
+            startCooldown(data.remaining_seconds);
+            showCustomAlert(data.message, 'warning');
+        } else {
+            showCustomAlert('Erreur: ' + data.message, 'error');
+            // Réactiver le bouton en cas d'erreur
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Vérifier Email';
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showCustomAlert('Erreur lors de l\'envoi de l\'email.', 'error');
+        // Réactiver le bouton en cas d'erreur
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Vérifier Email';
+    });
+}
+
+function startCooldown(seconds) {
+    const btn = document.getElementById('verifyEmailBtn');
+    const cooldownMsg = document.getElementById('cooldownMessage');
+    const cooldownText = document.getElementById('cooldownText');
+    
+    // Cacher le bouton et afficher le message de cooldown
+    btn.style.display = 'none';
+    cooldownMsg.style.display = 'block';
+    
+    let remainingTime = seconds;
+    
+    const updateCooldown = () => {
+        const minutes = Math.floor(remainingTime / 60);
+        const secs = remainingTime % 60;
+        cooldownText.textContent = `Veuillez attendre ${minutes}m ${secs}s avant de renvoyer un email.`;
+        
+        if (remainingTime <= 0) {
+            // Fin du cooldown
+            btn.style.display = 'block';
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Vérifier Email';
+            cooldownMsg.style.display = 'none';
+            return;
+        }
+        
+        remainingTime--;
+        setTimeout(updateCooldown, 1000);
+    };
+    
+    updateCooldown();
+}
+
+// Fonction pour vérifier le code email
+function verifyEmailCode() {
+    const codeInput = document.getElementById('verificationCode');
+    const verifyBtn = document.getElementById('verifyCodeBtn');
+    const code = codeInput.value.trim();
+    
+    // Validation du code
+    if (!code || code.length !== 6 || !/^\d{6}$/.test(code)) {
+        showCustomAlert('Veuillez entrer un code à 6 chiffres valide.', 'error');
+        return;
+    }
+    
+    // Désactiver le bouton et afficher le chargement
+    verifyBtn.disabled = true;
+    verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Vérification...';
+    
+    fetch('/verify-email-code/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            'verification_code': code
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showCustomAlert('🎉 Email vérifié avec succès !', 'success');
+            // Recharger la page pour afficher le statut mis à jour
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
+        } else {
+            showCustomAlert('❌ ' + data.message, 'error');
+            // Réactiver le bouton en cas d'erreur
+            verifyBtn.disabled = false;
+            verifyBtn.innerHTML = '<i class="fas fa-check"></i> Vérifier';
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showCustomAlert('Erreur lors de la vérification du code.', 'error');
+        // Réactiver le bouton en cas d'erreur
+        verifyBtn.disabled = false;
+        verifyBtn.innerHTML = '<i class="fas fa-check"></i> Vérifier';
+    });
+}
+
+// Auto-focus sur le champ de code et validation en temps réel
+document.addEventListener('DOMContentLoaded', function() {
+    const codeInput = document.getElementById('verificationCode');
+    if (codeInput) {
+        // Auto-focus
+        codeInput.focus();
+        
+        // Validation en temps réel
+        codeInput.addEventListener('input', function() {
+            const value = this.value;
+            // Ne garder que les chiffres
+            this.value = value.replace(/[^0-9]/g, '');
+            
+            // Activer/désactiver le bouton selon la longueur
+            const verifyBtn = document.getElementById('verifyCodeBtn');
+            if (verifyBtn) {
+                verifyBtn.disabled = this.value.length !== 6;
+            }
+        });
+        
+        // Soumission avec Enter
+        codeInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && this.value.length === 6) {
+                verifyEmailCode();
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}

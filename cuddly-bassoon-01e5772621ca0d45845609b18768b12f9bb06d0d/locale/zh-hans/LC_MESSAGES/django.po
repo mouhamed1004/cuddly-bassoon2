@@ -1,0 +1,111 @@
+# BLIZZ Gaming Translation
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Language: zh-hans\n"
+
+msgid "Accueil"
+msgstr "首页"
+
+msgid "Profil"
+msgstr "个人资料"
+
+msgid "Messages"
+msgstr "消息"
+
+msgid "Notifications"
+msgstr "通知"
+
+msgid "Déconnexion"
+msgstr "登出"
+
+msgid "Connexion"
+msgstr "登录"
+
+msgid "Inscription"
+msgstr "注册"
+
+msgid "Paramètres"
+msgstr "设置"
+
+msgid "Acheter"
+msgstr "购买"
+
+msgid "Vendre"
+msgstr "出售"
+
+msgid "Rechercher"
+msgstr "搜索"
+
+msgid "Créer"
+msgstr "创建"
+
+msgid "Supprimer"
+msgstr "删除"
+
+msgid "Modifier"
+msgstr "编辑"
+
+msgid "Envoyer"
+msgstr "发送"
+
+msgid "Annuler"
+msgstr "取消"
+
+msgid "Confirmer"
+msgstr "确认"
+
+msgid "Voir plus"
+msgstr "查看更多"
+
+msgid "Prix"
+msgstr "价格"
+
+msgid "Description"
+msgstr "描述"
+
+msgid "Catégorie"
+msgstr "类别"
+
+msgid "Statut"
+msgstr "状态"
+
+msgid "Transaction"
+msgstr "交易"
+
+msgid "Paiement"
+msgstr "支付"
+
+msgid "Vendeur"
+msgstr "卖家"
+
+msgid "Acheteur"
+msgstr "买家"
+
+msgid "Compte"
+msgstr "账户"
+
+msgid "Niveau"
+msgstr "等级"
+
+msgid "Jeu"
+msgstr "游戏"
+
+msgid "Disponible"
+msgstr "可用"
+
+msgid "Vendu"
+msgstr "已售"
+
+msgid "En attente"
+msgstr "待处理"
+
+msgid "Bienvenue"
+msgstr "欢迎"
+
+msgid "Bonjour"
+msgstr "你好"
+
+msgid "Merci"
+msgstr "谢谢"
+

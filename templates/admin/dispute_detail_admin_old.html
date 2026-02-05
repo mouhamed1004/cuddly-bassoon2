@@ -1,0 +1,681 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Litige #{{ dispute.id.hex|slice:":8" }} - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.dispute-detail {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    padding: 20px;
+    color: #fff;
+}
+
+.dispute-header {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(138, 43, 226, 0.3);
+}
+
+.dispute-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.info-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    border: 1px solid rgba(138, 43, 226, 0.3);
+}
+
+.info-card h4 {
+    color: #00ffff;
+    margin-bottom: 15px;
+    border-bottom: 2px solid rgba(138, 43, 226, 0.3);
+    padding-bottom: 10px;
+}
+
+.status-badge {
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+.status-pending { background: #ff6b35; }
+.status-in-progress { background: #f7931e; }
+.status-resolved { background: #4caf50; }
+.status-closed { background: #666; }
+
+.priority-high { color: #ff4757; font-weight: bold; }
+.priority-medium { color: #ffa502; }
+.priority-low { color: #2ed573; }
+
+.action-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(138, 43, 226, 0.3);
+}
+
+.btn-admin {
+    background: linear-gradient(45deg, #8a2be2, #4169e1);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 5px;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-admin:hover {
+    transform: scale(1.05);
+    color: white;
+    text-decoration: none;
+}
+
+.btn-success { background: linear-gradient(45deg, #4caf50, #2e7d32); }
+.btn-danger { background: linear-gradient(45deg, #f44336, #d32f2f); }
+.btn-warning { background: linear-gradient(45deg, #ff9800, #f57c00); }
+
+.form-control {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(138, 43, 226, 0.3);
+    color: #fff;
+    border-radius: 8px;
+}
+
+.form-control:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #8a2be2;
+    color: #fff;
+    box-shadow: 0 0 0 0.2rem rgba(138, 43, 226, 0.25);
+}
+
+.timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, #8a2be2, #00ffff);
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    border-left: 3px solid #8a2be2;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -18px;
+    top: 20px;
+    width: 12px;
+    height: 12px;
+    background: #00ffff;
+    border-radius: 50%;
+    border: 2px solid #1a1a2e;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 15px;
+    border: 2px solid #8a2be2;
+}
+
+.transaction-link {
+    color: #00ffff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.transaction-link:hover {
+    color: #8a2be2;
+    text-decoration: underline;
+}
+
+.dispute-description-long {
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    line-height: 1.6;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    color: #fff;
+}
+
+.dispute-description-long::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dispute-description-long::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.dispute-description-long::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.dispute-description-long::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Styles responsive */
+@media (max-width: 1200px) {
+    .dispute-info-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .left-sidebar, .right-sidebar {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .dispute-detail {
+        padding: 10px;
+    }
+    
+    .dispute-header {
+        padding: 15px;
+        text-align: center;
+    }
+    
+    .dispute-title {
+        font-size: 1.4rem;
+    }
+    
+    .dispute-info-grid {
+        gap: 15px;
+    }
+    
+    .info-card {
+        padding: 15px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .action-btn {
+        width: 100%;
+        margin: 5px 0;
+    }
+    
+    .dispute-description-long {
+        max-height: 150px;
+    }
+}
+
+@media (max-width: 480px) {
+    .dispute-detail {
+        padding: 5px;
+    }
+    
+    .dispute-header {
+        padding: 10px;
+    }
+    
+    .dispute-title {
+        font-size: 1.2rem;
+    }
+    
+    .info-card {
+        padding: 10px;
+    }
+    
+    .dispute-description-long {
+        max-height: 120px;
+        padding: 8px;
+    }
+    
+    .action-btn {
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dispute-detail">
+    <!-- Header -->
+    <div class="dispute-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h1><i class="fas fa-exclamation-triangle"></i> Litige #{{ dispute.id.hex|slice:":8" }}</h1>
+                <p class="mb-0">Créé le {{ dispute.created_at|date:"d/m/Y à H:i" }}</p>
+            </div>
+            <div>
+                <span class="status-badge status-{{ dispute.status }}">
+                    {{ dispute.get_status_display }}
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Informations du litige -->
+    <div class="dispute-info-grid">
+        <!-- Détails du litige -->
+        <div class="info-card">
+            <h4><i class="fas fa-info-circle"></i> Détails du Litige</h4>
+            <p><strong>Raison :</strong> {{ dispute.get_reason_display }}</p>
+            <p><strong>Description :</strong></p>
+            <div class="bg-dark p-3 rounded dispute-description-long">{{ dispute.description|linebreaks }}</div>
+            <p class="mt-3"><strong>Montant disputé :</strong> <span class="text-warning">{{ dispute.disputed_amount }}€</span></p>
+            <p><strong>Priorité :</strong> <span class="priority-{{ dispute.priority }}">{{ dispute.get_priority_display }}</span></p>
+            {% if dispute.deadline %}
+            <p><strong>Délai limite :</strong> {{ dispute.deadline|date:"d/m/Y à H:i" }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Transaction liée -->
+        <div class="info-card">
+            <h4><i class="fas fa-exchange-alt"></i>{% trans "Transaction" %}</h4>
+            <p><strong>Produit :</strong> 
+                <a href="{% url 'transaction_detail' dispute.transaction.id %}" class="transaction-link">
+                    {{ dispute.transaction.post.title }}
+                </a>
+            </p>
+            <p><strong>Acheteur :</strong> {{ dispute.transaction.buyer.username }}</p>
+            <p><strong>Vendeur :</strong> {{ dispute.transaction.seller.username }}</p>
+            <p><strong>Montant :</strong> {{ dispute.transaction.amount }}€</p>
+            <p><strong>Statut transaction :</strong> 
+                <span class="badge badge-info">{{ dispute.transaction.get_status_display }}</span>
+            </p>
+        </div>
+
+        <!-- Statistiques Acheteur -->
+        <div class="info-card">
+            <h4><i class="fas fa-user-tie"></i> Acheteur - {{ dispute.transaction.buyer.username }}</h4>
+            <div class="user-info">
+                {% if dispute.transaction.buyer.profile.profile_picture %}
+                <img src="{{ dispute.transaction.buyer.profile.profile_picture.url }}" alt="Avatar" class="user-avatar">
+                {% else %}
+                <div class="user-avatar bg-secondary d-flex align-items-center justify-content-center">
+                    <i class="fas fa-user"></i>
+                </div>
+                {% endif %}
+                <div>
+                    <strong>{{ dispute.transaction.buyer.username }}</strong><br>
+                    <small class="text-muted">{{ dispute.transaction.buyer.email }}</small>
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                <h6 style="color: #00ffff; margin-bottom: 10px;">Historique des Litiges</h6>
+                <p><strong>En tant qu'acheteur :</strong> {{ buyer_stats.total_disputes_as_buyer }} litiges
+                    {% if buyer_stats.disputes_lost_as_buyer > 0 %}
+                    <span style="color: #ff4757;">({{ buyer_stats.disputes_lost_as_buyer }} perdus)</span>
+                    {% endif %}
+                </p>
+                <p><strong>En tant que vendeur :</strong> {{ buyer_stats.total_disputes_as_seller }} litiges
+                    {% if buyer_stats.disputes_lost_as_seller > 0 %}
+                    <span style="color: #ff4757;">({{ buyer_stats.disputes_lost_as_seller }} perdus)</span>
+                    {% endif %}
+                </p>
+                
+                {% with total_lost=buyer_stats.disputes_lost_as_buyer|add:buyer_stats.disputes_lost_as_seller total_disputes=buyer_stats.total_disputes_as_buyer|add:buyer_stats.total_disputes_as_seller %}
+                {% if total_disputes > 0 %}
+                <div style="margin-top: 10px; padding: 8px; border-radius: 5px; background: {% if total_lost >= 3 %}rgba(255, 71, 87, 0.2){% elif total_lost >= 1 %}rgba(255, 165, 2, 0.2){% else %}rgba(46, 213, 115, 0.2){% endif %};">
+                    <strong>Fiabilité : 
+                        {% if total_lost >= 3 %}
+                            <span style="color: #ff4757;">⚠️ RISQUE ÉLEVÉ</span>
+                        {% elif total_lost >= 1 %}
+                            <span style="color: #ffa502;">⚡ ATTENTION</span>
+                        {% else %}
+                            <span style="color: #2ed573;">✅ FIABLE</span>
+                        {% endif %}
+                    </strong>
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Statistiques Vendeur -->
+        <div class="info-card">
+            <h4><i class="fas fa-store"></i> Vendeur - {{ dispute.transaction.seller.username }}</h4>
+            <div class="user-info">
+                {% if dispute.transaction.seller.profile.profile_picture %}
+                <img src="{{ dispute.transaction.seller.profile.profile_picture.url }}" alt="Avatar" class="user-avatar">
+                {% else %}
+                <div class="user-avatar bg-secondary d-flex align-items-center justify-content-center">
+                    <i class="fas fa-user"></i>
+                </div>
+                {% endif %}
+                <div>
+                    <strong>{{ dispute.transaction.seller.username }}</strong><br>
+                    <small class="text-muted">{{ dispute.transaction.seller.email }}</small>
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                <h6 style="color: #8a2be2; margin-bottom: 10px;">Historique des Litiges</h6>
+                <p><strong>En tant qu'acheteur :</strong> {{ seller_stats.total_disputes_as_buyer }} litiges
+                    {% if seller_stats.disputes_lost_as_buyer > 0 %}
+                    <span style="color: #ff4757;">({{ seller_stats.disputes_lost_as_buyer }} perdus)</span>
+                    {% endif %}
+                </p>
+                <p><strong>En tant que vendeur :</strong> {{ seller_stats.total_disputes_as_seller }} litiges
+                    {% if seller_stats.disputes_lost_as_seller > 0 %}
+                    <span style="color: #ff4757;">({{ seller_stats.disputes_lost_as_seller }} perdus)</span>
+                    {% endif %}
+                </p>
+                
+                {% with total_lost=seller_stats.disputes_lost_as_buyer|add:seller_stats.disputes_lost_as_seller total_disputes=seller_stats.total_disputes_as_buyer|add:seller_stats.total_disputes_as_seller %}
+                {% if total_disputes > 0 %}
+                <div style="margin-top: 10px; padding: 8px; border-radius: 5px; background: {% if total_lost >= 3 %}rgba(255, 71, 87, 0.2){% elif total_lost >= 1 %}rgba(255, 165, 2, 0.2){% else %}rgba(46, 213, 115, 0.2){% endif %};">
+                    <strong>Fiabilité : 
+                        {% if total_lost >= 3 %}
+                            <span style="color: #ff4757;">⚠️ RISQUE ÉLEVÉ</span>
+                        {% elif total_lost >= 1 %}
+                            <span style="color: #ffa502;">⚡ ATTENTION</span>
+                        {% else %}
+                            <span style="color: #2ed573;">✅ FIABLE</span>
+                        {% endif %}
+                    </strong>
+                </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Admin assigné -->
+        <div class="info-card">
+            <h4><i class="fas fa-user-shield"></i> Administration</h4>
+            {% if dispute.assigned_admin %}
+            <p><strong>Assigné à :</strong> {{ dispute.assigned_admin.username }}</p>
+            {% else %}
+            <p><em>Aucun admin assigné</em></p>
+            {% endif %}
+            
+            {% if dispute.response_time_hours %}
+            <p><strong>Temps de réponse :</strong> {{ dispute.response_time_hours }}h</p>
+            {% endif %}
+            
+            {% if dispute.resolution_time_hours %}
+            <p><strong>Temps de résolution :</strong> {{ dispute.resolution_time_hours }}h</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Demandes d'information -->
+    <div class="info-section">
+        <h4><i class="fas fa-question-circle"></i> Demandes d'Information</h4>
+        
+        {% with info_requests=dispute.information_requests.all %}
+        {% if info_requests %}
+            <div class="row">
+                {% for request in info_requests %}
+                <div class="col-md-6 mb-3">
+                    <div class="info-request-card" style="background: rgba(0,0,0,0.2); border-radius: 10px; padding: 20px; border-left: 4px solid {% if request.status == 'pending' %}#ff9800{% elif request.status == 'responded' %}#4caf50{% else %}#f44336{% endif %};">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 style="color: #00ffff; margin: 0;">
+                                <i class="fas fa-user"></i> {{ request.requested_to.username }}
+                                <span class="badge" style="background: {% if request.status == 'pending' %}#ff9800{% elif request.status == 'responded' %}#4caf50{% else %}#f44336{% endif %}; margin-left: 10px;">
+                                    {{ request.get_status_display }}
+
+                            </h6>
+                            <small style="color: #999;">{{ request.created_at|date:"d/m/Y H:i" }}</small>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <strong style="color: #8a2be2;">Type:</strong> 
+                            <span class="badge" style="background: {% if request.request_type == 'text_response' %}#2196f3{% elif request.request_type == 'screenshot' %}#ff9800{% else %}#9c27b0{% endif %}; padding: 4px 8px; border-radius: 12px; font-size: 0.8em;">
+                                {{ request.get_request_type_display }}
+
+                        </div>
+                        
+                        <div class="mb-2">
+                            <strong style="color: #8a2be2;">Question:</strong>
+                            <div style="background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; margin-top: 5px;">
+                                {{ request.question|linebreaks }}
+                            </div>
+                        </div>
+                        
+                        {% if request.status == 'responded' %}
+                        <div class="mb-2">
+                            <strong style="color: #4caf50;">✅ Réponse reçue ({{ request.responded_at|date:"d/m/Y H:i" }}):</strong>
+                            {% if request.response_text %}
+                            <div style="background: rgba(76,175,80,0.15); padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #4caf50;">
+                                <div style="font-weight: bold; color: #4caf50; margin-bottom: 8px;">
+                                    <i class="fas fa-comment-alt"></i> Réponse textuelle:
+                                </div>
+                                <div style="color: #fff; line-height: 1.5;">
+                                    {{ request.response_text|linebreaks }}
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% if request.response_file %}
+                            <div style="background: rgba(0,255,255,0.1); padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #00ffff;">
+                                <div style="font-weight: bold; color: #00ffff; margin-bottom: 8px;">
+                                    <i class="fas fa-file-alt"></i> Fichier joint:
+                                </div>
+                                <a href="{{ request.response_file.url }}" target="_blank" style="color: #00ffff; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; padding: 8px 12px; background: rgba(0,255,255,0.2); border-radius: 5px; transition: all 0.3s ease;">
+                                    <i class="fas fa-download"></i> 
+                                    <span>{{ request.response_file.name|default:"Fichier téléchargé" }}</span>
+                                    <small style="opacity: 0.7;">(Clic pour ouvrir)</small>
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% elif request.status == 'pending' %}
+                        <div class="text-warning">
+                            <i class="fas fa-clock"></i> En attente de réponse avant {{ request.deadline|date:"d/m/Y H:i" }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p style="color: #999; font-style: italic;">Aucune demande d'information envoyée pour ce litige.</p>
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Actions administratives -->
+    {% if dispute.status != 'resolved' and dispute.status != 'closed' %}
+    <div class="action-section">
+        <h4><i class="fas fa-tools"></i> Actions Administratives</h4>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <h5>Demandes d'Information</h5>
+                <form method="POST" action="{% url 'admin_send_information_request' dispute.id %}" style="background: rgba(0,0,0,0.2); padding: 20px; border-radius: 10px;">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label style="color: #00ffff; font-weight: bold;">Demander à :</label>
+                        <select name="requested_to" class="form-control" required>
+                            <option value="">Sélectionner...</option>
+                            <option value="{{ dispute.transaction.buyer.id }}">{{ dispute.transaction.buyer.username }} (Acheteur)</option>
+                            <option value="{{ dispute.transaction.seller.id }}">{{ dispute.transaction.seller.username }} (Vendeur)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #00ffff; font-weight: bold;">Type :</label>
+                        <select name="request_type" class="form-control" required>
+                            <option value="text_response">Réponse textuelle</option>
+                            <option value="screenshot">Capture d'écran</option>
+                            <option value="document">Document/Preuve</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="color: #00ffff; font-weight: bold;">Question :</label>
+                        <textarea name="question" class="form-control" rows="3" placeholder="Que voulez-vous demander ?" required></textarea>
+                    </div>
+                    <button type="submit" class="btn-admin" style="width: 100%;">
+                        <i class="fas fa-question-circle"></i> Envoyer Demande
+                    </button>
+                </form>
+            </div>
+            
+            <div class="col-md-4">
+                <h5>Résolution du Litige</h5>
+                <a href="{% url 'admin_dispute_resolve_refund' dispute.id %}" class="btn-admin btn-success">
+                    <i class="fas fa-undo"></i> Rembourser l'Acheteur
+                </a>
+                <a href="{% url 'admin_dispute_resolve_payout' dispute.id %}" class="btn-admin btn-warning">
+                    <i class="fas fa-money-bill-wave"></i> Payer le Vendeur
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <h5>Gestion</h5>
+                {% if not dispute.assigned_admin %}
+                <form method="POST" action="{% url 'admin_assign_dispute' dispute.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-admin">
+                        <i class="fas fa-user-plus"></i> M'Assigner ce Litige
+                    </button>
+                </form>
+                {% endif %}
+                
+                <a href="{% url 'admin_dispute_dashboard' %}" class="btn-admin">
+                    <i class="fas fa-arrow-left"></i> Retour au Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Notes administratives -->
+    <div class="action-section">
+        <h4><i class="fas fa-sticky-note"></i> Notes Administratives</h4>
+        
+        {% if dispute.admin_notes %}
+        <div class="bg-dark p-3 rounded mb-3">
+            {{ dispute.admin_notes|linebreaks }}
+        </div>
+        {% endif %}
+        
+        <form method="POST" action="{% url 'admin_update_dispute_notes' dispute.id %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <textarea name="admin_notes" class="form-control" rows="4" 
+                          placeholder="Ajouter des notes internes...">{{ dispute.admin_notes }}</textarea>
+            </div>
+            <button type="submit" class="btn-admin">
+                <i class="fas fa-save"></i> Sauvegarder les Notes
+            </button>
+        </form>
+    </div>
+
+    <!-- Messages de Chat -->
+    <div class="action-section">
+        <h4><i class="fas fa-comments"></i> Messages de Chat (Transaction)</h4>
+        
+        {% if dispute.transaction.messages.exists %}
+        <div class="chat-messages" style="max-height: 400px; overflow-y: auto; background: rgba(0,0,0,0.2); border-radius: 10px; padding: 15px;">
+            {% for message in dispute.transaction.messages.all %}
+            <div class="message-item" style="margin-bottom: 15px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px; border-left: 3px solid {% if message.sender == dispute.transaction.buyer %}#00ffff{% else %}#8a2be2{% endif %};">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                    <strong style="color: {% if message.sender == dispute.transaction.buyer %}#00ffff{% else %}#8a2be2{% endif %};">
+                        {{ message.sender.username }}
+                        {% if message.sender == dispute.transaction.buyer %}
+                            <span style="font-size: 0.8rem; color: #ccc;">(Acheteur)</span>
+                        {% else %}
+                            <span style="font-size: 0.8rem; color: #ccc;">(Vendeur)</span>
+                        {% endif %}
+                    </strong>
+                    <small style="color: #999;">{{ message.created_at|date:"d/m/Y H:i" }}</small>
+                </div>
+                <div style="color: #fff;">{{ message.content|linebreaks }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 30px; color: #666;">
+            <i class="fas fa-comment-slash" style="font-size: 2rem; margin-bottom: 10px;"></i>
+            <p>Aucun message échangé entre l'acheteur et le vendeur</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Historique -->
+    <div class="action-section">
+        <h4><i class="fas fa-history"></i> Historique du Litige</h4>
+        
+        <div class="timeline">
+            <div class="timeline-item">
+                <strong>{{ dispute.created_at|date:"d/m/Y à H:i" }}</strong><br>
+                Litige créé par <strong>{{ dispute.opened_by.username }}</strong><br>
+                <em>Raison: {{ dispute.get_reason_display }}</em>
+            </div>
+            
+            {% if dispute.assigned_admin %}
+            <div class="timeline-item">
+                <strong>Assigné à {{ dispute.assigned_admin.username }}</strong><br>
+                <em>Litige pris en charge</em>
+            </div>
+            {% endif %}
+            
+            {% if dispute.resolved_at %}
+            <div class="timeline-item">
+                <strong>{{ dispute.resolved_at|date:"d/m/Y à H:i" }}</strong><br>
+                Litige résolu: <strong>{{ dispute.get_resolution_display }}</strong><br>
+                {% if dispute.resolution_details %}
+                <em>{{ dispute.resolution_details }}</em>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Confirmation pour les actions critiques
+document.querySelectorAll('.btn-success, .btn-warning').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        const action = this.textContent.includes('Rembourser') ? 'rembourser l\'acheteur' : 'payer le vendeur';
+        if (!confirm(`Êtes-vous sûr de vouloir ${action} pour ce litige ?`)) {
+            e.preventDefault();
+        }
+    });
+});
+</script>
+{% endblock %}

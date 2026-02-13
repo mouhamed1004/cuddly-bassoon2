@@ -1,0 +1,16 @@
+# Exclure le fichier settings problématique (erreur UTF-8 avec Nixpacks)
+settings_render_optimized.py
+
+# Fichiers déjà dans .gitignore
+node_modules/
+.env
+*.log
+*.sqlite3
+db.sqlite3
+__pycache__/
+*.pyc
+venv/
+env/
+.venv/
+media/
+staticfiles/

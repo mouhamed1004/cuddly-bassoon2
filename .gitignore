@@ -42,3 +42,6 @@ static_collected/
 *.swp
 *.swo
 *~
+
+# Fichier settings alternatif (encoding UTF-8 problématique pour Nixpacks)
+settings_render_optimized.py

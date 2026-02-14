@@ -179,10 +179,14 @@ try:
         )
     }
     
-    # Configuration SSL pour Render
+    # Configuration SSL : désactivé pour connexions internes (Sevalla), requis pour externes (Render, Supabase)
     if 'postgres' in DATABASES['default']['ENGINE']:
+        db_host = DATABASES['default'].get('HOST', '') or ''
+        # Connexions internes (Kubernetes/Sevalla) : pas de SSL
+        is_internal = 'svc.cluster' in db_host or 'cluster.local' in db_host
+        ssl_mode = config('DATABASE_SSL_MODE', default='disable' if is_internal else 'require')
         DATABASES['default']['OPTIONS'] = {
-            'sslmode': 'require',  # SSL requis pour Render
+            'sslmode': ssl_mode,
             'connect_timeout': 10,
         }
         

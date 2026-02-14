@@ -1605,67 +1605,6 @@ class Report(models.Model):
     def __str__(self):
         return f"Signalement de {self.reporter.username} - {self.get_reason_display()}"
 
-class UserWarning(models.Model):
-    """
-    Modèle pour gérer les avertissements utilisateur
-    """
-    WARNING_TYPES = [
-        ('content_violation', 'Violation de contenu'),
-        ('behavior_violation', 'Violation de comportement'),
-        ('spam', 'Spam'),
-        ('other', 'Autre'),
-    ]
-    
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='warnings')
-    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='warnings_issued')
-    warning_type = models.CharField(max_length=20, choices=WARNING_TYPES)
-    reason = models.TextField(help_text="Raison de l'avertissement")
-    related_report = models.ForeignKey(Report, on_delete=models.SET_NULL, null=True, blank=True)
-    is_active = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        ordering = ['-created_at']
-    
-    def __str__(self):
-        return f"Avertissement pour {self.user.username} - {self.get_warning_type_display()}"
-
-class UserBan(models.Model):
-    """
-    Modèle pour gérer les bannissements utilisateur
-    """
-    BAN_TYPES = [
-        ('temporary', 'Temporaire'),
-        ('permanent', 'Permanent'),
-    ]
-    
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bans')
-    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bans_issued')
-    ban_type = models.CharField(max_length=20, choices=BAN_TYPES)
-    reason = models.TextField(help_text="Raison du bannissement")
-    related_report = models.ForeignKey(Report, on_delete=models.SET_NULL, null=True, blank=True)
-    
-    start_date = models.DateTimeField(auto_now_add=True)
-    end_date = models.DateTimeField(null=True, blank=True, help_text="Date de fin pour bannissement temporaire")
-    is_active = models.BooleanField(default=True)
-    
-    class Meta:
-        ordering = ['-start_date']
-    
-    def __str__(self):
-        return f"Bannissement {self.get_ban_type_display()} - {self.user.username}"
-    
-    @property
-    def is_expired(self):
-        if self.ban_type == 'permanent':
-            return False
-        if self.end_date:
-            return timezone.now() > self.end_date
-        return False
-        return timezone.now() > self.deadline and self.status == 'pending'
-
 # Modèle pour la vérification email
 class EmailVerification(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='email_verification')
@@ -2077,6 +2016,8 @@ class UserWarning(models.Model):
     Modèle pour gérer les avertissements des utilisateurs
     """
     WARNING_TYPES = [
+        ('content_violation', 'Violation de contenu'),
+        ('behavior_violation', 'Violation de comportement'),
         ('dispute_lost', 'Litige perdu'),
         ('inappropriate_behavior', 'Comportement inapproprié'),
         ('fake_account', 'Compte falsifié'),
@@ -2095,6 +2036,7 @@ class UserWarning(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='warnings')
     admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='warnings_given', limit_choices_to={'is_staff': True})
     dispute = models.ForeignKey(Dispute, on_delete=models.CASCADE, null=True, blank=True, related_name='warnings')
+    related_report = models.ForeignKey(Report, on_delete=models.SET_NULL, null=True, blank=True)
     
     warning_type = models.CharField(max_length=30, choices=WARNING_TYPES)
     severity = models.CharField(max_length=10, choices=SEVERITY_LEVELS, default='medium')
@@ -2147,10 +2089,11 @@ class UserBan(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bans')
     admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bans_given', limit_choices_to={'is_staff': True})
     dispute = models.ForeignKey(Dispute, on_delete=models.CASCADE, null=True, blank=True, related_name='bans')
+    related_report = models.ForeignKey(Report, on_delete=models.SET_NULL, null=True, blank=True)
     
     ban_type = models.CharField(max_length=20, choices=BAN_TYPES)
-    reason = models.CharField(max_length=30, choices=BAN_REASONS)
-    details = models.TextField(help_text="Détails du bannissement")
+    reason = models.CharField(max_length=30, choices=BAN_REASONS, default='other')
+    details = models.TextField(help_text="Détails du bannissement", blank=True)
     
     is_active = models.BooleanField(default=True)
     starts_at = models.DateTimeField(auto_now_add=True)

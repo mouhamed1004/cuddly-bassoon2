@@ -1,0 +1,6 @@
+# Configuration Nixpacks pour BLIZZ (Sevalla)
+# https://nixpacks.com/docs/configuration/file
+
+[phases.build]
+# "..." = étendre les commandes par défaut (ne pas les remplacer)
+cmds = ["...", "python manage.py collectstatic --noinput --clear"]

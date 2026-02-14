@@ -5569,10 +5569,9 @@ def admin_send_warning(request):
         # Créer une notification pour l'utilisateur
         Notification.objects.create(
             user=report.reported_user,
-            type='warning',
+            type='system',
             title='Avertissement reçu',
             content=f'Vous avez reçu un avertissement: {reason}',
-            warning=warning
         )
         
         return JsonResponse({'success': True, 'message': 'Avertissement envoyé avec succès'})
@@ -5600,17 +5599,23 @@ def admin_ban_user(request):
         report = get_object_or_404(Report, id=report_id)
         
         # Calculer la date de fin pour bannissement temporaire
-        end_date = None
+        ends_at = None
         if ban_type == 'temporary' and duration:
-            end_date = timezone.now() + timezone.timedelta(days=int(duration))
+            ends_at = timezone.now() + timezone.timedelta(days=int(duration))
+        
+        # Valider reason (doit être dans BAN_REASONS)
+        valid_reasons = [r[0] for r in UserBan.BAN_REASONS]
+        ban_reason = reason if reason in valid_reasons else 'other'
+        ban_details = reason if reason not in valid_reasons else ''
         
         # Créer le bannissement
         ban = UserBan.objects.create(
             user=report.reported_user,
             admin=request.user,
             ban_type=ban_type,
-            reason=reason,
-            end_date=end_date,
+            reason=ban_reason,
+            details=ban_details,
+            ends_at=ends_at,
             related_report=report
         )
         
@@ -5624,8 +5629,8 @@ def admin_ban_user(request):
         
         # Créer une notification pour l'utilisateur
         ban_message = f"Bannissement {ban.get_ban_type_display().lower()}"
-        if end_date:
-            ban_message += f" jusqu'au {end_date.strftime('%d/%m/%Y')}"
+        if ends_at:
+            ban_message += f" jusqu'au {ends_at.strftime('%d/%m/%Y')}"
         
         Notification.objects.create(
             user=report.reported_user,

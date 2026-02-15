@@ -123,12 +123,18 @@ logger = logging.getLogger(__name__)
 
 def email_verified_required(view_func):
     """
-    Décorateur qui vérifie que l'utilisateur a vérifié son email
+    Décorateur qui vérifie que l'utilisateur a vérifié son email.
+    Désactivé si EMAIL_VERIFICATION_REQUIRED=False dans settings.
     """
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated:
             return redirect('signin')
+        
+        # Bypass si la vérification email est désactivée
+        from django.conf import settings
+        if not getattr(settings, 'EMAIL_VERIFICATION_REQUIRED', True):
+            return view_func(request, *args, **kwargs)
         
         try:
             from .models import EmailVerification

@@ -343,8 +343,8 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
-# Configuration de vérification email
-EMAIL_VERIFICATION_REQUIRED = True
+# Configuration de vérification email (désactivée temporairement pour permettre la création d'annonces)
+EMAIL_VERIFICATION_REQUIRED = config('EMAIL_VERIFICATION_REQUIRED', default=False, cast=bool)
 EMAIL_VERIFICATION_EXPIRE_HOURS = 24
 
 # Payment Timeout Settings

@@ -328,12 +328,9 @@ CINETPAY_DROPSHIPPING_TEST_MODE = config('CINETPAY_DROPSHIPPING_TEST_MODE', defa
 
 CINETPAY_TEST_MODE = False  # Forcé à False pour désactiver le mode test global
 
-# URL de base pour les callbacks CinetPay
-# En production, utiliser l'URL Render, en local utiliser localhost
-if config('ENVIRONMENT', default='production') == 'production':
-    BASE_URL = 'https://blizz-web-service.onrender.com'
-else:
-    BASE_URL = config('BASE_URL', default='http://localhost:8000')
+# URL de base pour les callbacks CinetPay et redirections
+# IMPORTANT: En production (Sevalla), définir BASE_URL=https://blizz.boutique dans les variables d'environnement
+BASE_URL = config('BASE_URL', default='http://localhost:8000')
 
 # Configuration email Gmail SMTP
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

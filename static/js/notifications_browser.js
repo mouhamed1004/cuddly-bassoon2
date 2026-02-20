@@ -214,9 +214,59 @@ document.addEventListener('DOMContentLoaded', function() {
     // ========================================
     
     /**
+     * Injecte les styles pour l'animation de pulsation (une seule fois)
+     */
+    function injectPulseStyles() {
+        if (document.getElementById('blizz-notification-pulse-styles')) return;
+        const style = document.createElement('style');
+        style.id = 'blizz-notification-pulse-styles';
+        style.textContent = `
+            @keyframes blizz-notif-pulse-ring {
+                0% { transform: scale(0.8); opacity: 0.6; }
+                100% { transform: scale(1.8); opacity: 0; }
+            }
+            .notification-indicator-wrapper .blizz-pulse-ring {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: 50px;
+                height: 50px;
+                margin-left: -25px;
+                margin-top: -25px;
+                border-radius: 50%;
+                border: 2px solid rgba(108, 92, 231, 0.6);
+                pointer-events: none;
+                opacity: 0;
+            }
+            .notification-indicator-wrapper.has-notifications .blizz-pulse-ring {
+                animation: blizz-notif-pulse-ring 1.8s ease-out infinite;
+            }
+            .notification-indicator-wrapper.has-notifications .blizz-pulse-ring:nth-child(2) {
+                animation-delay: 0.6s;
+            }
+            .notification-indicator-wrapper.has-notifications .blizz-pulse-ring:nth-child(3) {
+                animation-delay: 1.2s;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    /**
      * Crée l'indicateur de notifications flottant (aligné sous le bouton WhatsApp)
      */
     function createNotificationIndicator() {
+        injectPulseStyles();
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'notification-indicator-wrapper';
+
+        // Anneaux de pulsation (visibles quand has-notifications)
+        for (let i = 0; i < 3; i++) {
+            const ring = document.createElement('div');
+            ring.className = 'blizz-pulse-ring';
+            wrapper.appendChild(ring);
+        }
+
         const indicator = document.createElement('div');
         indicator.className = 'notification-indicator';
         indicator.innerHTML = `
@@ -226,19 +276,23 @@ document.addEventListener('DOMContentLoaded', function() {
             </a>
         `;
 
-        // Styles inline pour l'indicateur flottant
-        // Aligne exactement sous le bouton WhatsApp défini dans base.html
-        // WhatsApp: bottom: 80px; right: 20px; width/height: 50px
-        // Notifications: bottom: 20px; right: 20px; width/height: 50px
-        indicator.style.cssText = `
+        // Styles inline pour le wrapper (position fixe)
+        wrapper.style.cssText = `
             position: fixed;
             bottom: 20px;
             right: 20px;
             z-index: 9998;
-            background: rgba(15, 23, 41, 0.9);
-            border-radius: 50%;
             width: 50px;
             height: 50px;
+        `;
+
+        // Styles inline pour l'indicateur flottant
+        indicator.style.cssText = `
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 41, 0.9);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -295,25 +349,19 @@ document.addEventListener('DOMContentLoaded', function() {
             indicator.style.transform = 'translateY(0)';
             indicator.style.boxShadow = '0 0 15px rgba(0, 0, 0, 0.3)';
         });
-        
-        // Ajouter au body
-        document.body.appendChild(indicator);
+
+        wrapper.appendChild(indicator);
+        document.body.appendChild(wrapper);
 
         // Responsive (mêmes règles que le bouton WhatsApp en mobile)
         const mq = window.matchMedia('(max-width: 768px)');
         const applyMobile = () => {
             if (mq.matches) {
-                indicator.style.right = '15px';
-                indicator.style.bottom = '20px';
-                indicator.style.width = '50px';
-                indicator.style.height = '50px';
-                link.style.fontSize = '20px';
+                wrapper.style.right = '15px';
+                wrapper.style.bottom = '20px';
             } else {
-                indicator.style.right = '20px';
-                indicator.style.bottom = '20px';
-                indicator.style.width = '50px';
-                indicator.style.height = '50px';
-                link.style.fontSize = '20px';
+                wrapper.style.right = '20px';
+                wrapper.style.bottom = '20px';
             }
         };
         applyMobile();
@@ -403,17 +451,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateNotificationCount(count) {
         const badge = document.querySelector('.notification-count');
         const indicator = document.querySelector('.notification-indicator');
+        const wrapper = document.querySelector('.notification-indicator-wrapper');
         
         if (!badge || !indicator) return;
         
         if (count > 0) {
             badge.textContent = count > 999 ? '999+' : count;
             badge.style.display = 'block';
-            indicator.classList.add('has-notifications');
+            if (wrapper) wrapper.classList.add('has-notifications');
         } else {
             badge.textContent = '0';
             badge.style.display = 'none';
-            indicator.classList.remove('has-notifications');
+            if (wrapper) wrapper.classList.remove('has-notifications');
         }
     }
     

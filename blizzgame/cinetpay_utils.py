@@ -14,6 +14,70 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
+def _get_cinetpay_v1_base_url():
+    """
+    Retourne l'URL de base de la nouvelle API CinetPay v1.
+    """
+    # Valeur par défaut : sandbox/documentation
+    return getattr(settings, "CINETPAY_API_BASE_URL", "https://api.cinetpay.net")
+
+
+def _get_cinetpay_v1_access_token():
+    """
+    Récupère un jeton d'accès (Bearer) pour l'API paiement web v1.
+    Utilise api_key / api_password fournis dans le backoffice CinetPay.
+    """
+    base_url = _get_cinetpay_v1_base_url()
+
+    # On permet de réutiliser l'ancienne CINETPAY_API_KEY si besoin,
+    # mais la nouvelle doc recommande un couple api_key / api_password dédié.
+    api_key = getattr(settings, "CINETPAY_ACCOUNT_KEY", None) or getattr(
+        settings, "CINETPAY_API_KEY", ""
+    )
+    api_password = getattr(settings, "CINETPAY_ACCOUNT_PASSWORD", "")
+
+    if not api_key or not api_password:
+        logger.error(
+            "CinetPay v1: api_key ou api_password manquant. "
+            "Vérifiez CINETPAY_ACCOUNT_KEY / CINETPAY_ACCOUNT_PASSWORD."
+        )
+        return None
+
+    try:
+        response = requests.post(
+            f"{base_url}/v1/oauth/login",
+            json={"api_key": api_key, "api_password": api_password},
+            headers={"Content-Type": "application/json"},
+            timeout=15,
+        )
+
+        try:
+            result = response.json()
+        except Exception:
+            logger.error(
+                "CinetPay v1: réponse non JSON lors de l'authentification: "
+                f"{response.status_code} - {response.text}"
+            )
+            return None
+
+        if response.status_code == 200 and result.get("status") == "OK":
+            access_token = result.get("access_token")
+            if access_token:
+                return access_token
+
+        logger.error(
+            f"CinetPay v1: échec de l'obtention du jeton d'accès: "
+            f"{response.status_code} - {result}"
+        )
+        return None
+    except requests.exceptions.RequestException as e:
+        logger.error(f"CinetPay v1: erreur réseau lors de l'authentification: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"CinetPay v1: erreur inattendue lors de l'authentification: {e}")
+        return None
+
 class CinetPayAPI:
     def __init__(self):
         self.api_key = settings.CINETPAY_API_KEY
@@ -412,143 +476,200 @@ class GamingCinetPayAPI(CinetPayAPI):
     Hérite de CinetPayAPI mais adapte les URLs et la logique pour les transactions gaming
     """
     
-    def initiate_payment(self, transaction, customer_data):
+    def verify_payment(self, identifier):
         """
-        Initie un paiement CinetPay pour une transaction gaming
+        Vérifie le statut d'un paiement via l'API v1.
+        `identifier` peut être un payment_token ou un merchant_transaction_id.
         """
         try:
-            # Générer un ID de transaction unique pour gaming
-            transaction_id = f"GAMING_{transaction.id}_{uuid.uuid4().hex[:8]}"
-            
-            # URLs de callback spécifiques au gaming
-            base_url = getattr(settings, 'BASE_URL', 'http://localhost:8000')
-            return_url = f"{base_url}{reverse('cinetpay_payment_success', args=[transaction.id])}"
-            notify_url = f"{base_url}{reverse('gaming_cinetpay_notification')}"
-            cancel_url = f"{base_url}{reverse('cinetpay_payment_failed', args=[transaction.id])}"
-            
-            # Convertir le montant en devise CinetPay (XOF par défaut)
-            amount_eur = float(transaction.amount)
-            amount_xof = convert_currency_for_cinetpay(amount_eur, 'EUR', 'XOF')
-            
-            # Log des données reçues pour débogage
-            print(f"[CINETPAY API DEBUG] Données reçues - Name: '{customer_data.get('customer_name')}', Surname: '{customer_data.get('customer_surname')}', Email: '{customer_data.get('customer_email')}', Phone: '{customer_data.get('customer_phone_number')}'")
-            logger.error(f"[CINETPAY API DEBUG] Données reçues - Name: '{customer_data.get('customer_name')}', Surname: '{customer_data.get('customer_surname')}', Email: '{customer_data.get('customer_email')}', Phone: '{customer_data.get('customer_phone_number')}'")
-            
-            # Données pour CinetPay avec valeurs par défaut pour éviter MINIMUM_REQUIRED_FIELDS
-            payment_data = {
-                'apikey': self.api_key,
-                'site_id': self.site_id,
-                'transaction_id': transaction_id,
-                'amount': int(amount_xof),  # CinetPay attend un entier
-                'currency': 'XOF',
-                'alternative_currency': 'XOF',
-                'description': f'Achat gaming BLIZZ - {transaction.post.title}',
-                'return_url': return_url,
-                'notify_url': notify_url,
-                'cancel_url': cancel_url,
-                'customer_id': str(transaction.buyer.id),
-                'customer_name': customer_data.get('customer_name') or transaction.buyer.first_name or 'Gamer',
-                'customer_surname': customer_data.get('customer_surname') or transaction.buyer.last_name or 'BLIZZ',
-                'customer_email': customer_data.get('customer_email') or transaction.buyer.email or 'gamer@blizz.com',
-                'customer_phone_number': customer_data.get('customer_phone_number') or '+221701234567',
-                'customer_address': customer_data.get('customer_address') or 'Adresse non renseignée',
-                'customer_city': customer_data.get('customer_city') or 'Dakar',
-                'customer_country': customer_data.get('customer_country') or 'SN',
-                'customer_state': customer_data.get('customer_state') or 'Dakar',
-                'customer_zip_code': customer_data.get('customer_zip_code') or '12345',
-            }
-            
-            # Log des données finales envoyées à CinetPay
-            print(f"[CINETPAY API DEBUG] Données finales - Name: '{payment_data['customer_name']}', Surname: '{payment_data['customer_surname']}', Email: '{payment_data['customer_email']}', Phone: '{payment_data['customer_phone_number']}'")
-            logger.error(f"[CINETPAY API DEBUG] Données finales - Name: '{payment_data['customer_name']}', Surname: '{payment_data['customer_surname']}', Email: '{payment_data['customer_email']}', Phone: '{payment_data['customer_phone_number']}'")
-            
-            # Log de TOUTES les données envoyées à CinetPay
-            print(f"[CINETPAY API DEBUG] TOUTES LES DONNÉES: {payment_data}")
-            logger.error(f"[CINETPAY API DEBUG] TOUTES LES DONNÉES: {payment_data}")
-            
-            # Appel à l'API CinetPay
-            print(f"[CINETPAY API DEBUG] Appel à l'API CinetPay: {self.base_url}/payment")
-            logger.error(f"[CINETPAY API DEBUG] Appel à l'API CinetPay: {self.base_url}/payment")
-            
-            response = requests.post(
-                f"{self.base_url}/payment",
-                json=payment_data,
-                headers={'Content-Type': 'application/json'},
-                timeout=20
-            )
-            
-            print(f"[CINETPAY API DEBUG] Réponse CinetPay: {response.status_code} - {response.text}")
-            logger.error(f"[CINETPAY API DEBUG] Réponse CinetPay: {response.status_code} - {response.text}")
+            access_token = _get_cinetpay_v1_access_token()
+            if not access_token:
+                return None
 
-            # Parser la réponse
+            api_base_url = _get_cinetpay_v1_base_url()
+
+            response = requests.get(
+                f"{api_base_url}/v1/payment/{identifier}",
+                headers={"Authorization": f"Bearer {access_token}"},
+                timeout=15,
+            )
+
             try:
                 result = response.json()
             except Exception:
-                result = {'code': str(response.status_code), 'message': response.text}
-            
-            # Gestion des erreurs serveur
+                logger.error(
+                    f"CinetPay v1: réponse non JSON lors de la vérification gaming: "
+                    f"{response.status_code} - {response.text}"
+                )
+                return None
+
+            if response.status_code != 200:
+                logger.error(
+                    f"CinetPay v1: échec vérification gaming: "
+                    f"{response.status_code} - {result}"
+                )
+                return None
+
+            return result
+        except Exception as e:
+            logger.error(f"Erreur lors de la vérification gaming CinetPay v1: {e}")
+            return None
+
+    def initiate_payment(self, transaction, customer_data):
+        """
+        Initie un paiement CinetPay pour une transaction gaming
+        via la nouvelle API paiement web v1 (https://api.cinetpay.net/v1/payment).
+        """
+        try:
+            # Générer un ID de transaction unique pour le marchand (merchant_transaction_id)
+            merchant_transaction_id = f"GAMING_{transaction.id}_{uuid.uuid4().hex[:8]}"
+
+            # URLs de callback spécifiques au gaming
+            base_url = getattr(settings, "BASE_URL", "http://localhost:8000")
+            return_url = f"{base_url}{reverse('cinetpay_payment_success', args=[transaction.id])}"
+            notify_url = f"{base_url}{reverse('gaming_cinetpay_notification')}"
+            cancel_url = f"{base_url}{reverse('cinetpay_payment_failed', args=[transaction.id])}"
+
+            # Convertir le montant en devise CinetPay (XOF par défaut)
+            amount_eur = float(transaction.amount)
+            amount_xof = convert_currency_for_cinetpay(amount_eur, "EUR", "XOF")
+
+            # Récupérer le jeton d'accès pour l'API v1
+            access_token = _get_cinetpay_v1_access_token()
+            if not access_token:
+                return {
+                    "success": False,
+                    "error": "Impossible de s'authentifier auprès de CinetPay. "
+                             "Vérifiez vos identifiants API (api_key / api_password).",
+                }
+
+            api_base_url = _get_cinetpay_v1_base_url()
+
+            # Préparer les données pour CinetPay v1
+            payment_data = {
+                "currency": "XOF",
+                # Laisser CinetPay proposer les méthodes dispo si non défini
+                # "payment_method": "OM",
+                "merchant_transaction_id": merchant_transaction_id,
+                "amount": int(amount_xof),
+                "lang": "fr",
+                "designation": f"Achat gaming BLIZZ - {transaction.post.title}",
+                "client_email": customer_data.get("customer_email")
+                or transaction.buyer.email
+                or "gamer@blizz.com",
+                "client_phone_number": customer_data.get("customer_phone_number")
+                or "+221701234567",
+                "client_first_name": customer_data.get("customer_name")
+                or transaction.buyer.first_name
+                or "Gamer",
+                "client_last_name": customer_data.get("customer_surname")
+                or transaction.buyer.last_name
+                or "BLIZZ",
+                "direct_pay": False,
+                "success_url": return_url,
+                "failed_url": cancel_url,
+                "notify_url": notify_url,
+            }
+
+            # Appel à l'API CinetPay v1
+            response = requests.post(
+                f"{api_base_url}/v1/payment",
+                json=payment_data,
+                headers={
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {access_token}",
+                },
+                timeout=20,
+            )
+
+            try:
+                result = response.json()
+            except Exception:
+                result = {"code": str(response.status_code), "message": response.text}
+
+            logger.error(
+                f"[CINETPAY V1 GAMING] Réponse: {response.status_code} - {result}"
+            )
+
             if response.status_code >= 500:
-                logger.error(f"Erreur serveur CinetPay Gaming: {response.status_code} - {response.text}")
-                return {'success': False, 'error': 'Erreur de connexion au service de paiement'}
-            
-            if result.get('code') == '201':
-                # Succès - mettre à jour la transaction CinetPay existante avec gestion de transaction
-                from django.db import transaction as db_transaction, connection
-                
-                try:
-                    # Forcer la reconnexion si la connexion est fermée
-                    connection.ensure_connection()
-                    
-                    with db_transaction.atomic():
-                        cinetpay_transaction = CinetPayTransaction.objects.filter(transaction=transaction).first()
-                        if cinetpay_transaction:
-                            cinetpay_transaction.cinetpay_transaction_id = transaction_id
-                            cinetpay_transaction.payment_url = result['data']['payment_url']
-                            cinetpay_transaction.payment_token = result['data'].get('payment_token', '')
-                            cinetpay_transaction.status = 'pending_payment'
-                            cinetpay_transaction.save()
-                    
-                    logger.info(f"Paiement CinetPay Gaming initié: {transaction_id}")
+                return {
+                    "success": False,
+                    "error": "Erreur de connexion au service de paiement",
+                }
+
+            # Succès attendu : code 200, status 'OK', avec payment_url + payment_token
+            if response.status_code == 200 and result.get("status") == "OK":
+                details = result.get("details", {}) or {}
+                payment_url = result.get("payment_url")
+                payment_token = result.get("payment_token")
+
+                if not payment_url:
                     return {
-                        'success': True,
-                        'payment_url': result['data']['payment_url'],
-                        'transaction_id': transaction_id,
-                        'cinetpay_transaction': cinetpay_transaction
+                        "success": False,
+                        "error": "Réponse CinetPay invalide: payment_url manquant.",
+                    }
+
+                from django.db import transaction as db_transaction, connection
+
+                try:
+                    connection.ensure_connection()
+                    with db_transaction.atomic():
+                        cinetpay_transaction = CinetPayTransaction.objects.filter(
+                            transaction=transaction
+                        ).first()
+                        if cinetpay_transaction:
+                            # On stocke notre identifiant marchand (merchant_transaction_id)
+                            cinetpay_transaction.cinetpay_transaction_id = (
+                                merchant_transaction_id
+                            )
+                            cinetpay_transaction.payment_url = payment_url
+                            cinetpay_transaction.payment_token = payment_token
+                            cinetpay_transaction.status = "pending_payment"
+                            cinetpay_transaction.save()
+
+                    logger.info(
+                        f"Paiement CinetPay Gaming (v1) initié: {merchant_transaction_id}"
+                    )
+                    return {
+                        "success": True,
+                        "payment_url": payment_url,
+                        "transaction_id": merchant_transaction_id,
+                        "cinetpay_transaction": cinetpay_transaction,
                     }
                 except Exception as db_error:
-                    logger.error(f"Erreur DB lors de la sauvegarde CinetPay: {db_error}")
-                    # Même si la sauvegarde échoue, retourner l'URL de paiement
+                    logger.error(
+                        f"Erreur DB lors de la sauvegarde CinetPay Gaming (v1): {db_error}"
+                    )
                     return {
-                        'success': True,
-                        'payment_url': result['data']['payment_url'],
-                        'transaction_id': transaction_id,
-                        'cinetpay_transaction': None
+                        "success": True,
+                        "payment_url": payment_url,
+                        "transaction_id": merchant_transaction_id,
+                        "cinetpay_transaction": None,
                     }
-            else:
-                # Gestion des erreurs
-                code = (result.get('code') or '').upper()
-                error_msg = result.get('message', 'Erreur inconnue')
-                if code == 'ERROR_AMOUNT_TOO_LOW':
-                    error_msg = "Montant trop bas pour CinetPay. Minimum requis."
-                elif code == 'ERROR_AMOUNT_TOO_HIGH':
-                    error_msg = "Montant trop élevé pour CinetPay. Réduisez le montant ou contactez le support."
-                logger.error(f"Erreur CinetPay Gaming: {error_msg}")
-                return {
-                    'success': False,
-                    'error': error_msg
-                }
-                
+
+            # Gestion des erreurs fonctionnelles
+            code = str(result.get("code", "")).upper()
+            error_msg = result.get("message", "Erreur inconnue")
+            if code == "ERROR_AMOUNT_TOO_LOW":
+                error_msg = "Montant trop bas pour CinetPay. Minimum requis."
+            elif code == "ERROR_AMOUNT_TOO_HIGH":
+                error_msg = (
+                    "Montant trop élevé pour CinetPay. "
+                    "Réduisez le montant ou contactez le support."
+                )
+            return {"success": False, "error": error_msg}
+
         except requests.exceptions.RequestException as e:
-            logger.error(f"Erreur de requête CinetPay Gaming: {e}")
+            logger.error(f"Erreur de requête CinetPay Gaming (v1): {e}")
             return {
-                'success': False,
-                'error': 'Erreur de connexion au service de paiement'
+                "success": False,
+                "error": "Erreur de connexion au service de paiement",
             }
         except Exception as e:
-            logger.error(f"Erreur inattendue CinetPay Gaming: {e}")
+            logger.error(f"Erreur inattendue CinetPay Gaming (v1): {e}")
             return {
-                'success': False,
-                'error': 'Erreur interne du service de paiement'
+                "success": False,
+                "error": "Erreur interne du service de paiement",
             }
 
 
@@ -557,33 +678,42 @@ def handle_gaming_cinetpay_notification(notification_data):
     Traite une notification CinetPay pour les transactions gaming
     """
     try:
-        transaction_id = notification_data.get('cpm_trans_id')
-        if not transaction_id:
+        # Nouvelle API v1 : on reçoit merchant_transaction_id / transaction_id
+        merchant_transaction_id = notification_data.get('merchant_transaction_id')
+        legacy_id = notification_data.get('cpm_trans_id')
+        identifier = merchant_transaction_id or legacy_id
+
+        if not identifier:
             logger.error("ID de transaction manquant dans la notification gaming")
             return False
         
         # Trouver la transaction CinetPay gaming
         cinetpay_transaction = CinetPayTransaction.objects.filter(
-            cinetpay_transaction_id=transaction_id
+            cinetpay_transaction_id=identifier
         ).first()
         
         if not cinetpay_transaction:
-            logger.error(f"Transaction CinetPay Gaming non trouvée: {transaction_id}")
+            logger.error(f"Transaction CinetPay Gaming non trouvée: {identifier}")
             return False
         
         transaction = cinetpay_transaction.transaction
         
-        # Vérifier le statut du paiement
+        # Vérifier le statut du paiement via l'API v1
         cinetpay_api = GamingCinetPayAPI()
-        verification_result = cinetpay_api.verify_payment(transaction_id)
+        # On privilégie le payment_token si présent, sinon l'identifiant marchand
+        verification_identifier = (
+            cinetpay_transaction.payment_token or cinetpay_transaction.cinetpay_transaction_id
+        )
+        verification_result = cinetpay_api.verify_payment(verification_identifier)
         
         if not verification_result:
-            logger.error(f"Impossible de vérifier le paiement gaming: {transaction_id}")
+            logger.error(f"Impossible de vérifier le paiement gaming: {identifier}")
             return False
         
-        payment_status = verification_result.get('data', {}).get('payment_status')
+        # Nouvelle API v1 : le champ de statut principal est "status"
+        payment_status = (verification_result.get('status') or '').upper()
         
-        if payment_status == 'ACCEPTED':
+        if payment_status == 'SUCCESS':
             # Paiement réussi
             cinetpay_transaction.status = 'payment_received'
             cinetpay_transaction.completed_at = timezone.now()
@@ -609,10 +739,10 @@ def handle_gaming_cinetpay_notification(notification_data):
                 transaction=transaction
             )
             
-            logger.info(f"Paiement gaming réussi pour: {transaction_id}, annonce marquée en transaction")
+            logger.info(f"Paiement gaming réussi pour: {identifier}, annonce marquée en transaction")
             return True
             
-        elif payment_status == 'REFUSED':
+        elif payment_status == 'FAILED':
             # Paiement échoué
             cinetpay_transaction.status = 'failed'
             cinetpay_transaction.save()
@@ -626,7 +756,7 @@ def handle_gaming_cinetpay_notification(notification_data):
             post.is_on_sale = True
             post.save()
             
-            logger.info(f"Paiement gaming échoué pour: {transaction_id}, annonce remise en vente")
+            logger.info(f"Paiement gaming échoué pour: {identifier}, annonce remise en vente")
             return True
         
         else:

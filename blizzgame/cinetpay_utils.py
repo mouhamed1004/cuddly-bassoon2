@@ -78,6 +78,16 @@ def _get_cinetpay_v1_access_token():
         logger.error(f"CinetPay v1: erreur inattendue lors de l'authentification: {e}")
         return None
 
+
+def _build_merchant_transaction_id(prefix, obj_id):
+    """
+    Génère un merchant_transaction_id compatible avec la nouvelle API :
+    - uniquement lettres/chiffres
+    - longueur maximale 30 caractères
+    """
+    base = f"{prefix}{obj_id.hex}"
+    return base[:30]
+
 class CinetPayAPI:
     def __init__(self):
         self.api_key = settings.CINETPAY_API_KEY
@@ -522,7 +532,8 @@ class GamingCinetPayAPI(CinetPayAPI):
         """
         try:
             # Générer un ID de transaction unique pour le marchand (merchant_transaction_id)
-            merchant_transaction_id = f"GAMING_{transaction.id}_{uuid.uuid4().hex[:8]}"
+            # Contrainte CinetPay : <= 30 caractères, format simple
+            merchant_transaction_id = _build_merchant_transaction_id("G", transaction.id)
 
             # URLs de callback spécifiques au gaming
             base_url = getattr(settings, "BASE_URL", "http://localhost:8000")

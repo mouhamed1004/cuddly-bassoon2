@@ -79,13 +79,20 @@ def _get_cinetpay_v1_access_token():
         return None
 
 
-def _build_merchant_transaction_id(prefix, obj_id):
+def _build_merchant_transaction_id(prefix, obj_id=None):
     """
     Génère un merchant_transaction_id compatible avec la nouvelle API :
     - uniquement lettres/chiffres
     - longueur maximale 30 caractères
     """
-    base = f"{prefix}{obj_id.hex}"
+    from uuid import uuid4
+
+    core = uuid4().hex  # 32 caractères alphanumériques
+    if obj_id is not None:
+        # Préfixer avec une partie de l'ID interne pour faciliter le debug
+        core = f"{getattr(obj_id, 'hex', str(obj_id))[:8]}{core}"
+
+    base = f"{prefix}{core}"
     return base[:30]
 
 class CinetPayAPI:

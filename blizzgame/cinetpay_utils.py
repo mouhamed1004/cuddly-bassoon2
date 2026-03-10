@@ -597,17 +597,21 @@ class GamingCinetPayAPI(CinetPayAPI):
                     "error": "Erreur de connexion au service de paiement",
                 }
 
-            # Succès attendu : code 200, status 'OK', avec payment_url + payment_token
+            # Succès attendu : code 200, status 'OK'
             if response.status_code == 200 and result.get("status") == "OK":
                 details = result.get("details", {}) or {}
                 payment_url = result.get("payment_url")
                 payment_token = result.get("payment_token")
 
+                # Si CinetPay renvoie un statut fonctionnel d'erreur dans details,
+                # propager son message plutôt que forcer une URL.
+                details_status = (details.get("status") or "").upper()
                 if not payment_url:
-                    return {
-                        "success": False,
-                        "error": "Réponse CinetPay invalide: payment_url manquant.",
-                    }
+                    error_msg = (
+                        details.get("message")
+                        or "Réponse CinetPay invalide: payment_url manquant."
+                    )
+                    return {"success": False, "error": error_msg}
 
                 from django.db import transaction as db_transaction, connection
 

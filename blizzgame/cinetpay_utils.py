@@ -145,8 +145,8 @@ class CinetPayAPI:
                 'customer_address': customer_data.get('customer_address') or order.shipping_address_line1 or 'Adresse non renseignée',
                 'customer_city': customer_data.get('customer_city') or order.shipping_city or 'Dakar',
                 'customer_country': customer_data.get('customer_country') or order.shipping_country or 'SN',
-                'customer_state': customer_data.get('customer_state') or order.shipping_state or 'Dakar',
-                'customer_zip_code': customer_data.get('customer_zip_code') or order.shipping_postal_code or '12345',
+                'customer_state': customer_data.get('customer_state') or order.shipping_state or 'DK',
+                'customer_zip_code': customer_data.get('customer_zip_code') or order.shipping_postal_code or '20000',
             }
             
             # Appel à l'API CinetPay

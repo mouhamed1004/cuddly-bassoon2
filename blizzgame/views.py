@@ -1743,13 +1743,13 @@ def initiate_cinetpay_payment(request, transaction_id):
                 customer_city = 'Dakar'
                 logger.info(f"[CINETPAY DEBUG] customer_city vide, fallback: '{customer_city}'")
             if not customer_zip_code:
-                customer_zip_code = '12345'
+                customer_zip_code = '20000'
                 logger.info(f"[CINETPAY DEBUG] customer_zip_code vide, fallback: '{customer_zip_code}'")
             if not customer_country:
                 customer_country = 'SN'
                 logger.info(f"[CINETPAY DEBUG] customer_country vide, fallback: '{customer_country}'")
             if not customer_state:
-                customer_state = 'Dakar'
+                customer_state = 'DK'
                 logger.info(f"[CINETPAY DEBUG] customer_state vide, fallback: '{customer_state}'")
             
             # Log des données finales

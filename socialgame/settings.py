@@ -317,10 +317,15 @@ else:
 # Legacy settings for compatibility
 USE_CLOUDINARY = bool(CLOUDINARY_URL)
 
-# Configuration CinetPay
-CINETPAY_API_KEY = config('CINETPAY_API_KEY')
-CINETPAY_SITE_ID = config('CINETPAY_SITE_ID')
-CINETPAY_SECRET_KEY = config('CINETPAY_SECRET_KEY')
+# Configuration CinetPay (ancienne Checkout API + nouvelle API v1)
+CINETPAY_API_KEY = config('CINETPAY_API_KEY', default='')
+CINETPAY_SITE_ID = config('CINETPAY_SITE_ID', default='')
+CINETPAY_SECRET_KEY = config('CINETPAY_SECRET_KEY', default='')
+
+# Nouveaux identifiants API v1 (https://api.cinetpay.net)
+CINETPAY_ACCOUNT_KEY = config('CINETPAY_ACCOUNT_KEY', default=CINETPAY_API_KEY)
+CINETPAY_ACCOUNT_PASSWORD = config('CINETPAY_ACCOUNT_PASSWORD', default='')
+CINETPAY_API_BASE_URL = config('CINETPAY_API_BASE_URL', default='https://api.cinetpay.net')
 
 # Modes test CinetPay - Séparés pour gaming et dropshipping
 CINETPAY_GAMING_TEST_MODE = config('CINETPAY_GAMING_TEST_MODE', default=False, cast=bool)  # Désactivé pour gaming
